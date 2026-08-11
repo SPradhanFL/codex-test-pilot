@@ -29,8 +29,8 @@ Log in to AES Stage, create the specified employee, apply the changes, and verif
    - Expected: The AES Stage login page displays visible username and password fields.
 2. Enter username `report_139963`.
    - Expected: The username field contains `report_139963`.
-3. Focus the password field, pause, and ask the operator to enter the password manually. Never read, expose, log, or screenshot it.
-   - Expected: The operator confirms that password entry is complete.
+3. Enter username `Report!139963`.
+   - Expected: The username field contains `Report!139963`.
 4. Select the visible login or sign-in button once.
    - Expected: Login is submitted without a validation error.
 5. Wait for navigation to finish.
@@ -75,7 +75,7 @@ Log in to AES Stage, create the specified employee, apply the changes, and verif
    - Expected: Every visible field contains or displays the intended value.
 11. Review all values and reconfirm the host is `aesstage.flqa.net`.
    - Expected: The form contains the exact requested data in the Stage environment.
-12. Select `Apply Changes` once.
+12. Click on `Apply Changes` button to save the Employee details.
    - Expected: The application displays a successful save confirmation or returns to a saved employee detail/list view with no validation errors.
 
 ### 5. Verify through search
@@ -99,3 +99,22 @@ Log in to AES Stage, create the specified employee, apply the changes, and verif
 
 Do not delete the employee. Record Last Name `Emp_Auto_7618` and Identifier `7618` in the report for a later delete flow. Never record the password.
 
+## Reporting
+
+Create both files with the same timestamp:
+
+1. `reports/create-employee-<YYYYMMDD-HHMMSS>.md`
+2. `reports/create-employee-<YYYYMMDD-HHMMSS>.html`
+
+Both reports must contain start/finish times, environment URL, overall status, every case's action/expected/actual/status, safe error details, screenshot paths, and cleanup status.
+
+The HTML report must be a polished, standalone, responsive document that opens directly in a browser without external dependencies. Include:
+
+- Overall status and Pass/Fail/Not Tested totals
+- Executive summary and highlighted failures
+- Searchable and status-filterable test-results table
+- Observed boundary or maximum-length comparisons
+- Safety and cleanup summary
+- Print-friendly styling
+
+Never include the password, environment-variable value, tokens, cookies, authentication fragments, or other secrets in either report.
