@@ -2,10 +2,11 @@
 
 ## Login account
 
-- Username: `report_139963`
-- Password source: `secure manual entry at runtime`
+- URL and username source: `config/aes-stage.json`
+- Primary password source: `AES_STAGE_PASSWORD`
+- Local fallback password source: `.secrets/aes-stage.credentials.json`
 
-When the password field is ready, pause and ask the operator to enter the AES Stage password. Never store, display, repeat, screenshot, or write the password to a report.
+Resolve credentials before opening the browser. Use the environment variable first and the ignored local credentials file second. Do not pause for password entry when either source is valid. If neither source exists or the local value is still a placeholder, mark the scenario **BLOCKED** and stop before browser actions. Never print, display, repeat, screenshot, report, or copy the resolved password.
 
 ## Employee record
 
@@ -28,4 +29,3 @@ When the password field is ready, pause and ask the operator to enter the AES St
 - Search value: `Emp_Auto_7618`
 
 This is synthetic Stage data. Before creating it, stop if an existing employee with the same exact Last Name and Identifier is found.
-

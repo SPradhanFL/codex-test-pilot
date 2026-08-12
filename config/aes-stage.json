@@ -1,0 +1,12 @@
+{
+  "environment": "stage",
+  "application": "AES Stage",
+  "url": "https://aesstage.flqa.net",
+  "username": "report_139963",
+  "approvedHosts": [
+    "aesstage.flqa.net",
+    "idgatewayawsstage.flqa.net",
+    "adminwebstage2.flqa.net"
+  ]
+}
+
