@@ -1,5 +1,12 @@
 # Delete Employee
 
+## Full-suite execution mode
+
+When this scenario is executed by `instructions/full-suite-headed-video-execution.md`, follow the coordinator's selected mode:
+
+- **Unattended safe mode:** locate and reverify only the exact synthetic target, confirm the Remove control is available, do not open or accept the deletion dialog, and mark deletion/post-deletion checks **NOT TESTED — unattended safe mode**.
+- **Full destructive mode:** delete only the exact synthetic record created by the current suite. Permanent browser deletion may require a narrow action-time confirmation; do not bypass it. The coordinator should group exact cleanup targets when possible.
+
 ## Execution directive
 
 Before any browser action, read:
@@ -28,9 +35,9 @@ Delete only the synthetic employee identified by the resolved Employee ID and ve
    - Expected: Exactly one matching employee is found.
 3. Compare its Employee ID, name, and email with the expected synthetic data.
    - Expected: All identifying values match. If not, stop without deleting anything.
-4. Select the visible delete control for that record.
+4. In full destructive mode, select the visible delete control for that record. In unattended safe mode, verify the control is available but do not select it.
    - Expected: A confirmation dialog identifies the same employee.
-5. Confirm deletion once.
+5. In full destructive mode, confirm deletion once after any required action-time authorization. In unattended safe mode, mark this step **NOT TESTED**.
    - Expected: A deletion success message or return to the employee list appears.
 6. Search again for the exact Employee ID.
    - Expected: No matching employee is present.
@@ -38,4 +45,3 @@ Delete only the synthetic employee identified by the resolved Employee ID and ve
 ## Cleanup
 
 If deletion fails or cannot be verified, mark the scenario FAIL or BLOCKED and state that manual cleanup may be required.
-

@@ -2,3 +2,7 @@
 .secrets/*
 !.secrets/aes-stage.credentials.example.json
 
+# Local browser/runtime artifacts.
+node_modules/
+.playwright-mcp/
+reports/playwright-mcp-artifacts/

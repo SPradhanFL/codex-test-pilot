@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@playwright/mcp": "^0.0.79",
+    "ffmpeg-static": "^5.3.0"
+  }
+}

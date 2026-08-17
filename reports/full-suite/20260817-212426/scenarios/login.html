@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AES Stage Login · 20260817-212426</title><style>
+:root{--bg:#f4f7fb;--panel:#fff;--ink:#172033;--muted:#5c6780;--line:#dfe6f0;--brand:#2354d8;--pass:#087d45;--fail:#b42318;--not-tested:#8a5b00;--blocked:#6b3fa0;--shadow:0 10px 30px rgba(27,42,74,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif;line-height:1.55}a{color:var(--brand)}main{max-width:1240px;margin:auto;padding:32px 22px 64px}.hero{padding:30px;border-radius:22px;color:#fff;background:linear-gradient(135deg,#172554,#2354d8);box-shadow:var(--shadow)}.hero h1{margin:0 0 8px;font-size:clamp(28px,4vw,46px)}.hero p{margin:4px 0;color:#dbe6ff}.status{display:inline-flex;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;letter-spacing:.04em}.pass{color:#fff;background:var(--pass)}.fail{color:#fff;background:var(--fail)}.not-tested{color:#fff;background:var(--not-tested)}.blocked{color:#fff;background:var(--blocked)}.partial{color:#172033;background:#ffd166}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:20px 0}.card,.panel,.outcome{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.card{padding:18px}.metric{font-size:30px;font-weight:800}.label{color:var(--muted);font-size:13px}.panel{padding:22px;margin:18px 0}.panel h2{margin-top:0}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}input,select,button{font:inherit;border:1px solid #bfc9da;border-radius:10px;padding:10px 12px;background:#fff}button{cursor:pointer;color:#fff;background:var(--brand);border-color:var(--brand)}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;vertical-align:top;padding:12px;border-bottom:1px solid var(--line)}th{color:#46526a;background:#f8faff}.table-wrap{overflow:auto}.outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.outcome{padding:18px}.outcome h3{margin:0 0 8px}.outcome p{color:var(--muted)}video{width:100%;max-height:680px;border-radius:14px;background:#111}.evidence{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}.evidence figure{margin:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}.evidence img{display:block;width:100%;height:auto}.evidence figcaption{padding:10px;color:var(--muted);font-size:13px}pre{white-space:pre-wrap;word-break:break-word;background:#111827;color:#e5e7eb;padding:20px;border-radius:14px;max-height:700px;overflow:auto}.failure{border-left:6px solid var(--fail);background:#fff3f1}.muted{color:var(--muted)}.back{display:inline-block;margin-bottom:16px}.pill-link{display:inline-block;text-decoration:none;border-radius:10px;padding:8px 11px;color:#fff;background:var(--brand)}@media print{body{background:#fff}.toolbar,button,.back{display:none}.panel,.card,.outcome{box-shadow:none;break-inside:avoid}main{max-width:none;padding:10px}video{display:none}}
+</style></head><body><main>
+  <a class="back" href="../index.html">← Full-suite dashboard</a>
+  <header class="hero"><span class="status pass">PASS</span><h1>Execution 1 · AES Stage Login</h1><p>tests/login/login.md · Video 0:00–0:55</p></header>
+  <section class="cards"><div class="card"><div class="metric">1</div><div class="label">Execution</div></div><div class="card"><div class="metric">0:00–0:55</div><div class="label">Continuous-video range</div></div><div class="card"><div class="metric">Unattended safe mode</div><div class="label">Execution mode</div></div></section>
+  <section class="panel"><h2>Scenario outcome</h2><p>Authentication succeeded and React Home loaded.</p><button onclick="playRange(0,55.31)">Play this execution (0:00–0:55)</button></section>
+  
+  <section class="panel"><h2>Continuous video evidence</h2><video id="suite-video" controls preload="metadata" src="../videos/full-suite-execution.webm"></video></section>
+  <section class="panel"><h2>Screenshot evidence</h2><div class="evidence"><figure><a href="../screenshots/login/login-final.png"><img src="../screenshots/login/login-final.png" alt="AES Stage Login evidence"></a><figcaption>login-final.png</figcaption></figure></div></section>
+  <section class="panel"><h2>Complete test structure</h2><p class="muted">Source: tests/login/login.md</p><pre># Login
+
+## Execution directive
+
+Before any browser action, read:
+
+1. `instructions/project-instructions.md`
+2. `instructions/application-details.md`
+3. `instructions/test-data.md`
+
+Execute this scenario directly with Playwright MCP. Do not generate test code. Save the execution report under `reports/`.
+
+## Objective
+
+Verify that the dedicated test user can sign in to the configured non-production application.
+
+## Preconditions
+
+- All required placeholders in the shared files are resolved.
+- The test account is active and authorized.
+- If manual password entry or MFA is required, pause and ask the user to complete it.
+
+## Steps
+
+1. Open the configured login page.
+   - Expected: The configured login-page identifier is visible.
+2. Enter the configured test username.
+   - Expected: The username or email field contains the test username.
+3. Enter the password through the approved secure mechanism without revealing or recording it.
+   - Expected: The password field accepts the value.
+4. Select the visible sign-in or login control.
+   - Expected: Authentication is submitted once.
+5. Wait for the authenticated landing page.
+   - Expected: The URL no longer represents the login page and the configured post-login identifier is visible.
+6. Confirm that no authentication error is displayed.
+   - Expected: The user is signed in successfully.
+
+## Cleanup
+
+Sign out only if a selected follow-up scenario does not require the authenticated session.
+
+</pre></section>
+  <section class="panel"><h2>Safety and cleanup</h2><p>No password, token, cookie, or authentication fragment is included. Unattended safe mode did not create, update, or delete persistent staging records.</p></section>
+  </main><script>
+function playRange(start,end){const video=document.getElementById('suite-video');video.currentTime=start;video.play();const stop=()=>{if(video.currentTime>=end){video.pause();video.removeEventListener('timeupdate',stop)}};video.addEventListener('timeupdate',stop);video.scrollIntoView({behavior:'smooth',block:'center'})}
+</script></body></html>

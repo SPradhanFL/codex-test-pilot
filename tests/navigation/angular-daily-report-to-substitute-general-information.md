@@ -10,7 +10,7 @@ Before any browser action, read:
 
 Execute this scenario directly in Chrome using browser automation. Do not generate test code. Save the execution report under `reports/`.
 
-If the operator's invocation explicitly authorizes executing all actions autonomously, treat that invocation as authorization for the scenario-defined staging create and delete actions in that run. Do not ask repetitive yes/ready questions for those actions. This does not authorize changes outside this scenario, production execution, bypassing access controls, or automated password entry.
+When executed by `instructions/full-suite-headed-video-execution.md`, follow the coordinator's selected execution mode. Unattended safe mode performs no persistent creation or deletion and marks dependent steps **NOT TESTED**. Full destructive mode performs only the documented synthetic lifecycle; permanent browser deletion may still require narrow action-time confirmation. Do not bypass that safeguard or ask unrelated ready/password questions.
 
 Reuse the same authenticated Chrome browser session and the same controlled tab throughout the scenario whenever they remain available. Do not create a new browser session or tab between scenario steps. If AES closes, releases, or disconnects the controlled tab after a JavaScript confirmation dialog or authentication transition, reconnect to the existing Chrome session first and claim the matching open AES tab when possible. Create a replacement tab only when no matching AES tab remains, then reverify the exact record and current state before continuing.
 
@@ -23,6 +23,7 @@ Verify that an authenticated AES Stage organization user can navigate from the A
 - Chrome is available through the approved browser-control connection.
 - The user is authenticated in AES Stage.
 - The Angular Daily Report page is open.
+- Generate a fresh synthetic phone number and PIN in memory immediately before completing the Add Substitute form. The phone number must be exactly 10 digits with a first digit from `2` through `9`; the PIN must be exactly 5 digits with a first digit from `1` through `9`. Do not persist either generated value in configuration or credential files.
 - Work only in the AES staging environment.
 - Use only a clearly synthetic Substitute returned by the documented search. Do not select or remove a realistic-looking person.
 - If no clearly synthetic result is available, stop with a **BLOCKED** result.
@@ -56,7 +57,7 @@ Verify that an authenticated AES Stage organization user can navigate from the A
    - Safety: Do not select a realistic-looking person. If the result's synthetic nature is uncertain, stop with a **BLOCKED** result.
 8. Record and reverify the selected Substitute name, Substitute ID, and identifier immediately before deletion.
    - Expected: The exact synthetic target is verified before any deletion action.
-   - Authorization: Continue without another prompt only when the current invocation explicitly authorizes executing all scenario actions autonomously. Otherwise, request exact action-time confirmation.
+   - Authorization: In full destructive mode, follow the coordinator's action-time confirmation requirement. In unattended safe mode, do not delete and mark this branch **NOT TESTED**.
 9. After authorization, select **Remove** and accept the application's deletion confirmation.
    - Expected: AES displays `This Substitute has been deleted.` or an equivalent deletion confirmation.
 10. Open Substitute search and search for the deleted record's exact identifier.
@@ -79,12 +80,13 @@ Verify that an authenticated AES Stage organization user can navigate from the A
     - First Name: `sumit`
     - Last Name: `Codex`
     - Identifier: `sumit4455`
-    - Phone Number: `7788990077`
-    - Phone PIN: use the value supplied by the operator at execution time.
+    - Phone Number: generate a random 10-digit number at runtime whose first digit is `2` through `9`.
+    - Phone PIN: generate a separate random 5-digit number at runtime whose first digit is `1` through `9`.
+    - Keep both generated values only in execution memory for the duration of this scenario. Do not write either value to a configuration file, credentials file, screenshot annotation, video filename, or report.
     - Expected: All required fields pass validation and **Apply Changes** is available.
 14. Record and reverify the intended creation target immediately before selecting **Apply Changes**.
     - Expected: The exact creation target is verified before submission.
-    - Authorization: Continue without another prompt only when the current invocation explicitly authorizes executing all scenario actions autonomously. Otherwise, request action-time confirmation.
+    - Authorization: Submit only in full destructive mode. In unattended safe mode, do not create the record and mark persistence-dependent checks **NOT TESTED**.
 15. After authorization, select **Apply Changes**.
     - Expected: The Substitute General Information page opens for `sumit Codex`.
     - Expected: The page shows identifier `sumit4455`, the requested phone number, an active status, a numeric Substitute ID, and **Log in as User**.
@@ -114,7 +116,7 @@ Verify that an authenticated AES Stage organization user can navigate from the A
     - Expected: The same created Substitute ID, name `sumit Codex`, and identifier `sumit4455` are displayed.
 23. Record and reverify the created Substitute name, assigned Substitute ID, and identifier immediately before cleanup deletion.
     - Expected: The exact created record is verified before deletion.
-    - Authorization: Continue without another prompt only when the current invocation explicitly authorizes executing all scenario actions autonomously. Otherwise, request separate action-time confirmation.
+    - Authorization: In full destructive mode, follow the coordinator's action-time confirmation requirement. In unattended safe mode, do not delete and mark this branch **NOT TESTED**.
     - Safety: Reverify the name, Substitute ID, and identifier after exiting impersonation and immediately before deletion.
 24. After authorization, select **Remove** and accept the application's deletion confirmation.
     - Expected: AES displays `This Substitute has been deleted.` or an equivalent deletion confirmation.
@@ -137,21 +139,21 @@ When no Substitute is already selected, AES opens **Select a Substitute** before
 
 ## Deletion safety
 
-- Deletion permanently removes the selected staging record and requires explicit authorization for the current run. An invocation that explicitly requests autonomous execution of all scenario actions satisfies this requirement for the scenario-defined staging records.
-- When autonomous authorization is absent, the confirmation request must identify the exact Substitute name, Substitute ID, and identifier.
+- Deletion permanently removes the selected staging record. In full destructive mode, follow any action-time confirmation required by the execution surface and identify the exact Substitute name, Substitute ID, and identifier.
+- In unattended safe mode, do not select Remove or accept a deletion dialog.
 - Reverify the exact target after any browser interruption or reconnection.
 - Never remove a realistic-looking person or a record whose synthetic status is uncertain.
 
 ## Creation safety
 
-- Creation is a persistent staging-data change and requires explicit authorization for the current run. An invocation that explicitly requests autonomous execution of all scenario actions satisfies this requirement for the defined test record.
+- Creation is a persistent staging-data change and runs only in full destructive mode.
 - Verify that searches for `sumit4455`, `Codex`, and `sumit` are all clear before opening the creation form.
-- Removing the newly created test Substitute is covered only by explicit autonomous authorization for the current scenario run; otherwise request separate confirmation immediately before selecting **Remove**.
-- Do not record the Phone PIN in the execution report or any screenshot annotation.
+- Removing the newly created test Substitute follows the full-suite coordinator's action-time confirmation rule. It is not performed in unattended safe mode.
+- Do not record the generated Phone Number or Phone PIN in the execution report or any screenshot annotation. Report only that values of the required lengths and formats were generated, entered, and validated.
 
 ## Cleanup
 
-Exit impersonation, remove the newly created test Substitute after explicit confirmation, and verify that its exact identifier and assigned Substitute ID are absent. If it is already absent, record the verified absence and do not perform another destructive action. Verify both documented alphabet-group links and leave the second alphabet-group results page open. Do not sign out when another authenticated scenario will follow.
+In full destructive mode, exit impersonation, remove the newly created test Substitute after any required action-time confirmation, and verify that its exact identifier and assigned Substitute ID are absent. In unattended safe mode, no record is created or removed and all persistence-dependent checks are NOT TESTED. If a full-destructive record is already absent, record the verified absence and do not perform another destructive action. Verify both documented alphabet-group links and leave the second alphabet-group results page open. Do not sign out when another authenticated scenario will follow.
 
 ## Report requirements
 
@@ -182,4 +184,4 @@ Record:
 - Overall status: PASS, FAIL, or BLOCKED
 - Any safe error details
 
-Never record passwords, Phone PINs, tokens, cookies, or browser-session information.
+Never record passwords, generated Phone Numbers, Phone PINs, tokens, cookies, or browser-session information.
