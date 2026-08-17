@@ -147,6 +147,8 @@ node scripts/generate-full-suite-report.mjs <YYYYMMDD-HHMMSS>
 
 This keeps one continuous video, its execution timeline, current screenshots, the dashboard, and detailed scenario pages together under the current timestamped run folder.
 
+The recording keeps every application page fully visible. Full-screen chapter cards, blur effects, dimming, masking, and action-callout overlays are disabled; scenario boundaries are provided by the clickable HTML timeline instead.
+
 The new report, continuous video, timeline, and screenshots remain in a new top-level timestamped folder under `reports/full-suite/`.
 
 For a zero-routine-prompt, non-destructive run:

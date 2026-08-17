@@ -19,7 +19,8 @@ const formatTime = (seconds) => {
 };
 
 const scale = data.recordedDurationSeconds / (data.sourceElapsedMilliseconds / 1000);
-const starts = data.executions.map((item, index) => index === 0 ? 0 : Math.max(0, ((item.startMs - 1200) / 1000) * scale));
+const chapterOffsetMs = Number(data.chapterOffsetMs ?? 0);
+const starts = data.executions.map((item, index) => index === 0 ? 0 : Math.max(0, ((item.startMs - chapterOffsetMs) / 1000) * scale));
 const executions = data.executions.map((item, index) => {
   const startSeconds = starts[index];
   const endSeconds = index + 1 < starts.length ? starts[index + 1] : data.recordedDurationSeconds;
@@ -55,7 +56,9 @@ const timeline = {
   recordedDurationSeconds: data.recordedDurationSeconds,
   recordedDuration: data.recordedDuration,
   wallClockDuration: data.wallClockDuration,
-  note: 'Ranges are contiguous and aligned to the chapter cards in the single continuous recording.',
+  note: chapterOffsetMs > 0
+    ? 'Ranges are contiguous and aligned to legacy chapter cards in this recording.'
+    : 'Ranges are contiguous and use recorded execution offsets. No chapter card, blur, or recording overlay is used.',
   executions: executions.map(({execution, scenario, source, status, startSeconds, endSeconds, start, end, range}) => ({execution, scenario, source, status, startSeconds, endSeconds, start, end, range}))
 };
 fs.writeFileSync(path.join(runDir, 'timeline.json'), JSON.stringify(timeline, null, 2) + '\n');

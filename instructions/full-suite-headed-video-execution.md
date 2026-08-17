@@ -58,7 +58,9 @@ Choose one mode before opening the browser:
 - Use one isolated browser context and one controlled tab for the entire suite. Reset logical application state between scenarios and re-authenticate when a scenario logs out.
 - Start one `1280x720` recording before scenario 1 and stop it only after scenario 15 reaches its final state.
 - Save the finalized recording as `videos/full-suite-execution.webm`.
-- Add a visible video chapter marker at the start of every scenario when supported.
+- Do not add video chapter cards. They blur and cover the application while the recording is running.
+- Do not enable recording overlays, action callouts, dimming, masking, or blur effects. Keep the native application screen fully visible throughout execution.
+- Use recorded start/end offsets and the HTML report timeline to identify scenario boundaries instead of placing overlays in the video.
 - Record the monotonic elapsed-video start and end offsets for each scenario. Pauses outside the recording do not count as execution time.
 - Do not start or stop per-scenario recordings during a normal full-suite run.
 - Do not record the desktop, terminal, credential file, or tool output. Browser video may show only the masked password control during authentication.

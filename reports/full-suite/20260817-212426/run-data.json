@@ -6,6 +6,7 @@
   "recordedDuration": "21:22",
   "wallClockDuration": "21:18",
   "sourceElapsedMilliseconds": 1278194,
+  "chapterOffsetMs": 1200,
   "video": "videos/full-suite-execution.webm",
   "executions": [
     {"execution":1,"scenario":"AES Stage Login","slug":"login","source":"tests/login/login.md","status":"PASS","startMs":1392,"endMs":45376,"summary":"Authentication succeeded and React Home loaded.","screenshots":["login-final.png"]},
