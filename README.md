@@ -128,6 +128,51 @@ That scenario automatically:
 
 Codex reads the selected scenario and shared files, opens the application, performs the browser actions, verifies the expected results, and writes the requested reports. If required configuration is missing, it stops before making changes and reports what must be supplied.
 
+## Execute the complete suite with one video
+
+The full-suite coordinator is:
+
+`instructions/full-suite-headed-video-execution.md`
+
+At the beginning of every full-suite execution, `scripts/start-full-suite-run.ps1` automatically moves previous timestamped runs to:
+
+`reports/full-suite/old-runs/old-<timestamp>/`
+
+At the end of the run, finalize and generate the shareable artifacts with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/finalize-full-suite-artifacts.ps1 -RunId <YYYYMMDD-HHMMSS>
+node scripts/generate-full-suite-report.mjs <YYYYMMDD-HHMMSS>
+```
+
+This keeps one continuous video, its execution timeline, current screenshots, the dashboard, and detailed scenario pages together under the current timestamped run folder.
+
+The recording keeps every application page fully visible. Full-screen chapter cards, blur effects, dimming, masking, and action-callout overlays are disabled; scenario boundaries are provided by the clickable HTML timeline instead.
+
+The new report, continuous video, timeline, and screenshots remain in a new top-level timestamped folder under `reports/full-suite/`.
+
+For a zero-routine-prompt, non-destructive run:
+
+```text
+Execute all scenarios using instructions/full-suite-headed-video-execution.md in unattended safe mode. Use the configured AES Stage credentials, keep one headed Chrome session and one continuous video, generate the timeline and standalone HTML reports, and continue through independent failures.
+```
+
+Unattended safe mode never submits persistent create, update, remove, delete, approval, reconciliation, or import actions. Those steps are reported as **NOT TESTED**, so mutation-focused scenarios cannot be marked PASS.
+
+For the complete staging create/delete lifecycle:
+
+```text
+Execute all scenarios using instructions/full-suite-headed-video-execution.md in full destructive mode. Use the configured AES Stage credentials, keep one headed Chrome session and one continuous video, generate the timeline and standalone HTML reports, and continue through independent failures.
+```
+
+Full destructive mode avoids routine questions and groups exact cleanup targets when possible. Permanent browser deletions may still require a narrow action-time confirmation; this safeguard cannot be disabled by storing approval in a project file or prompt.
+
+Each completed run contains one user-facing video:
+
+`reports/full-suite/<timestamp>/videos/full-suite-execution.webm`
+
+The dashboard and every scenario report show the exact range for that execution, for example `Execution 1: 0:00–5:21`. Selecting the range seeks the shared video to that scenario.
+
 ## Security
 
 Use dedicated test accounts and synthetic data. Usernames for dedicated Stage accounts may be documented when approved, but never store passwords, tokens, cookies, authentication fragments, or production personal data in Git-tracked files. Review reports and screenshots before sharing or committing them.

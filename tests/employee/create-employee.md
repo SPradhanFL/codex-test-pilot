@@ -1,5 +1,12 @@
 # Create Employee — AES Stage
 
+## Full-suite execution mode
+
+When this scenario is executed by `instructions/full-suite-headed-video-execution.md`, follow the coordinator's selected mode:
+
+- **Unattended safe mode:** complete navigation, duplicate protection, field interaction, and validation checks, but do not select the final Apply action. Mark creation and all checks that depend on a saved Employee **NOT TESTED — unattended safe mode**.
+- **Full destructive mode:** create only the documented synthetic Employee, capture its assigned ID for the later delete scenario, and follow the coordinator's grouped cleanup and action-time confirmation rules.
+
 ## Execution directive
 
 Before any browser action, read completely:
@@ -18,8 +25,8 @@ Log in to AES Stage, create the specified employee, apply the changes, and verif
 
 - Playwright MCP is available.
 - `https://aesstage.flqa.net` is reachable and is confirmed as the Stage environment.
-- The operator is available to enter the password securely when requested.
-- Do not continue if redirected to a host other than `aesstage.flqa.net`.
+- Resolve the password from `AES_STAGE_PASSWORD` first and `.secrets/aes-stage.credentials.json` second without displaying or reporting it.
+- Continue only on hosts listed in `config/aes-stage.json`.
 
 ## Steps
 
@@ -29,8 +36,8 @@ Log in to AES Stage, create the specified employee, apply the changes, and verif
    - Expected: The AES Stage login page displays visible username and password fields.
 2. Enter username `report_139963`.
    - Expected: The username field contains `report_139963`.
-3. Enter username `Report!139963`.
-   - Expected: The username field contains `Report!139963`.
+3. Enter the password from the approved runtime credential source.
+   - Expected: The password field is populated and the secret is not exposed in tool output, screenshots, videos, or reports.
 4. Select the visible login or sign-in button once.
    - Expected: Login is submitted without a validation error.
 5. Wait for navigation to finish.
@@ -75,7 +82,7 @@ Log in to AES Stage, create the specified employee, apply the changes, and verif
    - Expected: Every visible field contains or displays the intended value.
 11. Review all values and reconfirm the host is `aesstage.flqa.net`.
    - Expected: The form contains the exact requested data in the Stage environment.
-12. Click on `Apply Changes` button to save the Employee details.
+12. In full destructive mode, click `Apply Changes` to save the Employee details. In unattended safe mode, stop before this action and mark the persistent creation branch **NOT TESTED**.
    - Expected: The application displays a successful save confirmation or returns to a saved employee detail/list view with no validation errors.
 
 ### 5. Verify through search

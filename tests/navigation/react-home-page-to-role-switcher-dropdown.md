@@ -28,10 +28,16 @@ Log in to AES Stage, open the profile role switcher, switch among the assigned C
 
 ### 1. Launch and authenticate
 
+<<<<<<< HEAD
 1. Read the Stage URL and `testUsernames.userRoleSwitcher` from `config/aes-stage.json`.
    - This scenario-specific username must be used only for this test. Do not fall back to the default `username` unless the test configuration is intentionally changed.
 2. Use `AES_STAGE_PASSWORD` when the environment variable is configured.
 3. Otherwise, read `roleswitcher_org_password` from `.secrets/aes-stage.credentials.json`.
+=======
+1. Read the Stage URL and `username` from `config/aes-stage.json`.
+2. Use `AES_STAGE_PASSWORD` when the environment variable is configured.
+3. Otherwise, read `password` from `.secrets/aes-stage.credentials.json`.
+>>>>>>> 93c7066a7fdb2eaea833072957fd55be88059cf1
 4. If neither password source is available or the local value is still a placeholder, mark all flows **BLOCKED**, generate the HTML report, and stop before opening the browser.
 
 ### 2. Open the role switcher and switch roles

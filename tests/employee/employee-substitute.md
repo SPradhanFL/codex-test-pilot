@@ -1,5 +1,12 @@
 # AES Staging - Substitute Test Workflow
 
+## Full-suite execution mode
+
+When this scenario is executed by `instructions/full-suite-headed-video-execution.md`, follow the coordinator's selected mode:
+
+- **Unattended safe mode:** validate the Add Substitute form and generated-value length/format rules without submitting the form. Do not create or remove a record. Mark persistence-dependent steps **NOT TESTED — unattended safe mode**.
+- **Full destructive mode:** create only the current-run synthetic Substitute and remove only that exact assigned ID. Permanent browser deletion may require action-time confirmation; do not bypass it.
+
 ## Purpose
 
 Create, validate, verify, and clean up a synthetic Substitute record in AES staging.
@@ -37,7 +44,7 @@ Create, validate, verify, and clean up a synthetic Substitute record in AES stag
 
    The current fast workflow does **not** search for an existing identifier first. The timestamp-based identifier is used to minimize collisions.
 
-6. Select **Apply Changes** to create the record.
+6. In full destructive mode, select **Apply Changes** to create the record. In unattended safe mode, stop before submission and mark creation/cleanup checks **NOT TESTED**.
 
 ## Verify creation
 
@@ -50,7 +57,7 @@ Confirm all of the following on the Substitute General Information page:
 
 ## Cleanup
 
-1. Click **Remove** on the created record.
+1. In full destructive mode, click **Remove** on the created record. In unattended safe mode, do not create or remove a record.
 2. A browser confirmation dialog opens.
 3. The teammate must press **Enter** to accept the dialog.
 4. After confirmation, search for the generated identifier in Substitute search.

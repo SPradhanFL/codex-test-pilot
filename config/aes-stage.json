@@ -9,7 +9,10 @@
   "approvedHosts": [
     "aesstage.flqa.net",
     "idgatewayawsstage.flqa.net",
-    "adminwebstage2.flqa.net"
+    "adminwebstage2.flqa.net",
+    "aesempstage.flqa.net",
+    "aessubstage.flqa.net",
+    "supersuitawsstage.flqa.net",
+    "vtstage.flqa.net"
   ]
 }
-
