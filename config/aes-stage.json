@@ -3,6 +3,9 @@
   "application": "AES Stage",
   "url": "https://aesstage.flqa.net",
   "username": "report_139963",
+  "testUsernames": {
+    "userRoleSwitcher": "super10804"
+  },
   "approvedHosts": [
     "aesstage.flqa.net",
     "idgatewayawsstage.flqa.net",
