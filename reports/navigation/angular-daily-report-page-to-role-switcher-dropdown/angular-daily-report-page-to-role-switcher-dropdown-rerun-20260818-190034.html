@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Role Switcher Evidence Rerun — BLOCKED</title>
+  <style>
+    :root{--bg:#f4f6fb;--ink:#172033;--muted:#637087;--line:#dce3ee;--pass:#087f5b;--fail:#c92a2a;--blocked:#b26a00}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 system-ui,"Segoe UI",sans-serif}.wrap{max-width:1120px;margin:auto;padding:28px}.hero{color:white;padding:27px;border-radius:18px;background:linear-gradient(135deg,#4a245d,#70418a)}h1{margin:0 0 7px}.hero p{margin:0}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:0 4px 16px #202a4010}.metric b{display:block;font-size:24px}.pass{color:var(--pass);font-weight:800}.fail{color:var(--fail);font-weight:800}.blocked{color:var(--blocked);font-weight:800}section{margin-top:18px}h2{margin:0 0 13px}table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f2ecf7}video{display:block;width:100%;max-height:650px;background:#111;border-radius:10px}.primary{border-left:6px solid var(--fail)}code{background:#eef2f7;padding:2px 5px;border-radius:5px;overflow-wrap:anywhere}.muted{color:var(--muted)}a{color:#3b5bdb}@media(max-width:720px){.wrap{padding:14px}.cards{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body><main class="wrap">
+  <header class="hero"><h1>Angular Daily Report to Role Switcher</h1><p><strong>Evidence rerun: BLOCKED</strong> &middot; Finished 2026-08-18 19:05:56 +05:30</p></header>
+  <section class="cards"><div class="card metric">Total flows<b>4</b></div><div class="card metric">Passed<b class="pass">0</b></div><div class="card metric">Failed<b class="fail">1</b></div><div class="card metric">Blocked<b class="blocked">3</b></div></section>
+  <section class="card primary"><h2>Primary blocking point — Step 6</h2><p>The profile menu opened, but it contained only <strong>Your Frontline Account</strong>, <strong>Account Settings</strong>, and <strong>Sign Out</strong>. The required <strong>Your Roles</strong> section and all four assigned-role entries were absent.</p></section>
+  <section class="card"><h2>Video evidence</h2><video controls preload="metadata" src="evidence-20260818-190034/role-switcher-blocked-evidence.webm"></video><p class="muted">Browser-only frames from the rerun: Daily Report, missing-role menu, dismissal, reopen, refresh, and the reproduced final blocked state. Login and credentials are excluded.</p></section>
+  <section class="card"><h2>Where execution is blocked</h2><table><thead><tr><th>Step</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead><tbody>
+    <tr><td>6</td><td>Profile Icon displays assigned roles.</td><td>Your Roles is missing; only account settings and sign-out options appear.</td><td class="fail">FAIL / BLOCKING POINT</td></tr>
+    <tr><td>7</td><td>Select Campus User.</td><td>Campus User is unavailable.</td><td class="blocked">BLOCKED</td></tr>
+    <tr><td>8</td><td>Select Employee.</td><td>Employee is unavailable.</td><td class="blocked">BLOCKED</td></tr>
+    <tr><td>9</td><td>Select Substitute.</td><td>Substitute is unavailable.</td><td class="blocked">BLOCKED</td></tr>
+    <tr><td>10</td><td>Validate each active role and home page.</td><td>No required role can be selected.</td><td class="blocked">BLOCKED</td></tr>
+    <tr><td>11</td><td>Verify exactly four roles under Your Roles.</td><td>Zero assigned-role entries are displayed.</td><td class="blocked">BLOCKED</td></tr>
+    <tr><td>14</td><td>Select the active role.</td><td>Organization User is not listed in Your Roles.</td><td class="blocked">NOT TESTED</td></tr>
+    <tr><td>15</td><td>Refresh after a successful role switch.</td><td>Switch unavailable; refresh preserves existing Organization User context.</td><td class="blocked">PARTIAL / BLOCKED</td></tr>
+  </tbody></table></section>
+  <section class="card"><h2>Passed checks</h2><ul><li>Authentication and Daily Report navigation succeeded.</li><li>Daily Report URL, title, and heading were correct.</li><li>Menu opened and dismissed without changing the URL or active role.</li><li>Refresh preserved a responsive page and Organization User profile.</li><li>Repeated dismissal checks caused no navigation or application error.</li><li>No console errors and no data changes occurred.</li></ul></section>
+  <section class="card"><h2>Evidence links</h2><p><a href="evidence-20260818-190034/role-switcher-blocked-evidence.webm">Open the WebM video</a> &middot; <a href="evidence-20260818-190034/frames/02-role-menu-missing-roles.png">Blocking screenshot</a> &middot; <a href="evidence-20260818-190034/frames/06-after-refresh-menu-still-missing-roles.png">Post-refresh screenshot</a></p></section>
+  <section class="card"><h2>Resolution</h2><p>Assign Organization User, Campus User, Employee, and Substitute roles to <code>report_139963</code>, or use a Stage account that already has all four roles, then rerun.</p></section>
+</main></body></html>
