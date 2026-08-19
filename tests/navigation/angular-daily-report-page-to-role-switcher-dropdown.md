@@ -12,7 +12,7 @@ Execute this scenario directly in Chrome using Playwright MCP. Do not generate P
 
 ## Objective
 
-Log in to AES Stage, open the profile role switcher, switch among the assigned Campus User, Employee, and Substitute roles, and validate positive, negative, and edge-case behavior without creating or modifying any record.
+Log in to AES Stage, open the profile role switcher, switch among the assigned Campus User, Employee, and Organization User roles, and validate positive, negative, and edge-case behavior without creating or modifying any record.
 
 ## Preconditions and safety
 
@@ -41,18 +41,18 @@ Log in to AES Stage, open the profile role switcher, switch among the assigned C
    - Expected: It shows the lists of Roles Present for the logged in User
 7. Select the `Campus User` (Campus User) Role from Profile Icon
    - Expected: Application will reload and launch campus user profile
-8. Select the `Employee (Employee)` Role from Profile Icon
+8. Select the `Employee` Role from Profile Icon
    - Expected: Application will reload and launch Employee profile
-9. Select the `Substitute` Role from Profile Icon
-   - Expected: Application will reload and launch Substitute profile
+9. Select the `Organization User (Admin)` Role from Profile Icon
+   - Expected: Application will reload and launch Organization user profile
 
 ### 3. Positive validation
 
 10. After each successful role selection, verify the profile control displays the selected role and the corresponding role home page is responsive.
-   - Expected: `Campus User (Campus User)`, `Employee (Employee)`, and `Substitute` each appear as the active role after their respective reload, with no unhandled application error.
+   - Expected: `Campus User (Campus User) OR Campus User (Admin)`, `Employee (Employee) OR Employee`, and `Organization User (Admin)` each appear as the active role after their respective reload, with no unhandled application error.
 
 11. Reopen the profile control after a successful role switch and inspect `Your Roles`.
-    - Expected: The switcher displays exactly the assigned roles `Organization User (Org User)`, `Campus User (Campus User)`, `Employee (Employee)`, and `Substitute`, and the active role matches the profile control.
+    - Expected: The switcher displays exactly the assigned roles `Campus User (Campus User) OR Campus User (Admin)`, `Employee (Employee) OR Employee`, and `Organization User (Admin)`, and the active role matches the profile control.
 
 
 ### 4. Negative validation
