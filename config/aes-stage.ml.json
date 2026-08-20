@@ -1,0 +1,29 @@
+{
+  "environment": "stageML",
+  "application": "AES Stage ML",
+  "url": "https://login.stage-k12.ss.frontlineeducation.com/",
+  "username": "SSDManualSetup86_4",
+  "testUsernames": {
+    "org_username": "vtqamail+SSDManualSetupOU86ML@dev.frontlineed.com",
+    "campusUser": "",
+    "employee": "vtqamail+SSD_EmployeeUserML@dev.frontlineed.com",
+    "substitute": "vtqamail+SSDManualSetupSub86ML@dev.frontlineed.com",
+    "userRoleSwitcher": "vtqamail+multicuempssdML@dev.frontlineed.com",
+    "multiRoleOrgEmployee": "vtqamail+stageSSDManualSetup86MU@dev.frontlineed.com",
+    "multiRoleEmployeeEmployeeSubstitute": "vtqamail+stageSSDManualSetup86MRemp@dev.frontlineed.com",
+    "multiOrgEmployeeSubstitute": "vtqamail+stageMOSSD0@dev.frontlineed.com",
+    "multiOrgEmployeeEmployee": "vtqamail+stageSSDMultiOrgEMPEMP@dev.frontlineed.com",
+    "multiOrgOrgCampus": "vtqamail+stageSSDMultiOrgOUCU@dev.frontlineed.com"
+  },
+  "approvedHosts": [
+    "aesstage.flqa.net",
+    "idgatewayawsstage.flqa.net",
+    "adminwebstage2.flqa.net",
+    "aesempstage.flqa.net",
+    "aessubstage.flqa.net",
+    "supersuitawsstage.flqa.net",
+    "vtstage.flqa.net",
+    "adminwebreact-stage.flqa.net",
+    "adminwebreact-stage.flqa.net"
+  ]
+}

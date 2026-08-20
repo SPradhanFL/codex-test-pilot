@@ -128,7 +128,7 @@ Every scenario HTML file must include:
 
 ## Consolidated dashboard
 
-Generate `index.html` as a standalone, responsive, printable dashboard. Include summary cards for total scenarios, passed, failed, blocked, total recorded duration, and video count. The video count must be `1`. Include a searchable and status-filterable results table.
+Generate `index.html` as a standalone, responsive, printable dashboard. Follow `instructions/html-reporting-standard.md` and use `reports/migrated-user-navigation-suite/20260819-175231/index.html` as the canonical visual reference. Include summary cards for total scenarios, passed, failed, blocked, total recorded duration, and video count. The video count must be `1`. Include a searchable and status-filterable results table.
 
 The execution name in every dashboard row must link to `scenarios/<scenario-slug>.html`. Add a **Video range** column using a readable format such as `0:00–5:21`, and link that range to `videos/full-suite-execution.webm#t=<start-seconds>,<end-seconds>`. The individual scenario report must provide the complete source structure, results, screenshots, and the same time-bounded video evidence. Use relative links so the full run directory can be shared as one folder.
 

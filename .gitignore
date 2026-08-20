@@ -1,6 +1,7 @@
 # Local AES Stage credentials. Keep the placeholder example tracked.
 .secrets/*
 !.secrets/aes-stage.credentials.example.json
+!.secrets/aes-stage.ml.credentials.example.json
 
 # Local browser/runtime artifacts.
 node_modules/

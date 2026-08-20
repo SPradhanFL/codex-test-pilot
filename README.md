@@ -124,7 +124,7 @@ That scenario automatically:
 4. Executes the documented positive, negative, and edge-case validations.
 5. Avoids saving or creating an employee record.
 6. Cancels the form after validation.
-7. Creates timestamped Markdown and standalone HTML reports in the scenario's dedicated report folder.
+7. Creates the standard timestamped HTML dashboard and linked evidence pages in the scenario's dedicated report folder.
 
 Codex reads the selected scenario and shared files, opens the application, performs the browser actions, verifies the expected results, and writes the requested reports. If required configuration is missing, it stops before making changes and reports what must be supplied.
 
@@ -172,6 +172,30 @@ Each completed run contains one user-facing video:
 `reports/full-suite/<timestamp>/videos/full-suite-execution.webm`
 
 The dashboard and every scenario report show the exact range for that execution, for example `Execution 1: 0:00–5:21`. Selecting the range seeks the shared video to that scenario.
+
+## Standard report format
+
+All future executions must generate HTML reports according to `instructions/html-reporting-standard.md`. The canonical reference is:
+
+`reports/migrated-user-navigation-suite/20260819-175231/index.html`
+
+The standard provides a summary dashboard, linked scenario-detail pages, expected and actual results, screenshot evidence, a separate failure/blocked section with reproduction steps, and scenario-specific playback ranges from one continuous video. Markdown execution reports are created only when explicitly requested.
+
+## Execute the multi-user suite
+
+Use `instructions/multi-user-full-suite-execution.md` to execute all configured controllers under `instructions/Multi User Instructions/`. The current catalog contains ten controllers, including the dedicated Campus User + Employee + Organization User combination controller.
+
+Role coverage is defined in `instructions/Multi User Instructions/role-scenario-matrix.md`: Organization User runs scenarios 1–19, Campus User runs 3, 7, 14, 16, and 17, and Employee/Substitute run 14 and 16. Combination controllers execute each role/context separately and repeat shared scenario IDs instead of deduplicating them.
+
+```text
+Execute instructions/multi-user-full-suite-execution.md in unattended safe mode. Run all configured role/login-combination controllers in headed Chrome with one continuous video, archive the previous run, continue through independent failures, and generate the standard HTML evidence package.
+```
+
+Each run creates one consolidated dashboard and one self-contained folder per selected role/login-combination controller under `reports/full-suite/<timestamp>/roles/`. Every role folder contains its own report, scenario-detail pages, and screenshots; all folders use the same continuous video stored once under the run's `videos/` folder. A combination login remains one folder and its report separates the active role/organization contexts.
+
+The HTML generator uses the fixed visual structure of the 2026-08-19 migrated-user navigation report. Starting a new run moves every prior top-level timestamped run and matching ZIP to `reports/full-suite/old-reports/old-<timestamp>/` before creating the new run, so current and historical evidence never mix.
+
+Team members can use the ready-to-copy individual and one-shot prompts in `instructions/Multi User Instructions/team-execution-prompts.md`. Before running, copy `.secrets/aes-stage.ml.credentials.example.json` to the ignored `.secrets/aes-stage.ml.credentials.json` and fill the required local password values. `scripts/check-multi-user-run-readiness.ps1` verifies configuration without displaying secrets.
 
 ## Security
 
