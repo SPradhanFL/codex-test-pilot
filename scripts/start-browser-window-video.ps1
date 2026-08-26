@@ -38,6 +38,27 @@ $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 if ([string]$manifest.organizationId -ne $OrgId) {
     throw 'The organization does not match the run manifest.'
 }
+$isolationEvidencePath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory ([string]$manifest.capture.isolationEvidence)))
+if (-not $isolationEvidencePath.StartsWith($runDirectory, [System.StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $isolationEvidencePath)) {
+    throw 'Confirm the fresh Playwright MCP browser isolation before starting full-browser recording.'
+}
+$isolationEvidence = Get-Content -LiteralPath $isolationEvidencePath -Raw | ConvertFrom-Json
+if ($manifest.capture.isolationStatus -ne 'CONFIRMED' -or
+    $manifest.capture.freshAutomationContext -ne $true -or
+    $manifest.capture.freshBrowserWindow -ne $true -or
+    $isolationEvidence.status -ne 'CONFIRMED' -or
+    [string]$isolationEvidence.organizationId -ne $OrgId -or
+    [string]$isolationEvidence.runId -ne $RunId -or
+    $isolationEvidence.controlSurface -ne 'playwright-mcp' -or
+    $isolationEvidence.profileMode -ne 'isolated-in-memory' -or
+    $isolationEvidence.priorContextReset -ne $true -or
+    $isolationEvidence.pageControlProbe -ne $true -or
+    [int]$isolationEvidence.controlledTabCount -ne 1 -or
+    [string]$manifest.capture.confirmedAt -ne [string]$isolationEvidence.confirmedAt -or
+    [long]$manifest.capture.chromeWindowHandle -ne [long]$isolationEvidence.chromeWindowHandle -or
+    [int]$manifest.capture.chromeProcessId -ne [int]$isolationEvidence.chromeProcessId) {
+    throw 'The browser-isolation evidence is incomplete or does not match this run.'
+}
 
 $videoDirectory = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'videos'))
 $statePath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'browser-window-video-state.json'))
@@ -61,7 +82,10 @@ New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
 $stderrPath = Join-Path $logDirectory ("browser-window-video-$OrgId-$RunId.stderr.log")
 $stdoutPath = Join-Path $logDirectory ("browser-window-video-$OrgId-$RunId.stdout.log")
 
-$window = Get-ForegroundChromeCaptureWindow -Width $Width -Height $Height -Resize -PreferredTitleContains $PreferredTitleContains
+$window = Get-ForegroundChromeCaptureWindow -Width $Width -Height $Height -Resize -WindowHandle ([long]$isolationEvidence.chromeWindowHandle)
+if ($window.ProcessId -ne [int]$isolationEvidence.chromeProcessId) {
+    throw 'The confirmed isolated Chrome process is no longer available. Stop this run and start a new isolated browser context.'
+}
 $ffmpegPath = Get-MultiUserFfmpegPath -WorkspaceRoot $workspaceRoot
 $workerPath = Join-Path $PSScriptRoot 'browser-window-video-worker.ps1'
 if (-not (Test-Path -LiteralPath $workerPath)) {
@@ -125,6 +149,8 @@ $state = [ordered]@{
     captureScope = 'full-browser-window'
     captureMethod = 'print-window-raw-frame-pipe'
     addressBarIncluded = $true
+    browserIsolationEvidence = $isolationEvidencePath
+    browserIsolationStatus = 'CONFIRMED'
 }
 $state | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $statePath -Encoding utf8
 

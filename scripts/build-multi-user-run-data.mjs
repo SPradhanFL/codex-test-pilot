@@ -66,17 +66,18 @@ const workflowName = (slug) => {
     const label = contextLabel(slug);
     return `Switch Apps${label ? ` · ${label}` : ''}`;
   }
-  const match = slug.match(/scenario-(\d{2})/);
+  const match = slug.match(/scenario-(\d{1,2})/);
   if (!match) return slug;
   const label = contextLabel(slug);
-  return `${label ? `${label} · ` : ''}${Number(match[1])}. ${scenarioNames[match[1]] ?? `Scenario ${Number(match[1])}`}`;
+  const scenario = match[1].padStart(2, '0');
+  return `${label ? `${label} · ` : ''}${Number(scenario)}. ${scenarioNames[scenario] ?? `Scenario ${Number(scenario)}`}`;
 };
 
 const expectedText = (slug) => {
   if (slug.includes('app-switcher')) {
     return 'Every application exposed by Switch Apps opens successfully, and Absence Management can be restored in the same role and organization context.';
   }
-  const scenario = slug.match(/scenario-(\d{2})/)?.[1];
+  const scenario = slug.match(/scenario-(\d{1,2})/)?.[1]?.padStart(2, '0');
   if (scenario === '14') return 'An accessible absence opens read-only and every available detail tab displays responsive content without changing business data.';
   if (['16', '17', '18', '19'].includes(scenario)) return 'Logout reaches the approved login page, browser Back does not restore authenticated controls, and direct protected access requires authentication.';
   if (scenario === '20') return 'Report Writer and its primary controls load for the Campus User without changing report data.';
@@ -89,7 +90,7 @@ const expectedText = (slug) => {
 
 const passActual = (slug) => {
   if (slug.includes('app-switcher')) return 'Every application exposed by Switch Apps opened successfully, and Absence Management was restored in the same role and organization context.';
-  const scenario = slug.match(/scenario-(\d{2})/)?.[1];
+  const scenario = slug.match(/scenario-(\d{1,2})/)?.[1]?.padStart(2, '0');
   if (scenario === '14') return 'An existing absence was opened read-only and every available detail tab displayed responsive content; no record was changed.';
   if (['16', '17', '18', '19'].includes(scenario)) return 'Logout completed, browser Back did not restore authenticated controls, and direct protected access returned to the login page.';
   if (scenario === '20') return 'Reports → Report Writer loaded with its heading, filter area, and report workspace visible; no report action was performed.';
@@ -111,8 +112,10 @@ const inferScreenshots = (accountSlug, workflowSlug) => {
       return name.startsWith(prefix) && /app-switcher|frontline-(?:administration|central)|time-attendance|home/.test(name);
     });
   }
-  const match = workflowSlug.match(/^(.*?scenario-\d{2})/);
-  return match ? names.filter((name) => name.startsWith(match[1])) : [];
+  const match = workflowSlug.match(/^(.*?scenario-)(\d{1,2})/);
+  if (!match) return [];
+  const normalizedPrefix = `${match[1]}${match[2].padStart(2, '0')}`;
+  return names.filter((name) => name.startsWith(normalizedPrefix));
 };
 
 const defaultReproduce = (name, status) => status === 'PASS' ? [] : [
@@ -159,7 +162,10 @@ const accounts = manifest.accounts.map((manifestAccount, index) => {
       steps: override.steps ?? [{action: name, expected, actual, status}],
       reproduce: override.reproduce ?? defaultReproduce(name, status),
       screenshots: [...new Set(screenshots)].sort(),
-      warnings
+      warnings,
+      ...(status === 'FAIL' && Number(override.failureObservationSeconds) > 0
+        ? {failureObservationSeconds: Number(override.failureObservationSeconds)}
+        : {})
     };
   });
   const counts = workflows.reduce((result, workflow) => {

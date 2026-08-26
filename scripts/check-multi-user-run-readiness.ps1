@@ -27,6 +27,9 @@ $timelineScriptPaths = @(
 $ffmpegPath = Join-Path $workspaceRoot 'node_modules\ffmpeg-static\ffmpeg.exe'
 $suiteInstructionPath = Join-Path $workspaceRoot 'instructions\multi-user-full-suite-execution.md'
 $suiteInstructionText = if (Test-Path -LiteralPath $suiteInstructionPath) { Get-Content -LiteralPath $suiteInstructionPath -Raw } else { '' }
+$playwrightConfigPath = Join-Path $workspaceRoot '.codex\config.toml'
+$playwrightConfigText = if (Test-Path -LiteralPath $playwrightConfigPath) { Get-Content -LiteralPath $playwrightConfigPath -Raw } else { '' }
+$isolationConfirmationPath = Join-Path $workspaceRoot 'scripts\confirm-multi-user-browser-isolation.ps1'
 
 $secrets = if (Test-Path -LiteralPath $context.SecretPath) {
     Get-Content -LiteralPath $context.SecretPath -Raw | ConvertFrom-Json
@@ -58,7 +61,13 @@ $results = foreach ($item in $selected) {
 $urlReady = Test-MultiUserConfiguredValue ([string]$context.Config.url)
 $requiredUrlReady = Test-MultiUserConfiguredValue ([string]$context.Config.requiredUrlContains)
 $stageUrlPolicyReady = [string]::Equals([string]$context.Config.requiredUrlContains, 'stage-k12.ss', [System.StringComparison]::OrdinalIgnoreCase)
-$freshBrowserIsolationReady = $suiteInstructionText -match 'fresh isolated headed Chrome automation context' -and $suiteInstructionText -match 'Do not claim or reuse'
+$freshBrowserIsolationReady = $suiteInstructionText -match 'fresh isolated headed Chrome automation context' -and
+    $suiteInstructionText -match 'confirm-multi-user-browser-isolation\.ps1' -and
+    (Test-Path -LiteralPath $isolationConfirmationPath)
+$playwrightMcpIsolationReady = $playwrightConfigText -match '(?m)^\s*"--browser"\s*,?\s*$' -and
+    $playwrightConfigText -match '(?m)^\s*"chrome"\s*,?\s*$' -and
+    $playwrightConfigText -match '(?m)^\s*"--isolated"\s*,?\s*$' -and
+    $playwrightConfigText -notmatch '(?m)^\s*"--(?:extension|cdp-endpoint|user-data-dir|storage-state|shared-browser-context|save-session)"\s*,?\s*$'
 $timelineScriptsReady = @($timelineScriptPaths | Where-Object { -not (Test-Path -LiteralPath $_) }).Count -eq 0
 $ffmpegReady = Test-Path -LiteralPath $ffmpegPath
 $results | Format-Table -AutoSize
@@ -70,6 +79,7 @@ $notReady = @($results | Where-Object { -not $_.Ready })
     StageUrl = $urlReady
     RequiredUrlSubstring = $requiredUrlReady -and $stageUrlPolicyReady
     FreshBrowserIsolation = $freshBrowserIsolationReady
+    PlaywrightMcpIsolatedProfile = $playwrightMcpIsolationReady
     SecretFile = Test-Path -LiteralPath $context.SecretPath
     SelectedControllers = $results.Count
     ReadyControllers = @($results | Where-Object Ready).Count
@@ -79,7 +89,7 @@ $notReady = @($results | Where-Object { -not $_.Ready })
     ReportRoot = $context.FullSuiteRoot
 } | Format-List
 
-if (-not $urlReady -or -not $requiredUrlReady -or -not $stageUrlPolicyReady -or -not $freshBrowserIsolationReady -or -not $timelineScriptsReady -or -not $ffmpegReady -or $notReady.Count -gt 0) {
+if (-not $urlReady -or -not $requiredUrlReady -or -not $stageUrlPolicyReady -or -not $freshBrowserIsolationReady -or -not $playwrightMcpIsolationReady -or -not $timelineScriptsReady -or -not $ffmpegReady -or $notReady.Count -gt 0) {
     Write-Error "Multi-user readiness check failed for organization $OrgId. Only presence was checked; no credential values were displayed."
     exit 1
 }

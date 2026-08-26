@@ -12,8 +12,10 @@ Use this directory as the authoritative scenario and credential-routing source f
 - Stage ML login-to-application handoff: `instructions/Multi User Instructions/stage-ml-application-launch.md`
 - Full-browser URL evidence and warning policy: `instructions/Multi User Instructions/url-evidence-validation.md`
 - Copy/paste team prompts: `instructions/Multi User Instructions/team-execution-prompts.md`
+- Consolidated multi-organization coverage and execution guide: `reports/multi-user-execution-guide/index.html`
 - Credential placeholders: `.secrets/aes-stage.ml.140462.credentials.example.json` and `.secrets/aes-stage.ml.140463.credentials.example.json`
 - Readiness check: `scripts/check-multi-user-run-readiness.ps1`
+- Runtime browser-isolation confirmation: `scripts/confirm-multi-user-browser-isolation.ps1`
 
 Never store a plaintext password in a committed Markdown or JSON configuration file. The `.secrets/` directory is local and ignored by Git.
 
@@ -57,6 +59,6 @@ The configuration's `enabledControllers` array is authoritative. Organization `1
 
 ## Run every controller
 
-Use `instructions/multi-user-full-suite-execution.md` to start a fresh isolated headed Chrome automation context and new test window, then run every controller enabled for one organization with one continuous full-browser-window video, address-bar-visible screenshots, URL warnings, and one self-contained report folder per role/login-combination controller. Never reuse an existing user tab or authenticated session from a prior run. The report folders are created under `reports/full-suite/<OrgId>/<runId>/roles/` and use the canonical migrated-user navigation dashboard format:
+Use `instructions/multi-user-full-suite-execution.md` to close any Playwright MCP context retained by the current task, start a fresh isolated headed Chrome automation context and new test window, confirm it before credential entry, then run every controller enabled for one organization with one continuous full-browser-window video, address-bar-visible screenshots, URL warnings, and one self-contained report folder per role/login-combination controller. Never reuse an existing user tab or authenticated session from a prior run. The report folders are created under `reports/full-suite/<OrgId>/<runId>/roles/` and use the canonical migrated-user navigation dashboard format:
 
 `For OrgId <OrgId>, execute instructions/multi-user-full-suite-execution.md in unattended safe mode.`

@@ -12,6 +12,9 @@ const runDir = path.join(workspace, 'reports', 'full-suite', organizationId, run
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
 const data = readJson(path.join(runDir, 'run-data.json'));
 const manifest = readJson(path.join(runDir, 'run-manifest.json'));
+const isolationEvidencePath = path.join(runDir, 'browser-isolation.json');
+if (!fs.existsSync(isolationEvidencePath)) throw new Error('Missing confirmed browser-isolation evidence.');
+const isolationEvidence = readJson(isolationEvidencePath);
 if (manifest.configuration !== `config/aes-stage.ml.${organizationId}.json`) throw new Error('The run manifest has an invalid organization configuration reference.');
 const configPath = path.join(workspace, ...String(manifest.configuration ?? '').split('/'));
 if (!manifest.configuration || !fs.existsSync(configPath)) throw new Error('The run manifest must reference its organization configuration.');
@@ -24,6 +27,20 @@ if (String(manifest.organizationId) !== organizationId || String(data.organizati
   throw new Error('Run manifest/data organization does not match the requested organization.');
 }
 if (String(organizationConfig.organizationId) !== organizationId) throw new Error('The organization configuration does not match this run.');
+const isolationPolicy = organizationConfig.browserIsolation;
+if (!isolationPolicy
+  || isolationPolicy.required !== true
+  || isolationPolicy.controlSurface !== 'playwright-mcp'
+  || isolationPolicy.browser !== 'chrome'
+  || isolationPolicy.profileMode !== 'isolated-in-memory'
+  || isolationPolicy.dedicatedWindow !== true
+  || isolationPolicy.reuseExistingTabs !== false
+  || isolationPolicy.reuseExistingSessionState !== false
+  || Number(isolationPolicy.initialControlledTabCount) !== 1
+  || isolationPolicy.requireContextReset !== true
+  || isolationPolicy.requirePageControlProbe !== true) {
+  throw new Error('The organization configuration does not define the required isolated Playwright MCP browser policy.');
+}
 if (!manifest.urlValidation
   || manifest.urlValidation.requiredContains !== organizationConfig.requiredUrlContains
   || manifest.urlValidation.comparison !== 'case-insensitive-substring'
@@ -63,6 +80,10 @@ if (!manifest.capture) {
   const capture = manifest.capture;
   const invalidCapture = capture.browser !== 'Chrome'
     || capture.browserMode !== 'headed'
+    || capture.controlSurface !== 'playwright-mcp'
+    || capture.profileMode !== 'isolated-in-memory'
+    || capture.isolationStatus !== 'CONFIRMED'
+    || capture.isolationEvidence !== 'browser-isolation.json'
     || capture.freshAutomationContext !== true
     || capture.freshBrowserWindow !== true
     || capture.reuseExistingTabs !== false
@@ -77,6 +98,20 @@ if (!manifest.capture) {
     || capture.continuous !== true
     || ['blur', 'masking', 'overlays', 'dimming', 'annotations', 'chapterCards'].some((key) => capture[key] !== false);
   if (invalidCapture) throw new Error('The run manifest does not satisfy the full-browser headed-Chrome, address-bar-visible, one-continuous-video, no-blur/no-overlay capture policy.');
+}
+if (isolationEvidence.status !== 'CONFIRMED'
+  || String(isolationEvidence.organizationId) !== organizationId
+  || String(isolationEvidence.runId) !== runId
+  || isolationEvidence.controlSurface !== 'playwright-mcp'
+  || isolationEvidence.profileMode !== 'isolated-in-memory'
+  || isolationEvidence.priorContextReset !== true
+  || isolationEvidence.pageControlProbe !== true
+  || Number(isolationEvidence.controlledTabCount) !== 1
+  || isolationEvidence.dedicatedWindow !== true
+  || String(manifest.capture.confirmedAt) !== String(isolationEvidence.confirmedAt)
+  || Number(manifest.capture.chromeWindowHandle) !== Number(isolationEvidence.chromeWindowHandle)
+  || Number(manifest.capture.chromeProcessId) !== Number(isolationEvidence.chromeProcessId)) {
+  throw new Error('Fresh browser context cannot be reported because the runtime Playwright MCP isolation evidence is invalid.');
 }
 
 const esc = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));

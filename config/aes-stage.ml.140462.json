@@ -4,6 +4,18 @@
   "organizationId": "140462",
   "url": "https://login.stage-k12.ss.frontlineeducation.com/",
   "requiredUrlContains": "stage-k12.ss",
+  "browserIsolation": {
+    "required": true,
+    "controlSurface": "playwright-mcp",
+    "browser": "chrome",
+    "profileMode": "isolated-in-memory",
+    "dedicatedWindow": true,
+    "reuseExistingTabs": false,
+    "reuseExistingSessionState": false,
+    "initialControlledTabCount": 1,
+    "requireContextReset": true,
+    "requirePageControlProbe": true
+  },
   "username": "SSDManualSetup86_4",
   "testUsernames": {
     "org_username": "vtqamail+SSDManualSetupOU86ML@dev.frontlineed.com",

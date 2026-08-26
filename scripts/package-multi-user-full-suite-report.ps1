@@ -22,6 +22,7 @@ $manifestPath = Join-Path $runDirectory 'run-manifest.json'
 $runDataPath = Join-Path $runDirectory 'run-data.json'
 $timelinePath = Join-Path $runDirectory 'timeline.json'
 $videoEventPath = Join-Path $runDirectory 'video-events.json'
+$isolationEvidencePath = Join-Path $runDirectory 'browser-isolation.json'
 
 if (-not $runDirectory.StartsWith($fullSuiteRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'The run directory resolved outside the full-suite report root.'
@@ -38,15 +39,30 @@ if (-not (Test-Path -LiteralPath $manifestPath)) {
 if (-not (Test-Path -LiteralPath $runDataPath) -or -not (Test-Path -LiteralPath $videoEventPath)) {
     throw 'The measured run data or video event journal is missing.'
 }
+if (-not (Test-Path -LiteralPath $isolationEvidencePath)) {
+    throw 'The confirmed browser-isolation evidence is missing.'
+}
 
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 $runData = Get-Content -LiteralPath $runDataPath -Raw | ConvertFrom-Json
 $timeline = Get-Content -LiteralPath $timelinePath -Raw | ConvertFrom-Json
+$isolationEvidence = Get-Content -LiteralPath $isolationEvidencePath -Raw | ConvertFrom-Json
 if ([string]$manifest.organizationId -ne $OrgId -or [string]$runData.organizationId -ne $OrgId -or [string]$timeline.organizationId -ne $OrgId) {
     throw "Report artifacts do not match requested OrgId $OrgId."
 }
 if ($runData.timelineSource -ne 'measured-video-events-v1' -or $timeline.timelineSource -ne 'measured-video-events-v1') {
     throw 'The report does not contain a measured video timeline.'
+}
+if ($manifest.capture.isolationStatus -ne 'CONFIRMED' -or
+    $isolationEvidence.status -ne 'CONFIRMED' -or
+    [string]$isolationEvidence.organizationId -ne $OrgId -or
+    [string]$isolationEvidence.runId -ne $RunId -or
+    $isolationEvidence.controlSurface -ne 'playwright-mcp' -or
+    $isolationEvidence.profileMode -ne 'isolated-in-memory' -or
+    $isolationEvidence.priorContextReset -ne $true -or
+    $isolationEvidence.pageControlProbe -ne $true -or
+    [int]$isolationEvidence.controlledTabCount -ne 1) {
+    throw 'The package cannot be created without matching confirmed Playwright MCP browser-isolation evidence.'
 }
 foreach ($account in @($runData.accounts)) {
     if ($account.timelineMeasured -ne $true) {

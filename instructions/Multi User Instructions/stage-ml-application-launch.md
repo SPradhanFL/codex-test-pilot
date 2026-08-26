@@ -14,7 +14,8 @@ Use this procedure after Frontline Passport authentication and before executing 
    - wait for the browser transition to settle;
    - inspect the current controlled tab;
    - refresh the Chrome open-tab inventory; and
-   - attach to the exact newly opened or focused approved Stage tab whose URL contains the configured `requiredUrlContains` value.
+   - attach to and explicitly select the exact newly opened or focused approved Stage tab whose URL contains the configured `requiredUrlContains` value; and
+   - verify that this selected destination is the visibly active tab in the recorded Chrome window before interacting with it or capturing evidence.
 6. Continue only after the selected tab reaches a stable approved application route and visible role-appropriate controls confirm the application is responsive. For an Organization User Home page, acceptable proof includes the application header plus primary navigation such as **Web Navigator**, **Daily Report**, **Master Data**, or **Absences**. Use equivalent visible Home/navigation controls for Campus, Employee, or Substitute roles.
 7. Record the sanitized final application URL and use the attached final application tab for the controller's scenarios, screenshots, and video evidence.
 

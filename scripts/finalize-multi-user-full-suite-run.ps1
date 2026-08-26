@@ -20,6 +20,7 @@ $fullSuiteRoot = $context.FullSuiteRoot
 $runDirectory = [System.IO.Path]::GetFullPath((Join-Path $fullSuiteRoot $RunId))
 $runDataPath = Join-Path $runDirectory 'run-data.json'
 $manifestPath = Join-Path $runDirectory 'run-manifest.json'
+$isolationEvidencePath = Join-Path $runDirectory 'browser-isolation.json'
 $videoEventPath = Join-Path $runDirectory 'video-events.json'
 $videoDirectory = Join-Path $runDirectory 'videos'
 $videoDestination = Join-Path $videoDirectory 'multi-user-full-suite-execution.webm'
@@ -36,14 +37,34 @@ if (-not (Test-Path -LiteralPath $runDataPath)) {
 if (-not (Test-Path -LiteralPath $manifestPath)) {
     throw "Missing run manifest: $manifestPath"
 }
+if (-not (Test-Path -LiteralPath $isolationEvidencePath)) {
+    throw "Missing confirmed browser-isolation evidence: $isolationEvidencePath"
+}
 if (-not (Test-Path -LiteralPath $videoEventPath)) {
     throw "Missing measured video event journal: $videoEventPath"
 }
 
 $data = Get-Content -LiteralPath $runDataPath -Raw | ConvertFrom-Json
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+$isolationEvidence = Get-Content -LiteralPath $isolationEvidencePath -Raw | ConvertFrom-Json
 if ([string]$manifest.organizationId -ne $OrgId -or [string]$data.organizationId -ne $OrgId) {
     throw "Run manifest/data organization does not match requested OrgId $OrgId."
+}
+if ($manifest.capture.isolationStatus -ne 'CONFIRMED' -or
+    $manifest.capture.freshAutomationContext -ne $true -or
+    $manifest.capture.freshBrowserWindow -ne $true -or
+    $isolationEvidence.status -ne 'CONFIRMED' -or
+    [string]$isolationEvidence.organizationId -ne $OrgId -or
+    [string]$isolationEvidence.runId -ne $RunId -or
+    $isolationEvidence.controlSurface -ne 'playwright-mcp' -or
+    $isolationEvidence.profileMode -ne 'isolated-in-memory' -or
+    $isolationEvidence.priorContextReset -ne $true -or
+    $isolationEvidence.pageControlProbe -ne $true -or
+    [int]$isolationEvidence.controlledTabCount -ne 1 -or
+    [string]$manifest.capture.confirmedAt -ne [string]$isolationEvidence.confirmedAt -or
+    [long]$manifest.capture.chromeWindowHandle -ne [long]$isolationEvidence.chromeWindowHandle -or
+    [int]$manifest.capture.chromeProcessId -ne [int]$isolationEvidence.chromeProcessId) {
+    throw 'The run cannot be finalized because fresh isolated Playwright MCP browser evidence was not confirmed.'
 }
 if ($data.timelineSource -ne 'measured-video-events-v1' -or -not ([double]$data.sourceElapsedMilliseconds -gt 0)) {
     throw 'Apply the measured video event timeline before finalization. Estimated or evenly divided ranges are not accepted.'

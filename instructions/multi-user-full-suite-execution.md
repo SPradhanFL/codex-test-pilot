@@ -65,10 +65,14 @@ The manifest's `expectedRoleReports` value is derived from the organization conf
 ## Browser and continuous video
 
 - Use headed Chrome through Playwright MCP.
+- At the start of every suite invocation, use the project Playwright MCP `browser_close` action once to dispose any browser backend/context retained by the current task. This action must target only the project Playwright MCP session; never close or modify a user-owned Chrome window. The next Playwright MCP browser action must be `browser_navigate` to the configured organization URL, which creates the new isolated context.
 - Start every suite invocation in a fresh isolated headed Chrome automation context and a newly opened dedicated test window. Do not claim or reuse a user-owned tab, an earlier automation tab/window, browser history, cookies, or authenticated session state from a prior run.
+- Use only the project-scoped `playwright` MCP server defined in `.codex/config.toml`. Do not use Chrome extension control, `--extension`, CDP attachment, a persistent `--user-data-dir`, saved storage state, or a shared browser context for this suite.
 - Open the configured organization URL as the first navigation in that fresh context. If it is not possible to establish a genuinely fresh controllable context, stop before credential entry and report the browser-isolation blocker; do not sign out, clear data from, or otherwise modify a user-owned browser session.
+- Before entering any username or password, confirm that the Playwright MCP tab inventory contains exactly one controlled tab. Through Playwright MCP, temporarily set that page's title to `AES Stage ML Isolated Run <runId>` and read the title back to confirm the page-control probe. Then run the mandatory isolation confirmation command below. If any check fails, stop the run before credential entry. Never substitute a normal Chrome/extension-controlled tab.
 - Use the same fresh controlled browser context for the complete selected-controller run; re-authenticate with the next controller's account when required.
 - Use one test tab in the dedicated Chrome window except when the application itself opens a required destination tab. Hide bookmarks/sidebar UI, suppress notifications, keep Chrome foreground and unobstructed, and do not place another window over it.
+- When the application opens a required destination in another tab or page, immediately refresh the Playwright tab inventory and explicitly select that destination before any validation, screenshot, or additional interaction. Confirm that the destination is the visibly active Chrome tab and that its address bar shows the expected sanitized URL. A backend-current page that is not visibly active in the recorded Chrome window is not valid video evidence.
 - After Chrome reaches a safe Stage login page, start `scripts/start-browser-window-video.ps1`. It fixes Chrome's outer-window size at `1280x720` and records the exact Chrome rectangle, including tabs and the address bar. Do not use Playwright's native page-only video.
 - Immediately record `RecordingStart` after the full-browser recorder starts. Record `RecordingEnd` only after the final selected controller's stable browser state, then run `scripts/stop-browser-window-video.ps1`.
 - Save the final recording as `videos/multi-user-full-suite-execution.webm` before report finalization.
@@ -82,7 +86,15 @@ The manifest's `expectedRoleReports` value is derived from the organization conf
 
 The event journal is mandatory. It supplies the real scenario boundaries used by every **Play range** control.
 
-1. Open the newly created dedicated headed Chrome window in its fresh isolated automation context on the configured safe Stage login page. Bring it to the foreground, then start full-browser recording:
+1. Open the newly created dedicated headed Chrome window in its fresh isolated automation context on the configured safe Stage login page. Before credentials or recording, use Playwright MCP to verify one controlled tab, set `document.title` to `AES Stage ML Isolated Run <runId>`, and read the same title back through Playwright MCP. Bring that tagged window to the foreground and confirm the runtime isolation:
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts/confirm-multi-user-browser-isolation.ps1 -OrgId <OrgId> -RunId <runId> -InitialUrl <current-safe-login-url> -ControlSurface playwright-mcp -ControlledTabCount 1 -WindowTitleToken "AES Stage ML Isolated Run <runId>" -ContextReset -PageControlProbe
+   ```
+
+   This command writes `browser-isolation.json`, binds evidence capture to the exact tagged Chrome window, and changes the manifest from `PENDING` to `CONFIRMED`. It must fail when a shared Chrome profile, Chrome extension control, a persistent profile, saved storage state, multiple controlled tabs, or a missing page-control title probe is used.
+
+   Only after confirmation succeeds, start full-browser recording:
 
    ```powershell
    powershell -ExecutionPolicy Bypass -File scripts/start-browser-window-video.ps1 -OrgId <OrgId> -RunId <runId>
@@ -130,6 +142,7 @@ The event journal is mandatory. It supplies the real scenario boundaries used by
    ```powershell
    powershell -ExecutionPolicy Bypass -File scripts/capture-browser-window-screenshot.ps1 -OrgId <OrgId> -RunId <runId> -AccountSlug <account-slug> -EvidenceName <safe-evidence-name.png>
    ```
+   Playwright page screenshots may be retained as supplemental detail, but they do not replace this required full-browser-window capture because they omit Chrome tabs and the address bar.
 6. Continue to the next independent controller after PASS, FAIL, BLOCKED, or NOT TESTED.
 7. Do not convert a failed or blocked result to PASS because a later account succeeds.
 8. Keep read-only controllers read-only except for Scenario 14's explicitly authorized temporary absence fallback. When no existing absence is available, follow `tests/navigation/absence-tab.md` to create one uniquely identifiable Stage test absence, validate it, delete/cancel that exact record, and verify it is absent before continuing. No other test-data creation is authorized.
@@ -233,6 +246,7 @@ The completed structure must be:
 reports/full-suite/<OrgId>/<runId>/
 ├── index.html
 ├── run-data.json
+├── browser-isolation.json
 ├── video-events.json
 ├── timeline.json
 ├── report-format.json
@@ -263,8 +277,9 @@ Before handoff:
 6. Confirm summary totals equal all selected workflow/scenario statuses and the dashboard identifies the requested organization.
 7. Create a portable ZIP beside the current run folder.
 8. Confirm `run-data.json` and `timeline.json` both declare `measured-video-events-v1`, every account/workflow has `timelineMeasured: true`, and no scenario ranges were evenly divided or estimated.
-9. Confirm the continuous video and every screenshot show the complete Chrome window, including the address bar, without surrounding desktop content.
-10. Confirm every URL warning includes its step, expected/actual result, and linked screenshot, and that warning totals do not alter status totals.
+9. Confirm `browser-isolation.json` has status `CONFIRMED`, identifies `playwright-mcp` with `isolated-in-memory` profile mode, records the prior-context reset, one controlled tab, and a successful page-control title probe, and matches the organization/run manifest. Do not generate a “Fresh browser context” label without this evidence.
+10. Confirm the continuous video and every screenshot show the complete Chrome window, including the address bar, without surrounding desktop content.
+11. Confirm every URL warning includes its step, expected/actual result, and linked screenshot, and that warning totals do not alter status totals.
 
 ## Invocation
 

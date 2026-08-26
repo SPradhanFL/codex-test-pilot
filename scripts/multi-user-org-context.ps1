@@ -63,6 +63,22 @@ function Resolve-MultiUserOrganizationContext {
         throw "Configuration $configPath must use stage-k12.ss as requiredUrlContains."
     }
 
+    $browserIsolation = $config.browserIsolation
+    $browserIsolationReady = $null -ne $browserIsolation -and
+        $browserIsolation.required -eq $true -and
+        [string]::Equals([string]$browserIsolation.controlSurface, 'playwright-mcp', [System.StringComparison]::OrdinalIgnoreCase) -and
+        [string]::Equals([string]$browserIsolation.browser, 'chrome', [System.StringComparison]::OrdinalIgnoreCase) -and
+        [string]::Equals([string]$browserIsolation.profileMode, 'isolated-in-memory', [System.StringComparison]::OrdinalIgnoreCase) -and
+        $browserIsolation.dedicatedWindow -eq $true -and
+        $browserIsolation.reuseExistingTabs -eq $false -and
+        $browserIsolation.reuseExistingSessionState -eq $false -and
+        [int]$browserIsolation.initialControlledTabCount -eq 1 -and
+        $browserIsolation.requireContextReset -eq $true -and
+        $browserIsolation.requirePageControlProbe -eq $true
+    if (-not $browserIsolationReady) {
+        throw "Configuration $configPath must define the required Playwright MCP isolated-browser policy."
+    }
+
     $knownControllers = @($script:MultiUserControllerCatalog.File)
     $enabledControllers = @($config.enabledControllers)
     if ($enabledControllers.Count -eq 0) {

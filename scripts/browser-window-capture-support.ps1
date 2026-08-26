@@ -180,6 +180,18 @@ function Get-MultiUserFfmpegPath {
     return $ffmpegPath
 }
 
+function Get-MultiUserBrowserWindowTitle {
+    param(
+        [Parameter(Mandatory = $true)]
+        [IntPtr]$WindowHandle
+    )
+
+    $titleLength = [MultiUserBrowserCapture.NativeMethods]::GetWindowTextLength($WindowHandle)
+    $title = New-Object System.Text.StringBuilder([Math]::Max($titleLength + 1, 2))
+    [MultiUserBrowserCapture.NativeMethods]::GetWindowText($WindowHandle, $title, $title.Capacity) | Out-Null
+    return $title.ToString()
+}
+
 function Get-ForegroundChromeCaptureWindow {
     param(
         [ValidateRange(640, 3840)]
@@ -192,7 +204,9 @@ function Get-ForegroundChromeCaptureWindow {
 
         [long]$WindowHandle = 0,
 
-        [string]$PreferredTitleContains = 'Frontline Education - Sign In'
+        [string]$PreferredTitleContains = 'Frontline Education - Sign In',
+
+        [switch]$RequirePreferredTitle
     )
 
     Initialize-MultiUserBrowserCaptureNativeMethods
@@ -201,6 +215,27 @@ function Get-ForegroundChromeCaptureWindow {
         [MultiUserBrowserCapture.NativeMethods]::ResolveVisibleWindow($WindowHandle)
     } else {
         [MultiUserBrowserCapture.NativeMethods]::GetForegroundWindow()
+    }
+    if ($WindowHandle -ne 0 -and $handle -eq [IntPtr]::Zero) {
+        throw 'The previously confirmed Chrome window is no longer visible. Refusing to capture a different Chrome window.'
+    }
+    if ($RequirePreferredTitle) {
+        $currentTitle = if ($handle -ne [IntPtr]::Zero) { Get-MultiUserBrowserWindowTitle -WindowHandle $handle } else { '' }
+        [uint32]$candidateProcessId = 0
+        if ($handle -ne [IntPtr]::Zero) {
+            [MultiUserBrowserCapture.NativeMethods]::GetWindowThreadProcessId($handle, [ref]$candidateProcessId) | Out-Null
+        }
+        $candidateProcess = if ($candidateProcessId -ne 0) { Get-Process -Id $candidateProcessId -ErrorAction SilentlyContinue } else { $null }
+        $candidateMatches = $null -ne $candidateProcess -and
+            $candidateProcess.ProcessName -eq 'chrome' -and
+            -not [string]::IsNullOrWhiteSpace($PreferredTitleContains) -and
+            $currentTitle.IndexOf($PreferredTitleContains, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+        if (-not $candidateMatches) {
+            $handle = [MultiUserBrowserCapture.NativeMethods]::FindVisibleChromeWindow($PreferredTitleContains)
+        }
+        if ($handle -eq [IntPtr]::Zero) {
+            throw "No visible Chrome window contains the required isolated-run title token '$PreferredTitleContains'."
+        }
     }
     $needsChromeActivation = $WindowHandle -eq 0 -and $handle -eq [IntPtr]::Zero
     if (-not $needsChromeActivation) {
@@ -243,6 +278,10 @@ function Get-ForegroundChromeCaptureWindow {
     $process = Get-Process -Id $processId -ErrorAction Stop
     if ($process.ProcessName -ne 'chrome') {
         throw "The foreground window belongs to '$($process.ProcessName)', not Chrome. Bring the dedicated headed Chrome window to the foreground and retry."
+    }
+    $windowTitle = Get-MultiUserBrowserWindowTitle -WindowHandle $handle
+    if ($RequirePreferredTitle -and $windowTitle.IndexOf($PreferredTitleContains, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw 'The selected Chrome window does not contain the required isolated-run title token.'
     }
     $isMinimized = [MultiUserBrowserCapture.NativeMethods]::IsIconic($handle)
     $isMaximized = [MultiUserBrowserCapture.NativeMethods]::IsZoomed($handle)
@@ -287,5 +326,6 @@ function Get-ForegroundChromeCaptureWindow {
         Y = $rect.Top
         Width = $actualWidth
         Height = $actualHeight
+        Title = $windowTitle
     }
 }

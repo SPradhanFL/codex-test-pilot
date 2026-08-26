@@ -110,5 +110,6 @@ Remove-Item -LiteralPath $statePath
     height = [int]$state.height
     nativeDurationSeconds = $nativeDurationSeconds
     measuredDurationSeconds = $measuredDurationSeconds
+    recordedDurationSeconds = if ($null -ne $measuredDurationSeconds) { $measuredDurationSeconds } else { $nativeDurationSeconds }
     timestampScale = $timestampScale
 } | ConvertTo-Json -Depth 3

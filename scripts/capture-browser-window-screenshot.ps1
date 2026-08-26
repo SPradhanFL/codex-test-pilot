@@ -39,6 +39,22 @@ $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 if ([string]$manifest.organizationId -ne $OrgId -or $AccountSlug -notin @($manifest.accounts.slug)) {
     throw 'The organization or account slug does not match the run manifest.'
 }
+$isolationEvidencePath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory [string]$manifest.capture.isolationEvidence))
+if (-not $isolationEvidencePath.StartsWith($runDirectory, [System.StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $isolationEvidencePath)) {
+    throw 'Missing confirmed browser-isolation evidence for screenshot capture.'
+}
+$isolationEvidence = Get-Content -LiteralPath $isolationEvidencePath -Raw | ConvertFrom-Json
+if ($manifest.capture.isolationStatus -ne 'CONFIRMED' -or
+    $isolationEvidence.status -ne 'CONFIRMED' -or
+    [string]$isolationEvidence.organizationId -ne $OrgId -or
+    [string]$isolationEvidence.runId -ne $RunId -or
+    $isolationEvidence.controlSurface -ne 'playwright-mcp' -or
+    $isolationEvidence.profileMode -ne 'isolated-in-memory' -or
+    $isolationEvidence.priorContextReset -ne $true -or
+    $isolationEvidence.pageControlProbe -ne $true -or
+    [int]$isolationEvidence.controlledTabCount -ne 1) {
+    throw 'The browser-isolation evidence is incomplete or does not match this screenshot run.'
+}
 
 $screenshotDirectory = [System.IO.Path]::GetFullPath((Join-Path (Join-Path (Join-Path $runDirectory 'roles') $AccountSlug) 'screenshots'))
 $expectedRoleRoot = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'roles'))
@@ -53,12 +69,17 @@ if (-not $destination.StartsWith($screenshotDirectory, [System.StringComparison]
 }
 
 $videoStatePath = Join-Path $runDirectory 'browser-window-video-state.json'
-$recordedWindowHandle = 0
+$recordedWindowHandle = [long]$isolationEvidence.chromeWindowHandle
 if (Test-Path -LiteralPath $videoStatePath) {
     $videoState = Get-Content -LiteralPath $videoStatePath -Raw | ConvertFrom-Json
-    $recordedWindowHandle = [long]$videoState.chromeWindowHandle
+    if ([long]$videoState.chromeWindowHandle -ne $recordedWindowHandle) {
+        throw 'The recording window does not match the confirmed isolated Chrome window.'
+    }
 }
 $window = Get-ForegroundChromeCaptureWindow -Width 1280 -Height 720 -Resize -WindowHandle $recordedWindowHandle
+if ($window.ProcessId -ne [int]$isolationEvidence.chromeProcessId) {
+    throw 'The confirmed isolated Chrome process is no longer available. Refusing to capture another Chrome window.'
+}
 Add-Type -AssemblyName System.Drawing
 $bitmap = New-Object System.Drawing.Bitmap($window.Width, $window.Height)
 $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
