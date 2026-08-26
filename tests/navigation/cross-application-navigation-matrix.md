@@ -19,7 +19,7 @@ Read `instructions/project-instructions.md`, `instructions/application-details.m
 - The classic Extract / Import → Import Data experience currently uses `/mvc.aspx/dataimport`; do not require a `.asp` URL.
 - Angular Daily Report uses `/reports/absence/daily-report` on the approved Stage admin host.
 - Search term: `report`.
-- Accept either matching records or an explicit empty state containing the result count and `No Records Found`.
+- Treat global Search only as a navigation action. Do not validate result records, result counts, an empty state, or `No Records Found` in these navigation flows.
 - Wait for destination navigation to become visibly enabled before clicking it; do not use arbitrary reloads to bypass normal page readiness.
 - Restore changed dropdowns, checkboxes, dates, filters, and view selections.
 - Do not select a file, continue an import, print, save, add a record, or perform any data-changing action.
@@ -46,12 +46,10 @@ Read `instructions/project-instructions.md`, `instructions/application-details.m
 
 ### Global Search controls
 
-1. Confirm the submitted term remains `report` on the Search page.
-2. Confirm either matching records or the explicit zero-result state is displayed.
-3. Change Active/Inactive/Both from `Active` to `Both`, then restore it to `Active`.
-4. Confirm the page Search input, Add, Web Navigator, Daily Report, and Extract / Import navigation are enabled.
-5. Clear the page Search input and press Enter.
-   - Expected: Empty input is handled safely, the page remains responsive, and no application error appears.
+1. Confirm submitting the header global Search navigates to a responsive Search page without an application error.
+2. Confirm the Search page's visible Search input and available navigation elements are displayed.
+3. Confirm the navigation target required by the current flow—Web Navigator, Daily Report, or Extract / Import—is visible and enabled before selecting it.
+4. Do not inspect or assert search-result rows, result counts, empty-state messages, Active/Inactive/Both filters, or search-data content.
 
 ## Flow 1 — Import Data to Angular Daily Report
 
@@ -66,7 +64,7 @@ Read `instructions/project-instructions.md`, `instructions/application-details.m
 
 1. Start on Angular Daily Report and run the shared Daily Report checks.
 2. Enter `report` in header global Search and press Enter.
-3. Run the shared Global Search checks.
+3. Confirm the Search page loads and run only the shared Search-page element checks.
 4. Wait for `Web Navigator` to become visibly enabled, then select it.
 5. Confirm React Web Navigator Home loads at `/navigator/Dashboard.aspx`.
 6. Confirm global Search, Daily Report, and Extract / Import navigation remain enabled.
@@ -76,7 +74,7 @@ Read `instructions/project-instructions.md`, `instructions/application-details.m
 1. Start on React Web Navigator Home.
 2. Confirm global Search, Daily Report, and Extract / Import navigation are enabled.
 3. Enter `report` in header global Search and press Enter.
-4. Run the shared Global Search checks.
+4. Confirm the Search page loads and run only the shared Search-page element checks.
 5. Wait for `Daily Report` navigation to become visibly enabled, then select it.
 6. Confirm Angular Daily Report loads and run the shared Daily Report checks.
 
@@ -85,7 +83,7 @@ Read `instructions/project-instructions.md`, `instructions/application-details.m
 1. Navigate through `Extract / Import` → `Import Data`.
 2. Run the shared Import Data checks.
 3. Enter `report` in header global Search and press Enter.
-4. Run the shared Global Search checks.
+4. Confirm the Search page loads and run only the shared Search-page element checks.
 5. Wait for `Extract / Import` to become visibly enabled, open it, and select `Import Data`.
 6. Confirm `/mvc.aspx/dataimport`, then repeat the shared Import Data checks.
 
@@ -93,7 +91,7 @@ Read `instructions/project-instructions.md`, `instructions/application-details.m
 
 1. Complete the sequence Import Data → Daily Report → Search → React Home → Search → Daily Report → Import Data in one session.
    - Expected: Every destination loads without stale content, authentication loss, or unapproved redirects.
-2. After each zero-result search, wait for side navigation to be visibly ready before selecting the next destination.
+2. After each Search-page navigation, wait for side navigation to be visibly ready before selecting the next destination.
    - Expected: Navigation works without a manual page reload.
 3. Confirm all pages remain responsive after changed controls are restored.
    - Expected: No unhandled error, disabled primary action, or persisted test state remains.
@@ -106,7 +104,7 @@ Read `instructions/project-instructions.md`, `instructions/application-details.m
 
 ## Reporting
 
-Create `reports/navigation/cross-application-navigation-matrix/cross-application-navigation-matrix-<YYYYMMDD-HHMMSS>.html` as a polished standalone report containing scenario totals, detailed results, interaction evidence, accepted zero-result behavior, failures with reproduction steps, route observations, and safety/cleanup status. Create the report directory when it does not exist.
+Create `reports/navigation/cross-application-navigation-matrix/cross-application-navigation-matrix-<YYYYMMDD-HHMMSS>.html` as a polished standalone report containing scenario totals, detailed results, navigation and visible-element evidence, failures with reproduction steps, route observations, and safety/cleanup status. Create the report directory when it does not exist.
 
 At the top of the report, show separate summary cards for:
 

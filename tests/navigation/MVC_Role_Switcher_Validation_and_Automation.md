@@ -1,5 +1,9 @@
 # Complete MVC Pages Validation and Automation
 
+## Mandatory shared instructions
+
+Before any new or repeated browser execution, read and follow `instructions/project-instructions.md`, including its mandatory 60-second failure-observation policy. Do not finalize any **FAIL** until the expected result has been observed or polled for the full interval and final evidence has been captured at or after timeout. Historical results documented below remain unchanged.
+
 ## Test Summary
 
 | Field | Details |

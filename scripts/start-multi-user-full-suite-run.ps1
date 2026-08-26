@@ -1,62 +1,42 @@
 param(
+    [Parameter(Mandatory = $true)]
+    [string]$OrgId,
+
     [string]$RunId = (Get-Date -Format 'yyyyMMdd-HHmmss'),
+    [string[]]$Controller = @(),
     [string[]]$ExcludeController = @()
 )
 
 $ErrorActionPreference = 'Stop'
 
 $workspaceRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$fullSuiteRoot = [System.IO.Path]::GetFullPath((Join-Path $workspaceRoot 'reports\full-suite'))
+. (Join-Path $PSScriptRoot 'multi-user-org-context.ps1')
+
+$context = Resolve-MultiUserOrganizationContext -WorkspaceRoot $workspaceRoot -OrgId $OrgId
+$selected = @(Select-MultiUserControllers -Context $context -Controller $Controller -ExcludeController $ExcludeController)
+$fullSuiteRoot = $context.FullSuiteRoot
 $archiveRoot = [System.IO.Path]::GetFullPath((Join-Path $fullSuiteRoot 'old-reports'))
 $controllerRoot = [System.IO.Path]::GetFullPath((Join-Path $workspaceRoot 'instructions\Multi User Instructions'))
 
 if ($RunId -notmatch '^\d{8}-\d{6}$') {
     throw 'RunId must use the format yyyyMMdd-HHmmss.'
 }
-if (-not $fullSuiteRoot.StartsWith($workspaceRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
-    throw 'The full-suite report root resolved outside the workspace.'
-}
 if (-not $archiveRoot.StartsWith($fullSuiteRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
-    throw 'The archive root resolved outside the full-suite report root.'
+    throw 'The archive root resolved outside the organization report root.'
 }
 if (-not (Test-Path -LiteralPath $controllerRoot)) {
     throw "Missing multi-user controller directory: $controllerRoot"
 }
 
-$controllerOrder = @(
-    'organization-user-execution.md',
-    'campus-user-execution.md',
-    'employee-user-execution.md',
-    'substitute-user-execution.md',
-    'multi-role-campus-employee-organization-execution.md',
-    'multi-role-organization-employee-execution.md',
-    'multi-role-employee-employee-substitute-execution.md',
-    'multi-org-employee-substitute-execution.md',
-    'multi-org-employee-employee-execution.md',
-    'multi-org-organization-campus-execution.md'
-)
-
+$knownControllerOrder = @($context.ControllerCatalog.File)
 $discovered = @(
     Get-ChildItem -LiteralPath $controllerRoot -File -Filter '*-execution.md' |
         Select-Object -ExpandProperty Name |
         Sort-Object
 )
-$expected = @($controllerOrder | Sort-Object)
-
-if ($discovered.Count -ne $controllerOrder.Count) {
-    throw "Expected exactly $($controllerOrder.Count) execution controllers, discovered $($discovered.Count)."
-}
-if ((Compare-Object -ReferenceObject $expected -DifferenceObject $discovered).Count -ne 0) {
-    throw 'The discovered controller set does not match the required account order.'
-}
-
-$unknownExclusions = @($ExcludeController | Where-Object { $_ -notin $controllerOrder })
-if ($unknownExclusions.Count -gt 0) {
-    throw "Unknown excluded controller: $($unknownExclusions -join ', ')"
-}
-$selectedControllerOrder = @($controllerOrder | Where-Object { $_ -notin $ExcludeController })
-if ($selectedControllerOrder.Count -eq 0) {
-    throw 'At least one execution controller must remain selected.'
+$expected = @($knownControllerOrder | Sort-Object)
+if ($discovered.Count -ne $knownControllerOrder.Count -or (Compare-Object -ReferenceObject $expected -DifferenceObject $discovered).Count -ne 0) {
+    throw 'The discovered controller set does not match the required controller catalog.'
 }
 
 New-Item -ItemType Directory -Force -Path $fullSuiteRoot | Out-Null
@@ -79,22 +59,21 @@ foreach ($source in $currentRuns) {
         throw "Refusing to use unexpected archive path: $destination"
     }
     if (Test-Path -LiteralPath $destination) {
-        $destination = [System.IO.Path]::GetFullPath(
-            (Join-Path $archiveRoot ('old-' + $source.Name + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss')))
-        )
+        $destination = [System.IO.Path]::GetFullPath((Join-Path $archiveRoot ('old-' + $source.Name + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))))
     }
 
     Move-Item -LiteralPath $sourcePath -Destination $destination
     $archived.Add($destination)
 }
 
-$currentZipFiles = @(
-    Get-ChildItem -LiteralPath $fullSuiteRoot -File -Filter '*.zip' |
-        Where-Object { $_.BaseName -match '(\d{8}-\d{6})$' }
-)
+$currentZipFiles = @(Get-ChildItem -LiteralPath $fullSuiteRoot -File -Filter '*.zip')
 foreach ($zip in $currentZipFiles) {
-    $zipRunId = [regex]::Match($zip.BaseName, '(\d{8}-\d{6})$').Groups[1].Value
-    $zipArchive = Join-Path $archiveRoot ('old-' + $zipRunId)
+    $zipRunIdMatch = [regex]::Match($zip.BaseName, '(\d{8}-\d{6})$')
+    $zipArchiveName = if ($zipRunIdMatch.Success) { 'old-' + $zipRunIdMatch.Groups[1].Value } else { 'old-' + (Get-Date -Format 'yyyyMMdd-HHmmss') }
+    $zipArchive = [System.IO.Path]::GetFullPath((Join-Path $archiveRoot $zipArchiveName))
+    if (-not $zipArchive.StartsWith($archiveRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to use unexpected ZIP archive path: $zipArchive"
+    }
     if (-not (Test-Path -LiteralPath $zipArchive)) {
         New-Item -ItemType Directory -Force -Path $zipArchive | Out-Null
     }
@@ -103,7 +82,7 @@ foreach ($zip in $currentZipFiles) {
 
 $runDirectory = [System.IO.Path]::GetFullPath((Join-Path $fullSuiteRoot $RunId))
 if (-not $runDirectory.StartsWith($fullSuiteRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
-    throw 'The new run directory resolved outside the full-suite report root.'
+    throw 'The new run directory resolved outside the organization report root.'
 }
 if (Test-Path -LiteralPath $runDirectory) {
     throw "The requested run directory already exists: $runDirectory"
@@ -113,27 +92,14 @@ New-Item -ItemType Directory -Path $runDirectory | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $runDirectory 'roles') | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $runDirectory 'videos') | Out-Null
 
-$friendlyNames = @{
-    'organization-user-execution.md' = 'Organization User'
-    'campus-user-execution.md' = 'Campus User'
-    'employee-user-execution.md' = 'Employee'
-    'substitute-user-execution.md' = 'Substitute'
-    'multi-role-campus-employee-organization-execution.md' = 'Multi-role Campus User + Employee + Organization User'
-    'multi-role-organization-employee-execution.md' = 'Multi-role Organization User + Employee'
-    'multi-role-employee-employee-substitute-execution.md' = 'Multi-role Employee + Employee + Substitute'
-    'multi-org-employee-substitute-execution.md' = 'Multi-org Employee + Substitute'
-    'multi-org-employee-employee-execution.md' = 'Multi-org Employee + Employee'
-    'multi-org-organization-campus-execution.md' = 'Multi-org Organization User + Campus User'
-}
-
-$manifestAccounts = for ($index = 0; $index -lt $selectedControllerOrder.Count; $index++) {
-    $fileName = $selectedControllerOrder[$index]
-    $slug = $fileName -replace '-execution\.md$', ''
+$manifestAccounts = for ($index = 0; $index -lt $selected.Count; $index++) {
+    $controllerInfo = $selected[$index]
+    $slug = $controllerInfo.File -replace '-execution\.md$', ''
     [ordered]@{
         execution = $index + 1
-        name = $friendlyNames[$fileName]
+        name = $controllerInfo.FriendlyName
         slug = $slug
-        controller = 'instructions/Multi User Instructions/' + $fileName
+        controller = 'instructions/Multi User Instructions/' + $controllerInfo.File
         report = 'roles/' + $slug + '/index.html'
         status = 'PENDING'
     }
@@ -148,18 +114,37 @@ foreach ($role in $manifestAccounts) {
 
 $manifest = [ordered]@{
     runId = $RunId
+    organizationId = $OrgId
+    configuration = "config/aes-stage.ml.$OrgId.json"
     createdAt = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss zzz')
     mode = 'multi-user unattended safe mode'
-    reportFormat = 'migrated-user-navigation-reference-v1'
+    reportFormat = 'migrated-user-navigation-reference-v3'
     reportDirectory = 'roles'
-    expectedAccountReports = $selectedControllerOrder.Count
-    expectedRoleReports = $selectedControllerOrder.Count
+    expectedAccountReports = $selected.Count
+    expectedRoleReports = $selected.Count
+    enabledControllers = @($context.EnabledControllers)
+    selectedControllers = @($selected.File)
     excludedControllers = @($ExcludeController)
     video = 'videos/multi-user-full-suite-execution.webm'
+    timeline = [ordered]@{
+        source = 'measured-video-events-v1'
+        eventJournal = 'video-events.json'
+        allowEstimatedRanges = $false
+        allowEqualPartitioning = $false
+    }
     capture = [ordered]@{
         browser = 'Chrome'
         browserMode = 'headed'
-        viewport = '1280x720'
+        freshAutomationContext = $true
+        freshBrowserWindow = $true
+        reuseExistingTabs = $false
+        reuseExistingSessionState = $false
+        captureMethod = 'print-window-raw-frame-pipe'
+        captureScope = 'full-browser-window'
+        windowSize = '1280x720'
+        includeBrowserChrome = $true
+        addressBarVisible = $true
+        pageOnly = $false
         videoCount = 1
         continuous = $true
         blur = $false
@@ -169,14 +154,30 @@ $manifest = [ordered]@{
         annotations = $false
         chapterCards = $false
     }
+    urlValidation = [ordered]@{
+        requiredContains = [string]$context.Config.requiredUrlContains
+        comparison = 'case-insensitive-substring'
+        mismatchClassification = 'WARNING'
+        warningDoesNotChangeStatus = $true
+        evidence = 'full-browser-window-screenshot'
+    }
+    failurePolicy = [ordered]@{
+        appliesTo = 'FAIL'
+        observationTimeoutSeconds = 60
+        requireFinalEvidence = $true
+        preserveBlockedAndNotTested = $true
+    }
     accounts = $manifestAccounts
 }
-$manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $runDirectory 'run-manifest.json') -Encoding utf8
+$manifest | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath (Join-Path $runDirectory 'run-manifest.json') -Encoding utf8
 
 [pscustomobject]@{
+    organizationId = $OrgId
     runId = $RunId
+    configuration = $context.ConfigPath
+    credentialFile = $context.SecretPath
     runDirectory = $runDirectory
-    controllerCount = $selectedControllerOrder.Count
+    controllerCount = $selected.Count
     controllers = $manifestAccounts
     archivedRunDirectories = @($archived)
     archiveRoot = $archiveRoot

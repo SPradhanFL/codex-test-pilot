@@ -1,5 +1,9 @@
 # AES Staging - Substitute Test Workflow
 
+## Mandatory shared instructions
+
+Before browser execution, read and follow `instructions/project-instructions.md`, including its mandatory 60-second failure-observation policy. Do not finalize any **FAIL** until the expected result has been observed or polled for the full interval and final evidence has been captured at or after timeout.
+
 ## Full-suite execution mode
 
 When this scenario is executed by `instructions/full-suite-headed-video-execution.md`, follow the coordinator's selected mode:

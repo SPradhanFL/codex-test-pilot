@@ -1,0 +1,51 @@
+{
+  "environment": "stageML",
+  "application": "AES Stage ML",
+  "organizationId": "140463",
+  "url": "https://login.stage-k12.ss.frontlineeducation.com/",
+  "requiredUrlContains": "stage-k12.ss",
+  "username": "vtqamail+stageSSDManualSetup86_1@dev.frontlineed.com",
+  "testUsernames": {
+    "org_username": "vtqamail+stageSSDManualSetup86_1@dev.frontlineed.com",
+    "campusUser": "vtqamail+stage140463CU@dev.frontlineed.com",
+    "employee": "vtqamail+stage140463Emp01@dev.frontlineed.com",
+    "substitute": "vtqamail+stage140463Sub01@dev.frontlineed.com",
+    "userRoleSwitcher": "",
+    "multiRoleOrgEmployee": "",
+    "multiRoleEmployeeEmployeeSubstitute": "",
+    "multiOrgEmployeeSubstitute": "",
+    "multiOrgEmployeeEmployee": "",
+    "multiOrgOrgCampus": ""
+  },
+  "enabledControllers": [
+    "organization-user-execution.md",
+    "campus-user-execution.md",
+    "employee-user-execution.md",
+    "substitute-user-execution.md"
+  ],
+  "scenarioData": {
+    "manageAccess": {
+      "enabled": true,
+      "loginUsernameKey": "org_username",
+      "employeeFirstName": "Employee_sub",
+      "employeeLastName": "Employee_sub_last",
+      "unconfiguredLoginStatus": "NOT TESTED"
+    }
+  },
+  "approvedHosts": [
+    "login.stage-k12.ss.frontlineeducation.com",
+    "absence.stage-k12.ss.frontlineeducation.com",
+    "absence-adminweb.stage-k12.ss.frontlineeducation.com",
+    "absence-adminwebui.stage-k12.ss.frontlineeducation.com",
+    "absence-emp.stage-k12.ss.frontlineeducation.com",
+    "absence-sub.stage-k12.ss.frontlineeducation.com",
+    "aesstage.flqa.net",
+    "idgatewayawsstage.flqa.net",
+    "adminwebstage2.flqa.net",
+    "aesempstage.flqa.net",
+    "aessubstage.flqa.net",
+    "supersuitawsstage.flqa.net",
+    "vtstage.flqa.net",
+    "adminwebreact-stage.flqa.net"
+  ]
+}

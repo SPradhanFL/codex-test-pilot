@@ -17,25 +17,28 @@ Log in to AES Stage, find an existing absence that can be viewed safely, open it
 ## Preconditions and safety
 
 - Playwright MCP is available.
-- Work only on AES Stage at `https://aesstage.flqa.net`; the authentication redirect to `https://adminwebstage2.flqa.net/` is approved.
-- For this scenario, the environment-variable rules above replace the manual-password-entry instruction in `instructions/test-data.md`.
+- For standalone execution, work only on AES Stage at `https://aesstage.flqa.net`; the authentication redirect to `https://adminwebstage2.flqa.net/` is approved. For Multi User execution, use the Stage ML URL and `approvedHosts` from `config/aes-stage.ml.<OrgId>.json`.
+- For a Multi User invocation, the organization-scoped credential file replaces the manual-password-entry instruction in `instructions/test-data.md`.
+- When this file is invoked by a Multi User execution controller, that controller's Stage ML URL, credential keys, active role, and organization context replace the standalone URL and credential sources below. Do not change identity or organization merely to obtain easier test data.
 - Do not record, display, repeat, or screenshot the password.
-- Persistent creation is authorized only for the fallback setup described in this scenario and only for a verified synthetic employee in AES Stage.
+- Persistent creation and deletion are authorized only for the temporary fallback setup described in this scenario. This narrow create-and-cleanup lifecycle is also authorized during unattended safe-mode runs.
 - Never create an absence for a realistic-looking, unverified, or production employee.
-- Before creating the fallback record, find the exact synthetic employee using the verification key in `instructions/test-data.md` and verify its name and identifier.
+- In an Organization User or Campus User flow that exposes an employee selector, find the exact synthetic employee using the verification key in `instructions/test-data.md` and verify its name and identifier before creation.
+- In an Employee self-service flow that does not expose an employee selector, create only for the currently authenticated configured Stage test identity and confirm the active role and organization before submission.
+- For a Stage ML Substitute role, use the Substitute-specific Scenario 14 override in `instructions/Multi User Instructions/substitute-user-execution.md`: validate Available Jobs, Scheduled Jobs/Schedule, Past Jobs/History Jobs, and Non Work Days. Do not require an individual absence/job detail page or run the create fallback. Never accept, assign, reject, cancel, create, edit, save, or delete work.
 - Record the created absence confirmation number or assigned ID immediately after creation. Use that exact identifier for validation and cleanup.
 - Prefer an absence that does not require a substitute. Do not assign, notify, call, or contact a substitute.
 - Do not edit an existing absence. Existing records are read-only for this scenario.
-- During authentication, `idgatewayawsstage.flqa.net` is an approved login host. After authentication, continue only in the AES Stage application.
+- During standalone authentication, `idgatewayawsstage.flqa.net` is an approved login host. During Multi User authentication, use only hosts approved by the invoking controller's Stage ML configuration. After authentication, continue only in the configured AES Stage application.
 - For this scenario, the approved authentication redirect above is the explicit exception to the general different-host stop rule in the shared instructions.
 
 ## Steps
 
 ### 1. Launch and authenticate
 
-1. Read the Stage URL and username from `config/aes-stage.json`.
-2. Use `AES_STAGE_PASSWORD` when the environment variable is configured.
-3. Otherwise, read `password` from `.secrets/aes-stage.credentials.json`.
+1. For standalone execution, read the Stage URL and username from `config/aes-stage.json`. For Multi User execution, retain the URL, login combination, role, and organization selected by the invoking controller.
+2. For standalone execution, use `AES_STAGE_PASSWORD` when the environment variable is configured. For Multi User execution, use the invoking controller's documented credential key.
+3. Otherwise, read the applicable password from the local secrets file documented by the standalone test or invoking controller.
 4. If neither password source is available or the local value is still a placeholder, mark all flows **BLOCKED**, generate the HTML report, and stop before opening the browser.
 
 ### 2. Find an absence to view
@@ -52,8 +55,11 @@ Log in to AES Stage, find an existing absence that can be viewed safely, open it
 
 9. Navigate through `Absences` → `Create Absence`.
    - Expected: The Create Absence page is displayed with employee, date, reason, and continuation controls appropriate to the organization.
-10. Search for the exact synthetic employee using the Last Name and Identifier from `instructions/test-data.md`. Before selection, verify both values match the intended synthetic record.
-    - Expected: Exactly the intended synthetic employee is identifiable. If it is unavailable or cannot be verified, mark the scenario **BLOCKED** and do not use another employee.
+10. Resolve the safe target according to the active role:
+    - Organization User or Campus User with an employee selector: search for the exact synthetic employee using the Last Name and Identifier from `instructions/test-data.md`; verify both values before selection.
+    - Employee self-service without an employee selector: confirm the active configured Stage test identity, role, and organization and create only for that signed-in identity.
+    - Substitute: this fallback step is not applicable. Follow the four-view Substitute override and do not create, accept, assign, or manufacture a job.
+    - Expected: The intended test target is uniquely identifiable. If the target cannot be verified or the same role cannot later remove the exact record, mark the scenario **BLOCKED** and do not submit.
 11. Select the verified synthetic employee and enter the minimum valid absence data:
     - Use the application-local current date for both start and end when selectable; otherwise use the next selectable working date.
     - Keep the duration to one day or the smallest valid duration supported by the form.
@@ -93,6 +99,7 @@ Log in to AES Stage, find an existing absence that can be viewed safely, open it
     - Expected: The exact newly created absence is removed; no other absence is changed.
 21. Search again using the created absence ID or exact employee/date combination.
     - Expected: The created absence is no longer returned. If cleanup cannot be completed or verified, mark the scenario **FAIL** and clearly report the exact record requiring manual cleanup.
+22. Do not begin another role, organization context, scenario, or logout until cleanup has passed. If cleanup fails, preserve the identifier in the secure execution notes, mark the scenario **FAIL**, and stop additional mutation actions while allowing independent read-only scenarios to continue.
 
 ## Result classification
 

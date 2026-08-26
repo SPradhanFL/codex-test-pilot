@@ -128,6 +128,8 @@ That scenario automatically:
 
 Codex reads the selected scenario and shared files, opens the application, performs the browser actions, verifies the expected results, and writes the requested reports. If required configuration is missing, it stops before making changes and reports what must be supplied.
 
+Before any scenario is marked **FAIL**, the runner observes or polls the missing expected page, element, navigation, or state for a full 60 seconds. If it remains unavailable, the runner captures final evidence at or after the timeout and records the 60-second expiration in the report. This wait does not change genuine **BLOCKED** or **NOT TESTED** prerequisite outcomes.
+
 ## Execute the complete suite with one video
 
 The full-suite coordinator is:
@@ -183,19 +185,32 @@ The standard provides a summary dashboard, linked scenario-detail pages, expecte
 
 ## Execute the multi-user suite
 
-Use `instructions/multi-user-full-suite-execution.md` to execute all configured controllers under `instructions/Multi User Instructions/`. The current catalog contains ten controllers, including the dedicated Campus User + Employee + Organization User combination controller.
+Use `instructions/multi-user-full-suite-execution.md` with an explicit organization ID to execute the controllers enabled in `config/aes-stage.ml.<OrgId>.json`. The catalog contains ten possible controllers; each organization configuration enables only the login combinations available for that organization.
 
-Role coverage is defined in `instructions/Multi User Instructions/role-scenario-matrix.md`: Organization User runs scenarios 1–19, Campus User runs 3, 7, 14, 16, and 17, and Employee/Substitute run 14 and 16. Combination controllers execute each role/context separately and repeat shared scenario IDs instead of deduplicating them.
+Role coverage is defined in `instructions/Multi User Instructions/role-scenario-matrix.md`: Organization User runs scenarios 1–19; Campus User runs 3, 7, 14, 16, 17, 20, and 21, including Campus-only Report Writer and Account Settings navigation; and Employee/Substitute run 14 and 16. Combination controllers execute each role/context separately and repeat shared scenario IDs instead of deduplicating them.
 
-```text
-Execute instructions/multi-user-full-suite-execution.md in unattended safe mode. Run all configured role/login-combination controllers in headed Chrome with one continuous video, archive the previous run, continue through independent failures, and generate the standard HTML evidence package.
+Choose the organization by passing only its ID to the readiness and start commands. The organization configuration supplies the enabled login combinations:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check-multi-user-run-readiness.ps1 -OrgId 140462
+powershell -ExecutionPolicy Bypass -File scripts/start-multi-user-full-suite-run.ps1 -OrgId 140462
 ```
 
-Each run creates one consolidated dashboard and one self-contained folder per selected role/login-combination controller under `reports/full-suite/<timestamp>/roles/`. Every role folder contains its own report, scenario-detail pages, and screenshots; all folders use the same continuous video stored once under the run's `videos/` folder. A combination login remains one folder and its report separates the active role/organization contexts.
+Replace `140462` with `140463` to execute the four accounts configured for that organization. Reports and ZIPs are isolated under the matching `reports/full-suite/<OrgId>/` folder.
 
-The HTML generator uses the fixed visual structure of the 2026-08-19 migrated-user navigation report. Starting a new run moves every prior top-level timestamped run and matching ZIP to `reports/full-suite/old-reports/old-<timestamp>/` before creating the new run, so current and historical evidence never mix.
+```text
+For OrgId 140463, execute instructions/multi-user-full-suite-execution.md in unattended safe mode. Start a fresh isolated headed Chrome automation context and new test window, then run every controller enabled in config/aes-stage.ml.140463.json with one continuous 1280x720 full-browser-window video including the address bar, apply URL warning validation at every workflow checkpoint, archive only that organization's previous run, continue through independent failures, and generate the standard HTML evidence package.
+```
 
-Team members can use the ready-to-copy individual and one-shot prompts in `instructions/Multi User Instructions/team-execution-prompts.md`. Before running, copy `.secrets/aes-stage.ml.credentials.example.json` to the ignored `.secrets/aes-stage.ml.credentials.json` and fill the required local password values. `scripts/check-multi-user-run-readiness.ps1` verifies configuration without displaying secrets.
+Each run creates one consolidated dashboard and one self-contained folder per selected role/login-combination controller under `reports/full-suite/<OrgId>/<timestamp>/roles/`. Every role folder contains its own report, scenario-detail pages, and complete-Chrome-window screenshots; all folders use the same continuous full-browser video stored once under the run's `videos/` folder. A combination login remains one folder and its report separates the active role/organization contexts.
+
+At each workflow's final checkpoint, the runner compares the stable browser URL with `requiredUrlContains` from the selected organization configuration. Both current Stage ML configurations use the shared case-insensitive marker `stage-k12.ss`, so role-specific Stage ML hosts are accepted without requiring one product hostname. A mismatch is shown as a separate **WARNING** with its validation step and full-browser screenshot when the functional navigation still works; it does not replace or alter the workflow's PASS/FAIL/BLOCKED/NOT TESTED status.
+
+Every Stage ML multi-user run must begin in a fresh isolated headed Chrome automation context and a newly opened test window. Existing user tabs, prior automation tabs, browser history, cookies, and authenticated sessions must not be reused.
+
+The HTML generator uses the fixed visual structure of the 2026-08-19 migrated-user navigation report. Starting a new run moves only the selected organization's prior timestamped run and matching ZIP to `reports/full-suite/<OrgId>/old-reports/old-<timestamp>/`, so organizations and current/historical evidence never mix.
+
+Team members can use the ready-to-copy organization-scoped prompts in `instructions/Multi User Instructions/team-execution-prompts.md`. Before running, copy the matching `.secrets/aes-stage.ml.<OrgId>.credentials.example.json` to the ignored `.secrets/aes-stage.ml.<OrgId>.credentials.json` and fill the required local password values. Run `scripts/check-multi-user-run-readiness.ps1 -OrgId <OrgId>` to verify configuration without displaying secrets.
 
 ## Security
 

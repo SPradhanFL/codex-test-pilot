@@ -4,18 +4,22 @@ Use this directory as the authoritative scenario and credential-routing source f
 
 ## Shared configuration
 
-- URL and usernames: `config/aes-stage.ml.json`
-- Passwords: environment variables first, then `.secrets/aes-stage.ml.credentials.json`
+- URL and usernames: `config/aes-stage.ml.<OrgId>.json`
+- Passwords: `.secrets/aes-stage.ml.<OrgId>.credentials.json`
 - Report format: `instructions/html-reporting-standard.md`
 - Role/scenario routing: `instructions/Multi User Instructions/role-scenario-matrix.md`
 - Conditional cross-product switching: `instructions/Multi User Instructions/app-switcher-validation.md`
+- Stage ML login-to-application handoff: `instructions/Multi User Instructions/stage-ml-application-launch.md`
+- Full-browser URL evidence and warning policy: `instructions/Multi User Instructions/url-evidence-validation.md`
 - Copy/paste team prompts: `instructions/Multi User Instructions/team-execution-prompts.md`
-- Credential placeholder: `.secrets/aes-stage.ml.credentials.example.json`
+- Credential placeholders: `.secrets/aes-stage.ml.140462.credentials.example.json` and `.secrets/aes-stage.ml.140463.credentials.example.json`
 - Readiness check: `scripts/check-multi-user-run-readiness.ps1`
 
 Never store a plaintext password in a committed Markdown or JSON configuration file. The `.secrets/` directory is local and ignored by Git.
 
-After a new clone, copy `.secrets/aes-stage.ml.credentials.example.json` to `.secrets/aes-stage.ml.credentials.json`, replace the placeholders locally, and run the readiness check before execution. The checker reports only presence/absence and never prints credential values.
+After a new clone, copy the matching organization example to `.secrets/aes-stage.ml.<OrgId>.credentials.json`, replace the placeholders locally, and run `scripts/check-multi-user-run-readiness.ps1 -OrgId <OrgId>` before execution. The checker reports only presence/absence and never prints credential values.
+
+The configuration's `enabledControllers` array is authoritative. Organization `140462` enables its nine configured login combinations. Organization `140463` currently enables the four supplied Organization User, Campus User, Employee, and Substitute accounts. Add a combination controller only after its organization-specific username and password have been configured.
 
 ## Controller mapping
 
@@ -38,7 +42,7 @@ After a new clone, copy `.secrets/aes-stage.ml.credentials.example.json` to `.se
 2. Run only the workflows authorized by that controller.
 3. Use `role-scenario-matrix.md` as the authoritative role coverage:
    - Organization User: scenarios 1–19
-   - Campus User: scenarios 3, 7, 14, 16, and 17
+   - Campus User: scenarios 3, 7, 14, 16, 17, 20, and 21
    - Employee: scenarios 14 and 16
    - Substitute: scenarios 14 and 16
 4. For a combination account, execute each role/context block in the controller's order. Repeat shared scenario IDs in every applicable role/context; do not deduplicate them.
@@ -47,9 +51,12 @@ After a new clone, copy `.secrets/aes-stage.ml.credentials.example.json` to `.se
 7. A controller's read-only restriction overrides optional creation or cleanup branches in a shared scenario.
 8. Record role and organization labels only to the extent necessary to prove context switching; omit credentials and personal data.
 9. After every successful login/context selection and at the Home-page top-left checkpoint, apply `app-switcher-validation.md`. Execute its switching loops only when an App Switcher is visible.
+10. After Passport authentication, apply `stage-ml-application-launch.md`. Treat the `absence.stage-k12.ss.frontlineeducation.com` launcher as intermediate, rescan Chrome tabs after activating the Absence Management tile, and continue from the approved responsive tab whose URL contains `requiredUrlContains`.
+11. At every workflow's final evidence checkpoint, apply `url-evidence-validation.md`, capture the complete Chrome window including the address bar, and report a configured URL mismatch as a separate warning unless it also causes a functional failure.
+12. Before any controller finalizes a **FAIL**, apply the shared 60-second failure-observation policy in `instructions/project-instructions.md`. Poll the expected UI state for the full interval, capture evidence at or after timeout, and state the 60-second expiration in the failed workflow. Do not delay or reclassify genuine BLOCKED or NOT TESTED prerequisites.
 
 ## Run every controller
 
-Use `instructions/multi-user-full-suite-execution.md` to run all configured controllers in headed Chrome with one continuous video and one self-contained report folder per role/login-combination controller. The report folders are created under `reports/full-suite/<runId>/roles/` and use the canonical migrated-user navigation dashboard format:
+Use `instructions/multi-user-full-suite-execution.md` to start a fresh isolated headed Chrome automation context and new test window, then run every controller enabled for one organization with one continuous full-browser-window video, address-bar-visible screenshots, URL warnings, and one self-contained report folder per role/login-combination controller. Never reuse an existing user tab or authenticated session from a prior run. The report folders are created under `reports/full-suite/<OrgId>/<runId>/roles/` and use the canonical migrated-user navigation dashboard format:
 
-`Execute instructions/multi-user-full-suite-execution.md in unattended safe mode.`
+`For OrgId <OrgId>, execute instructions/multi-user-full-suite-execution.md in unattended safe mode.`

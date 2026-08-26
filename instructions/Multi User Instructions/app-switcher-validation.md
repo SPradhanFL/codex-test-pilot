@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Validate cross-product switching among **Absence Management**, **Time & Attendance**, and **Frontline Central** whenever the authenticated account exposes an App Switcher. Run this shared validation for every single-role, multi-role, and multi-organization login controller in this directory.
+Validate every application that is actually available in the authenticated account's App Switcher. Do not require a fixed application list: application visibility is entitlement-dependent and may differ by user, role, and organization. Run this shared validation for every single-role, multi-role, and multi-organization login controller in this directory.
 
 This is a conditional supplemental workflow, not one of the numbered scenarios 1–19 in `role-scenario-matrix.md`.
 
@@ -21,7 +21,9 @@ If both checkpoints resolve to the same page and the same switcher instance, rec
 2. If no App Switcher is visible at a checkpoint, record `App Switcher not exposed at this checkpoint` in the existing authentication or Home-page step and continue. Do not create a separate PASS, FAIL, BLOCKED, or NOT TESTED outcome for an absent optional switcher.
 3. If no App Switcher is visible at either checkpoint, do not add an App Switcher workflow to `run-data.json`.
 4. If an App Switcher is visible at either checkpoint, add one supplemental App Switcher workflow for that role/organization context and execute every step below.
-5. Once the switcher is visible, missing required applications, disabled entries, broken navigation, access-denied results, or failure to return to Absence Management are **FAIL** results. Continue the parent controller only after safely recovering the required role/context.
+5. Once the switcher is visible, inventory only the entries that are actually displayed. Do not search for, compare, or report applications that are not shown.
+6. Execute the switching loop for every visible, enabled alternate application. A displayed application that is represented as available but cannot be selected, a broken destination, an access-denied result, or failure to return to Absence Management is a **FAIL** result. Continue the parent controller only after safely recovering the required role/context.
+7. If the switcher contains only the current application and no enabled alternate application, record `No alternate application is assigned for this context`. Treat the supplemental workflow as **PASS** when the switcher itself is responsive and no broken or misleading entry is displayed.
 
 ## Safety and evidence rules
 
@@ -32,6 +34,7 @@ If both checkpoints resolve to the same page and the same switcher instance, rec
 - A target may open in the same tab or a new tab/window. Detect and use the actual active target, and close only an extra target tab after the return path has been validated.
 - Scroll each switcher, application entry, destination identity element, and return control into view before interaction and before taking evidence.
 - Capture screenshots of each visible switcher menu, each destination application, and the restored Absence Management page. Never capture credentials, tokens, cookies, personal data, or sensitive redirect fragments.
+- At every destination and return checkpoint, apply `url-evidence-validation.md` and use complete-browser-window evidence. A missing configured URL substring is a warning when switching and required elements still work.
 
 ## Switching loop
 
@@ -41,34 +44,36 @@ Use **Absence Management** as the starting and return product for each target ap
 
 1. Record the current role/organization context and the current Absence Management route without recording personal data.
 2. Open the App Switcher and confirm it is enabled, responsive, keyboard/mouse interactable, and fully visible.
-3. Confirm the menu contains unique, enabled entries for:
-   - `Absence Management`
-   - `Time & Attendance`
-   - `Frontline Central`
-4. Confirm no required entry is blank, duplicated, clipped beyond access, or disabled.
+3. Capture the exact visible application labels in display order.
+4. Identify the current application and every visible, enabled alternate application.
+5. Confirm each displayed entry has a non-blank, unique label and that every entry represented as available is enabled and interactable.
+6. Do not compare the menu with a fixed expected list. Applications that are not displayed are outside the scope of this context and require no validation result.
 
-Expected: All three required application entries are visible and interactable.
+Expected: The switcher is responsive, its displayed entries are valid, and every enabled alternate application is available for switching. No specific application name is required to be present.
 
-### B. Absence Management → Time & Attendance → Absence Management
+### B. Switch to every available alternate application and return
 
-1. From the open App Switcher, select `Time & Attendance`.
-2. Wait for the same-tab navigation or new target tab/window to settle.
-3. Confirm the destination visibly identifies **Time & Attendance**, remains in a non-production Frontline environment, is responsive, and retains an authenticated session without an application error or access-denied state.
-4. Open the destination App Switcher and select `Absence Management`.
-5. Wait for navigation to settle and confirm Absence Management is restored with the same authorized role/organization context.
+For each visible, enabled alternate application, in the order displayed:
 
-Expected: Time & Attendance opens successfully and the App Switcher returns to a responsive Absence Management page without losing the selected context.
-
-### C. Absence Management → Frontline Central → Absence Management
-
-1. Reopen the App Switcher from the restored Absence Management page.
-2. Select `Frontline Central`.
+1. Record the target application's exact visible label.
+2. Scroll the target entry into view and select it once.
 3. Wait for the same-tab navigation or new target tab/window to settle.
-4. Confirm the destination visibly identifies **Frontline Central**, remains in a non-production Frontline environment, is responsive, and retains an authenticated session without an application error or access-denied state.
-5. Open the destination App Switcher and select `Absence Management`.
-6. Wait for navigation to settle and confirm Absence Management is restored with the same authorized role/organization context.
+4. Confirm the destination visibly identifies the selected application, remains in a non-production Frontline environment, is responsive, and retains an authenticated session without an application error or access-denied state.
+5. Capture screenshot evidence of the destination without exposing credentials, personal data, or sensitive authentication fragments.
+6. Use the destination's App Switcher to select `Absence Management` when that return entry is available.
+7. If the destination does not expose a return switcher, use the supported My Frontline application launcher or the recovery procedure below. Do not construct or guess an application URL.
+8. Wait for navigation to settle and confirm Absence Management is restored with the same authorized role/organization context.
+9. Reopen the App Switcher and continue with the next enabled alternate application from the original inventory.
 
-Expected: Frontline Central opens successfully and the App Switcher returns to a responsive Absence Management page without losing the selected context.
+Expected: Every enabled alternate application displayed for the current account/context opens successfully and returns to a responsive Absence Management page without losing the selected context.
+
+### C. Reconcile the final inventory
+
+1. After all enabled alternate applications have been tested, reopen the App Switcher from Absence Management.
+2. Confirm the visible application labels still match the original inventory for the same role/organization context.
+3. Confirm no duplicate, blank, unexpectedly disabled, or broken entry was introduced during switching.
+
+Expected: The switcher remains stable after all available application round trips.
 
 ## Recovery
 
@@ -86,14 +91,15 @@ Recovery allows later independent scenarios to continue; it does not convert the
 When the switcher is present, report the supplemental workflow once per distinct role/organization context with:
 
 - checkpoint visibility results for post-login and Home-page locations;
-- all three application entries and their enabled/interactable state;
-- separate results for the Time & Attendance loop and the Frontline Central loop;
+- the complete discovered application inventory and each entry's enabled/interactable state;
+- a separate result for every enabled alternate application that was displayed;
+- confirmation that no comparison against a fixed expected-application list was performed;
 - exact continuous-video start/end offsets;
-- screenshot evidence for the switcher, both destination applications, and both returns to Absence Management;
+- screenshot evidence for the switcher, every tested destination application, and every return to Absence Management;
 - expected and actual results for every step;
 - numbered reproduction steps for FAIL or BLOCKED results; and
 - recovery and final active-context confirmation.
 
-Suggested workflow name: `Conditional App Switcher — Absence Management, Time & Attendance, and Frontline Central`.
+Suggested workflow name: `Conditional App Switcher — validate every available application`.
 
-The workflow is **PASS** only when every visible-checkpoint loop completes and both target applications return successfully to Absence Management. Never include credentials or sensitive identity/session data in the report.
+The workflow is **PASS** only when the switcher is responsive and every displayed, enabled alternate application completes its round trip back to Absence Management. An application that is not displayed for the selected account/context is outside that context's entitlement inventory and does not fail the workflow. Never include credentials or sensitive identity/session data in the report.

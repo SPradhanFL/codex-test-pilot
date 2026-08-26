@@ -52,34 +52,48 @@ Run these checks at the beginning of every flow:
    - Expected: Authentication succeeds without exposing credentials.
 3. Confirm React Web Navigator Home is available.
    - Expected: The authenticated account control, global Search, `Daily Report`, `Master Data`, and `Extract / Import` are visible.
+4. Wait for any loading overlay, spinner, splash screen, skeleton, or page-transition mask to become hidden or detached before evaluating the page or capturing evidence.
+   - Expected: The loading state clears and the Home page's primary elements are visible and responsive.
+   - Do not mark the flow **BLOCKED** merely because an evidence attempt occurs during a temporary loading state.
+5. If the loading state does not clear, retry the supported Home navigation or fresh authentication once, then wait for the same primary elements again.
+   - Expected: The retry establishes a responsive Home page without using an arbitrary page reload to bypass application behavior.
+   - Mark the flow **BLOCKED** only when the loading state still prevents the required destination or logout control from becoming usable after this retry.
 
 ## Shared logout action
 
 Use these steps from the destination page in each flow:
 
-1. Confirm the authenticated user/account control is visible and enabled.
+1. Wait for the destination's loading overlay or transition state to disappear, then confirm the destination's primary elements and authenticated user/account control are visible and enabled.
+   - Capture pre-logout screenshot evidence only after this readiness check passes.
+   - If a screenshot captures a temporary loading state, discard it, wait for readiness, and capture the evidence again.
 2. Open the user/account menu.
    - Expected: The menu opens without an application error and contains a visible enabled `Logout`, `Log Out`, or `Sign Out` action.
 3. Close the menu with Escape or by safely moving focus away, then open it again.
    - Expected: The menu can be dismissed and reopened; the logout action remains interactive.
 4. Record the current protected route without sensitive query data.
 5. Select the visible logout action once.
-   - Expected: The authenticated application closes and navigation reaches the approved login experience.
-6. Confirm logout completion.
-   - Expected: Username and password fields are visible, authenticated navigation and the account menu are absent, and no application error appears.
+   - Wait for the logout navigation, redirects, and any login-page loading overlay to finish before capturing evidence or starting session-termination checks.
+   - Do not use browser Back, direct protected-route navigation, or another application action while logout is still redirecting.
+   - Expected: The authenticated application closes and navigation settles on an approved Frontline Stage login experience.
+6. Confirm logout completion only after the destination is stable.
+   - Accept either the Frontline Passport email/Next page or the legacy Frontline username/password/Sign In page.
+   - Expected: A visible enabled login identifier field and its corresponding Next or Sign In action are available, authenticated navigation and the account menu are absent, and no loading overlay or application error remains.
+   - Capture post-logout screenshot evidence only after these conditions pass.
+7. If the logout destination remains in a transitional loading or redirect state, continue waiting for the same navigation to settle; do not classify the flow from an intermediate frame.
+   - Mark the flow **BLOCKED** only if the logout transition never exposes a usable approved login page and no application failure can be classified safely.
 
 ## Shared session-termination checks
 
 Run these checks immediately after every logout:
 
-1. Use browser Back once and wait for the page to settle.
+1. Begin only after the shared logout-completion checks have confirmed a stable approved login page. Then use browser Back once and wait for the page to settle.
    - Expected: Previously authenticated page content is not restored as an active usable session. The browser remains at login or redirects back to login.
 2. Navigate directly to the protected route recorded before logout.
    - Expected: The request is redirected to the approved login page; protected content is not usable.
 3. Confirm the previous account menu and authenticated navigation are unavailable.
    - Expected: No authenticated controls remain interactive.
 4. Confirm the login page remains responsive.
-   - Expected: Username, password, Sign In, and approved recovery links are visible and operable.
+   - Expected: The currently displayed approved login step is responsive: either Passport email with Next, or legacy username/password with Sign In. Available recovery links are visible and operable.
 
 ## Flow 1 — Logout from React Home
 

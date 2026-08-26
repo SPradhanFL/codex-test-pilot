@@ -10,21 +10,25 @@ Read completely before opening the browser:
 
 1. `instructions/project-instructions.md`
 2. `instructions/html-reporting-standard.md`
-3. `config/aes-stage.ml.json`
+3. `config/aes-stage.ml.<OrgId>.json`
 4. `instructions/Multi User Instructions/role-scenario-matrix.md`
 5. Every source test mapped to Organization User scenarios 1–19
 6. `tests/navigation/absence-tab.md`
 7. `tests/logout/logout-navigation-matrix.md`
 
-Execute directly in headed Chrome through Playwright MCP. Keep the run read-only and do not generate automation source code.
+Execute directly in headed Chrome through Playwright MCP. Keep the run read-only except for Scenario 14's temporary absence create-and-cleanup lifecycle, and do not generate automation source code.
 
 Also read and execute `instructions/Multi User Instructions/app-switcher-validation.md` after every successful login or role/context selection and again at the Home-page checkpoint. Apply its visibility condition separately to Organization User and Employee: run and report the switching workflow only when an App Switcher is exposed.
 
+Also read and execute `instructions/Multi User Instructions/stage-ml-application-launch.md` after every Passport authentication and before role scenarios. Apply its final-tab discovery and launcher recovery checks in every role context.
+
+Also read and execute `instructions/Multi User Instructions/url-evidence-validation.md` at every workflow's final evidence checkpoint. Use its full-browser screenshot and URL warning rules in every role context.
+
 ## Credentials
 
-- Expected username: `vtqamail+stageSSDManualSetup86MU@dev.frontlineed.com`
-- Username source: `testUsernames.multiRoleOrgEmployee` in `config/aes-stage.ml.json`
-- Password source: `AES_STAGE_MULTI_ROLE_ORG_EMPLOYEE_PASSWORD`, otherwise `multi_role_org_employee_password` in `.secrets/aes-stage.ml.credentials.json`
+- Require `OrgId` and confirm this controller is enabled in `config/aes-stage.ml.<OrgId>.json`.
+- Username source: `testUsernames.multiRoleOrgEmployee` in the organization-scoped configuration.
+- Password source: `multi_role_org_employee_password` in `.secrets/aes-stage.ml.<OrgId>.credentials.json`.
 - Never place the password or session secrets in this file, a report, screenshot, video, log, or response.
 
 ## Role-block execution order
@@ -46,7 +50,7 @@ Also read and execute `instructions/Multi User Instructions/app-switcher-validat
 
 1. After the final Organization User logout, authenticate again with this same account and select Employee.
 2. Verify Employee Home, the active role label, permitted navigation, and account control.
-3. Execute Employee scenario **14** read-only. If no existing absence is available, mark it **BLOCKED** and do not create data.
+3. Execute Employee scenario **14**. Prefer an existing absence read-only; if none is available, create one temporary self-service absence for this configured test identity, validate it, delete/cancel it, and verify it is absent as documented in `tests/navigation/absence-tab.md`.
 4. Execute Employee scenario **16** from a fresh login to this same account with Employee reselected.
 5. Record separate Employee results for scenarios 14 and 16 even though those IDs were already executed as Organization User.
 
@@ -56,12 +60,12 @@ Also read and execute `instructions/Multi User Instructions/app-switcher-validat
 2. Confirm browser Back and direct access do not restore the Employee authenticated session.
 3. Do not require a final return to Organization User after the Employee block; the required role order is Organization User followed by Employee.
 
-Do not create, edit, approve, reconcile, assign, import, invite, or delete business data.
+Do not create, edit, approve, reconcile, assign, import, invite, or delete business data except for Scenario 14's exact temporary absence create-and-cleanup lifecycle.
 
 ## Reporting
 
-Follow `instructions/html-reporting-standard.md`. Create the run under `reports/role-executions/multi-role-org-employee/<YYYYMMDD-HHMMSS>/` with role-grouped outcomes for all 19 Organization User scenarios and both Employee scenarios, screenshots of each role context, one continuous video, expected/actual results, and reproduction steps for failures. Do not collapse duplicate scenario IDs across roles and do not expose credentials or sensitive identity data.
+Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-organization-employee/` with role-grouped outcomes for all 19 Organization User scenarios and both Employee scenarios, screenshots of each role context, one continuous video, expected/actual results, and reproduction steps for failures. Do not collapse duplicate scenario IDs across roles and do not expose credentials or sensitive identity data.
 
 ## Invocation
 
-`Execute instructions/Multi User Instructions/multi-role-organization-employee-execution.md in unattended safe mode.`
+`For OrgId <OrgId>, execute instructions/Multi User Instructions/multi-role-organization-employee-execution.md in unattended safe mode using only the matching organization-scoped configuration and credentials.`

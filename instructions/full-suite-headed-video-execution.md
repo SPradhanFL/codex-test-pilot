@@ -43,6 +43,7 @@ Choose one mode before opening the browser:
 - Does not submit any create, update, remove, delete, approval, reconciliation, import, or other persistent data-changing action.
 - Executes every safe navigation, visibility, interaction, validation, search, authentication, logout, session-security, and form-without-submit check.
 - Marks persistent mutation steps **NOT TESTED — unattended safe mode**. A scenario whose required purpose is the persistent mutation cannot be reported as PASS.
+- Exception: Scenario 14 may execute the temporary absence create-and-cleanup fallback in `tests/navigation/absence-tab.md` when no existing absence is available. The run must create only the verified Stage test record, validate it, delete/cancel that exact record, and verify post-cleanup absence before continuing.
 
 ### Full destructive mode
 
@@ -94,7 +95,7 @@ Run sequentially in this order:
 14. `tests/navigation/angular-daily-report-to-substitute-general-information.md`
 15. `tests/logout/logout-navigation-matrix.md`
 
-Create Employee must precede Delete Employee. Logout runs last because it intentionally invalidates sessions. In full destructive mode, every create/delete scenario must verify its exact synthetic target and complete its documented cleanup. In unattended safe mode, persistent create/delete submissions are not performed and must be reported as NOT TESTED.
+Create Employee must precede Delete Employee. Logout runs last because it intentionally invalidates sessions. In full destructive mode, every create/delete scenario must verify its exact synthetic target and complete its documented cleanup. In unattended safe mode, persistent create/delete submissions are not performed and must be reported as NOT TESTED, except for Scenario 14's explicitly authorized temporary absence create-and-cleanup fallback.
 
 ## Per-scenario artifacts
 
@@ -145,6 +146,8 @@ Use recorded media duration rather than overall wall-clock duration when computi
 ## Result and failure rules
 
 - Apply each scenario's own PASS, FAIL, BLOCKED, and NOT TESTED rules.
+- Before finalizing any **FAIL**, observe or poll for the missing expected page, element, navigation, or state for a full **60 seconds** from the triggering action. If it recovers, continue the scenario; otherwise capture final evidence at or after 60 seconds and record the elapsed timeout in the detailed report step.
+- Do not apply the 60-second failure timeout to missing prerequisites or safety/permission restrictions that correctly produce **BLOCKED** or **NOT TESTED**.
 - Continue to the next independent scenario after a failure when doing so is safe.
 - Block dependent scenarios when required data or cleanup is unavailable.
 - Do not claim a step or scenario passed without observable browser evidence.

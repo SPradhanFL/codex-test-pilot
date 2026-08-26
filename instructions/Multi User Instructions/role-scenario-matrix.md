@@ -12,19 +12,21 @@ This file is the authoritative numbered scenario catalog and role-to-scenario ro
 4. Angular Daily Report → Master Data → Substitute → General Information.
 5. Angular Daily Report → Extract / Import → legacy Import Data.
 6. Legacy Import Data → Angular Daily Report.
-7. Angular Daily Report → global search for `report` → confirm matching results or the explicit `0 results` state → React Home.
-8. React Home → global search for `report` → confirm matching results or the explicit `0 results` state → Angular Daily Report.
-9. Legacy Import Data → global search for `report` → confirm matching results or the explicit `0 results` state → legacy Import Data.
+7. Angular Daily Report → submit global search for `report` → confirm the Search page and navigation elements display → React Home.
+8. React Home → submit global search for `report` → confirm the Search page and navigation elements display → Angular Daily Report.
+9. Legacy Import Data → submit global search for `report` → confirm the Search page and navigation elements display → legacy Import Data.
 10. React Home → Role Switcher → confirm every available role is displayed.
 11. Angular Daily Report → Role Switcher → confirm every available role is displayed.
 12. Legacy Import Data → Role Switcher → confirm every available role is displayed.
 13. React Employee General Information → Manage Access.
-14. Open an existing absence and successfully view every available tab.
+14. Role-adapted absence validation: Organization/Campus/Employee open an absence and view every available tab; Substitute validates Available Jobs, Scheduled Jobs/Schedule, Past Jobs/History Jobs, and Non Work Days.
 15. Security → Manage User Access → confirm the page loads successfully.
 16. Successfully log out from React Home.
 17. Successfully log out from Angular Daily Report.
 18. Successfully log out from legacy Import Data.
 19. Successfully log out from Employee maintenance.
+20. Campus User React Home → Reports → Report Writer → confirm the Report Writer page and its primary controls load.
+21. Campus User React Home → Settings → My Profile → Account Settings → confirm the page loads → return to the prior Campus page and React Home.
 
 ## Source test mapping
 
@@ -41,26 +43,37 @@ This file is the authoritative numbered scenario catalog and role-to-scenario ro
 | 14 | `tests/navigation/absence-tab.md` |
 | 15 | `tests/navigation/security-manage_user_access_page.md` |
 | 16–19 | `tests/logout/logout-navigation-matrix.md`, flows 1–4 |
+| 20–21 | `instructions/Multi User Instructions/campus-user-execution.md`, Campus User-only flows |
 
 ## Role authorization matrix
 
 | Active role | Authorized scenario IDs |
 |---|---|
 | Organization User | 1–19 |
-| Campus User | 3, 7, 14, 16, 17 |
+| Campus User | 3, 7, 14, 16, 17, 20, 21 |
 | Employee | 14, 16 |
 | Substitute | 14, 16 |
 
-Do not execute scenario 8 for Campus User. Do not run Organization-only navigation, role-switcher, Manage Access, Manage User Access, legacy Import, or Employee maintenance logout scenarios while the active role is Campus User, Employee, or Substitute.
+Scenarios 20 and 21 are Campus User-only and must not run while Organization User, Employee, or Substitute is active. Do not execute scenario 8 for Campus User. Do not run Organization-only navigation, role-switcher, Manage Access, Manage User Access, legacy Import, or Employee maintenance logout scenarios while the active role is Campus User, Employee, or Substitute.
+
+## Scenario 13 per-login data gate
+
+Scenario 13 is authorized for an Organization User context but executes only when the selected organization's `config/aes-stage.ml.<OrgId>.json` contains an enabled `scenarioData.manageAccess` mapping and the active login exactly matches `testUsernames[loginUsernameKey]` from that mapping.
+
+- Use only the configured `employeeFirstName` and `employeeLastName` for that exact login and organization.
+- When the mapping is disabled, absent, incomplete, or belongs to another active login, report Scenario 13 as **NOT TESTED** with `No safe Manage Access employee data is configured for this login.`
+- Do not classify this intentional skip as **BLOCKED** or **FAIL**.
+- Do not borrow employee data from another organization or login.
+- Continue with every independent Organization User scenario after the skip.
 
 ## Conditional supplemental workflow — App Switcher
 
 For every active role and organization context, apply `app-switcher-validation.md` immediately after successful authentication/context selection and again from the Home-page top-left area. This check is available to every role but is not numbered and does not change the assigned scenario IDs above.
 
 - If no App Switcher is visible at either checkpoint, record the observation inside the existing login/Home step and do not add a supplemental result.
-- If a switcher is visible, validate Absence Management → Time & Attendance → Absence Management and Absence Management → Frontline Central → Absence Management.
+- If a switcher is visible, capture its actual application inventory and validate a complete round trip from Absence Management to every displayed, enabled alternate application and back to Absence Management. Do not require Time & Attendance, Frontline Central, or any other fixed application to be present.
 - Add a separate workflow outcome, screenshots, and continuous-video range for every distinct role/organization context where the switcher is exposed.
-- A visible switcher with a missing application, failed destination, access-denied state, or failed return is a FAIL. Recover the same role/context safely and continue independent scenarios.
+- Applications not displayed are outside the scope of that context and require no result. A displayed application that cannot be selected, a failed destination, an access-denied state, or a failed return is a FAIL. Recover the same role/context safely and continue independent scenarios.
 
 ## Combination-account execution algorithm
 
@@ -77,10 +90,12 @@ For every active role and organization context, apply `app-switcher-validation.m
 
 ## Scenario 14 safety by role
 
-- Organization User: follow `tests/navigation/absence-tab.md`; in unattended safe mode use an existing absence. If none exists, mark scenario 14 **BLOCKED** unless the invocation explicitly authorizes the documented create-and-cleanup fallback.
-- Campus User: use an existing absence read-only. If none exists or the role lacks access, mark scenario 14 **BLOCKED** and do not create data.
-- Employee: use an existing absence from the Employee portal read-only. If none exists, mark scenario 14 **BLOCKED** and do not create data.
-- Substitute: use an existing assignment, job, or absence available to the Substitute portal read-only. Traverse every available detail tab; when the portal exposes inline details instead of tabs, validate the complete inline detail region and explicitly report that no separate tabs were presented. If no item exists, mark scenario 14 **BLOCKED** and do not accept or create work.
+- Scenario 14 has one narrow exception to unattended safe mode: when no existing viewable absence is available, execute the temporary create → reopen → validate every available tab → delete/cancel → verify absent lifecycle in `tests/navigation/absence-tab.md`.
+- Organization User: prefer an existing absence read-only. Otherwise create the fallback only for the uniquely verified synthetic employee, then delete it and verify cleanup before continuing.
+- Campus User: prefer an existing absence read-only. Otherwise use the fallback only when the Campus portal exposes both a supported creation path and a supported cleanup path for a uniquely verified test target. If either control or safe target verification is unavailable, mark scenario 14 **BLOCKED** without submitting.
+- Employee: prefer an existing absence read-only. Otherwise use the Employee portal's self-service Create Absence flow for the currently authenticated configured Stage test identity, validate the created record, then delete/cancel that exact record and verify it is absent.
+- Substitute: do not require an individual assignment, job, absence, confirmation link, or detail-tab page. Validate the four read-only portal views **Available Jobs**, **Scheduled Jobs/Schedule**, **Past Jobs/History Jobs**, and **Non Work Days**. Scroll each control into view, select it, and confirm its corresponding list, calendar, content, or explicit empty state loads. Never create, accept, assign, reject, cancel, edit, or delete work for this validation. A missing individual job is not a blocker; mark BLOCKED only when authentication, role, entitlement, or environment restrictions prevent access to a required view.
+- Never create when the target is ambiguous, a substitute could be contacted, cleanup is unavailable, or the record cannot be uniquely identified. A created fallback cannot pass until post-cleanup search proves the exact temporary record is gone.
 
 ## Reporting requirements
 
@@ -92,3 +107,4 @@ For every active role and organization context, apply `app-switcher-validation.m
 6. Report logout results separately because each logout uses a fresh session.
 7. The controller passes only when every required role/context exists and every authorized scenario in every role/context passes.
 8. When the App Switcher is exposed, include its supplemental outcome in that context and require it to pass. When it is not exposed at both checkpoints, include only the visibility observation and do not alter the controller result.
+9. Apply `url-evidence-validation.md` to every executed workflow. Capture the complete Chrome window and report a missing configured URL substring as a warning unless the unexpected destination also causes a functional FAIL.

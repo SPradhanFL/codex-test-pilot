@@ -1,5 +1,8 @@
 param(
     [Parameter(Mandatory = $true)]
+    [string]$OrgId,
+
+    [Parameter(Mandatory = $true)]
     [string]$RunId,
     [string]$VideoSource
 )
@@ -11,10 +14,13 @@ if ($RunId -notmatch '^\d{8}-\d{6}$') {
 }
 
 $workspaceRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$fullSuiteRoot = [System.IO.Path]::GetFullPath((Join-Path $workspaceRoot 'reports\full-suite'))
+. (Join-Path $PSScriptRoot 'multi-user-org-context.ps1')
+$context = Resolve-MultiUserOrganizationContext -WorkspaceRoot $workspaceRoot -OrgId $OrgId
+$fullSuiteRoot = $context.FullSuiteRoot
 $runDirectory = [System.IO.Path]::GetFullPath((Join-Path $fullSuiteRoot $RunId))
 $runDataPath = Join-Path $runDirectory 'run-data.json'
 $manifestPath = Join-Path $runDirectory 'run-manifest.json'
+$videoEventPath = Join-Path $runDirectory 'video-events.json'
 $videoDirectory = Join-Path $runDirectory 'videos'
 $videoDestination = Join-Path $videoDirectory 'multi-user-full-suite-execution.webm'
 
@@ -30,9 +36,18 @@ if (-not (Test-Path -LiteralPath $runDataPath)) {
 if (-not (Test-Path -LiteralPath $manifestPath)) {
     throw "Missing run manifest: $manifestPath"
 }
+if (-not (Test-Path -LiteralPath $videoEventPath)) {
+    throw "Missing measured video event journal: $videoEventPath"
+}
 
 $data = Get-Content -LiteralPath $runDataPath -Raw | ConvertFrom-Json
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+if ([string]$manifest.organizationId -ne $OrgId -or [string]$data.organizationId -ne $OrgId) {
+    throw "Run manifest/data organization does not match requested OrgId $OrgId."
+}
+if ($data.timelineSource -ne 'measured-video-events-v1' -or -not ([double]$data.sourceElapsedMilliseconds -gt 0)) {
+    throw 'Apply the measured video event timeline before finalization. Estimated or evenly divided ranges are not accepted.'
+}
 $expectedReports = if ($null -ne $manifest.expectedRoleReports) {
     [int]$manifest.expectedRoleReports
 } else {
@@ -103,6 +118,7 @@ if ($missingScreenshots.Count -gt 0) {
 }
 
 [pscustomobject]@{
+    organizationId = $OrgId
     runId = $RunId
     roleReports = @($data.accounts).Count
     video = $videoDestination
