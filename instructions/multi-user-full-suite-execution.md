@@ -64,6 +64,7 @@ The manifest's `expectedRoleReports` value is derived from the organization conf
 
 ## Browser and continuous video
 
+- Run `scripts/check-disposable-playwright-profile.ps1`, close any prior MCP browser session once, and let the first navigation create a clean isolated Chrome profile for the complete selected-controller run.
 - Use headed Chrome through Playwright MCP.
 - Start every suite invocation in a fresh isolated headed Chrome automation context and a newly opened dedicated test window. Do not claim or reuse a user-owned tab, an earlier automation tab/window, browser history, cookies, or authenticated session state from a prior run.
 - Open the configured organization URL as the first navigation in that fresh context. If it is not possible to establish a genuinely fresh controllable context, stop before credential entry and report the browser-isolation blocker; do not sign out, clear data from, or otherwise modify a user-owned browser session.
@@ -73,8 +74,12 @@ The manifest's `expectedRoleReports` value is derived from the organization conf
 - Immediately record `RecordingStart` after the full-browser recorder starts. Record `RecordingEnd` only after the final selected controller's stable browser state, then run `scripts/stop-browser-window-video.ps1`.
 - Save the final recording as `videos/multi-user-full-suite-execution.webm` before report finalization.
 - Do not add blur, masking, overlays, dimming, action labels, annotations, or chapter cards.
+- After stopping and finalizing the continuous recording and collecting the final browser evidence, close the MCP browser to discard the complete run's in-memory profile.
+- Do not record the desktop, terminal, configuration file, credentials file, or tool output.
 - Capture only Chrome's exact outer-window rectangle. Do not expose the surrounding desktop, terminal, configuration file, credentials file, notifications, or tool output.
 - Password controls may appear only in their native masked state.
+- Record exact continuous-video start and end offsets for every controller and every scenario/workflow. Authentication transitions may be omitted only when needed to prevent credential exposure; do not split the user-facing evidence into multiple videos.
+- Capture a sanitized URL-navigation trail for every scenario/workflow. Follow `instructions/time-and-attendance-details.md` for Time & Attendance flows and the equivalent scheme/host/sanitized-path/query-key-only format for other flows. Never persist query values, URL fragments, authorization/session values, personal identifiers, or tokenized path segments.
 - Keep all browser navigation, masked credential entry, authentication transitions, role/context selection, waits, retries, and scenario actions inside the one recording. Do not split the user-facing evidence into multiple videos.
 - Do not estimate, evenly divide, or reconstruct scenario ranges after execution. Capture measured events at each controller and workflow boundary.
 
@@ -199,6 +204,27 @@ Maintain `reports/full-suite/<OrgId>/<runId>/run-data.json` with this structure:
               "status": "PASS"
             }
           ],
+          "navigation": [
+            {
+              "evidence": "Observed",
+              "action": "Selected the application",
+              "origin": "https://stage-host.example",
+              "path": "/sanitized/path",
+              "queryKeys": ["state"],
+              "result": "Destination loaded; the state value was redacted."
+            }
+          ],
+          "http404s": [
+            {
+              "evidence": "Observed",
+              "action": "Loaded the required destination",
+              "status": 404,
+              "origin": "https://stage-host.example",
+              "path": "/sanitized/path",
+              "queryKeys": [],
+              "impact": "Required data did not load; workflow failed."
+            }
+          ],
           "failureObservationSeconds": 60,
           "reproduce": []
         }
@@ -210,7 +236,9 @@ Maintain `reports/full-suite/<OrgId>/<runId>/run-data.json` with this structure:
 }
 ```
 
-Use only `PASS`, `FAIL`, `BLOCKED`, or `NOT TESTED` for workflow status. `WARNING` is supplemental and belongs only in a workflow's `warnings` array; it is not a fifth status. Account and workflow slugs are mandatory before recording their events. A workflow `source`, `reproduce`, and `warnings` list are optional. Give every workflow its own `screenshots` list, using an empty list when no screenshot exists; every warning screenshot must also appear in that list. Scenario pages never inherit unrelated role-level screenshots. The timeline application script supplies the measured timeline fields shown above. Every selected controller must receive a report even when authentication is blocked.
+Use only `PASS`, `FAIL`, `BLOCKED`, or `NOT TESTED` for workflow status. `WARNING` is supplemental and belongs only in a workflow's `warnings` array; it is not a fifth status. Account and workflow slugs are mandatory before recording their events. A workflow `source`, `reproduce`, and `warnings` list are optional. Give every workflow its own `screenshots` list, using an empty list when no screenshot exists; every warning screenshot must also appear in that list. Scenario pages never inherit unrelated role-level screenshots.
+
+`navigation` is required for every workflow that reaches browser navigation; use an empty list only when execution is blocked before a browser destination is reached. Each navigation object must keep origin and path separate and contain query-key names only. Every Time & Attendance workflow must also include `http404s`: use one sanitized object per observed HTTP 404, or `[]` when none was observed. Each 404 object must contain status `404`, an approved Stage origin, a sanitized path, query-key names only, evidence classification, triggering action/source, and impact. Do not place the username in `run-data.json`; the report generator resolves it from the selected controller and `config/aes-stage.ml.<OrgId>.json`, with its supported environment-variable override taking precedence. The timeline application script supplies the measured timeline fields shown above. Every selected controller must receive a report even when authentication is blocked.
 
 Set `failureObservationSeconds` to `60` for every failed workflow and include the corresponding timeout step in `steps`. Omit that field for PASS, BLOCKED, and NOT TESTED workflows.
 
@@ -247,6 +275,7 @@ reports/full-suite/<OrgId>/<runId>/
     └── multi-user-full-suite-execution.webm
 ```
 
+The consolidated dashboard must link to the exact number of role/login-combination reports declared by the run manifest and show total reports, PASS, FAIL, BLOCKED, NOT TESTED, recorded duration, and video count `1`. Each role folder is self-contained except for the single shared video. A combination login receives one folder; its report separates scenarios by active role/organization context. Each role report and scenario page must use the visual structure of the canonical migrated-user reference and include detailed steps, expected/actual results, screenshots, exact video ranges, sanitized URL-navigation sequences, controller structure, cleanup, and numbered failure reproduction steps. For Time & Attendance, the consolidated dashboard, role dashboard, and each TA scenario page must show the exact configured `Test username`; each TA scenario page must also show the sanitized HTTP 404 table or the explicit no-404 state.
 Create the portable package beside the run folder as `reports/full-suite/<OrgId>/multi-user-full-suite-<OrgId>-<runId>.zip`.
 
 The consolidated dashboard must link to the exact number of role/login-combination reports declared by the run manifest and show total reports, PASS, FAIL, BLOCKED, NOT TESTED, WARNING, recorded duration, and video count `1`. Each role folder is self-contained except for the single shared video. A combination login receives one folder; its report separates scenarios by active role/organization context. Each role report and scenario page must use the visual structure of the canonical migrated-user reference and include detailed steps, expected/actual results, full-browser screenshots, URL warnings, exact video ranges, controller structure, cleanup, and numbered failure reproduction steps.

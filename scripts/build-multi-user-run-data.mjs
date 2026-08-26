@@ -159,7 +159,9 @@ const accounts = manifest.accounts.map((manifestAccount, index) => {
       steps: override.steps ?? [{action: name, expected, actual, status}],
       reproduce: override.reproduce ?? defaultReproduce(name, status),
       screenshots: [...new Set(screenshots)].sort(),
-      warnings
+      warnings,
+      navigation: override.navigation ?? [],
+      http404s: override.http404s ?? []
     };
   });
   const counts = workflows.reduce((result, workflow) => {

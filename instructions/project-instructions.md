@@ -41,6 +41,7 @@ For ML multi-user execution, treat `instructions/Multi User Instructions/` as th
 
 ## Browser execution rules
 
+- Before the run's first browser navigation, require `scripts/check-disposable-playwright-profile.ps1` to pass and call Playwright MCP's browser-close operation once. Use the next project-scoped MCP navigation as the start of the run's clean isolated Chrome profile.
 - Use Playwright MCP for all browser navigation, interaction, inspection, and screenshots.
 - For every Stage ML multi-user invocation, create a fresh isolated headed Chrome automation context and a new dedicated test window before opening the configured URL. Do not claim or reuse a user-owned tab, an earlier automation tab, or authenticated session state from a prior run. Use the same fresh context for the complete selected-controller run.
 - For Stage ML multi-user report evidence, use Playwright MCP for navigation, interaction, and URL inspection, but capture screenshots and video with the full-browser-window scripts required by `instructions/multi-user-full-suite-execution.md` so the address bar is visible.
@@ -53,6 +54,7 @@ For ML multi-user execution, treat `instructions/Multi User Instructions/` as th
 - For create, update, or delete scenarios, verify the target record before submitting.
 - Stop when continuing could affect the wrong record, environment, or user.
 - Do not change project files except for reports and useful screenshots under `reports/`.
+- After final browser evidence is captured, close the Playwright MCP browser so the isolated profile and its storage state are discarded.
 
 ## Result classification
 

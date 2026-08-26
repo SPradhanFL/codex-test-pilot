@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Execute all 19 numbered Organization User scenarios in `role-scenario-matrix.md`. This file is an execution controller; it does not replace or modify the mapped source tests.
+Execute all 24 numbered Organization User scenarios assigned by `role-scenario-matrix.md`: scenarios 1–19, 29, and 33–36. This file is an execution controller; it does not replace or modify the mapped source tests.
 
 ## Mandatory preparation
 
@@ -14,7 +14,8 @@ Before opening the browser, read completely:
 4. `instructions/full-suite-headed-video-execution.md`
 5. `config/aes-stage.ml.<OrgId>.json`
 6. `instructions/Multi User Instructions/role-scenario-matrix.md`
-7. Every source Markdown test mapped to scenarios 1–19 in that matrix
+7. `instructions/time-and-attendance-details.md`
+8. Every source Markdown test mapped to Organization User scenarios 1–19, 29, and 33–36 in that matrix
 
 Execute the scenarios directly in Chrome through Playwright MCP. Do not generate Playwright, TypeScript, or reusable automation source code.
 
@@ -37,9 +38,9 @@ Resolve credentials before opening the browser:
 
 ## Scenario selection and execution order
 
-1. The Organization User authorization set is exactly scenarios **1–19** in `role-scenario-matrix.md`.
-2. Execute non-logout scenarios 1–15 in numerical order unless a source test requires a dependency-safe navigation prerequisite.
-3. Execute logout scenarios 16–19 last. Each logout scenario begins with a fresh authenticated Organization User session and completes its Back and direct-route checks before the next login.
+1. The Organization User authorization set is exactly scenarios **1–19, 29, and 33–36** in `role-scenario-matrix.md`.
+2. Execute non-logout scenarios 1–15, 29, and 33–35 in numerical and dependency-safe order.
+3. Execute logout scenarios 16–19 and 36 last. Each logout scenario begins with a fresh authenticated Organization User session and completes its Back and direct-route checks before the next login.
 4. Use the source test mapped to each scenario ID for its detailed steps, interaction checks, expected results, safety rules, and reporting requirements.
 5. Before Scenario 13, apply the per-login data gate in `tests/navigation/manage-access.md`. Execute it only for an enabled organization-scoped mapping whose `loginUsernameKey` exactly matches the active login. For every other login, record Scenario 13 as **NOT TESTED**, state that no safe Manage Access employee data is configured, and continue.
 6. Do not execute unrelated Markdown tests merely because they exist under `tests/`. New files enter this controller only after they are assigned a numbered Organization User scenario in `role-scenario-matrix.md`.
@@ -61,14 +62,14 @@ Follow the full-suite artifact and dashboard rules in `instructions/full-suite-h
 For a standalone Organization User invocation, use the organization-scoped full-suite pipeline and create the canonical role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/organization-user/`. Archive older runs only within `reports/full-suite/<OrgId>/old-reports/`.
 
 - Organization User as the execution role
-- A complete outcome for each numbered scenario 1–19 in resolved execution order
+- A complete outcome for each assigned scenario 1–19, 29, and 33–36 in resolved execution order
 - PASS, FAIL, BLOCKED, and NOT TESTED totals
 - A detailed result for every discovered test and every documented step
 - Screenshots and video evidence when required by the full-suite instruction
 - Numbered reproduction steps for every failure
 - Safety, restoration, and cleanup results
 
-The overall Organization User result is **PASS** only when all 19 required scenarios pass. Never include secrets or sensitive identity data in an artifact.
+The overall Organization User result is **PASS** only when all 24 required scenarios pass. Never include passwords, session secrets, or sensitive identity data in an artifact. The configured Stage test username is the sole narrow exception and is required only in the labeled HTML `Test username` fields defined by the Time & Attendance reporting rules.
 
 ## Invocation
 

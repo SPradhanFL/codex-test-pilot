@@ -41,16 +41,19 @@ The configuration's `enabledControllers` array is authoritative. Organization `1
 1. Read the selected controller completely before opening the browser.
 2. Run only the workflows authorized by that controller.
 3. Use `role-scenario-matrix.md` as the authoritative role coverage:
-   - Organization User: scenarios 1–19
-   - Campus User: scenarios 3, 7, 14, 16, 17, 20, and 21
-   - Employee: scenarios 14 and 16
-   - Substitute: scenarios 14 and 16
+   - Organization User: scenarios 1–19, 29, and 33–36
+   - Campus User: scenarios 3, 7, 14, 16, 17, 20, 21, 30, and 37
+   - Employee: scenarios 14, 16, 31, and 38
+   - Substitute: scenarios 14, 16, 32, and 39
 4. For a combination account, execute each role/context block in the controller's order. Repeat shared scenario IDs in every applicable role/context; do not deduplicate them.
 5. Complete each logout's session-termination checks, then re-authenticate with the same combination account and select the next required role/context.
 6. Do not fall back to another identity when a username, password, role, organization, or permission is missing.
 7. A controller's read-only restriction overrides optional creation or cleanup branches in a shared scenario.
 8. Record role and organization labels only to the extent necessary to prove context switching; omit credentials and personal data.
 9. After every successful login/context selection and at the Home-page top-left checkpoint, apply `app-switcher-validation.md`. Execute its switching loops only when an App Switcher is visible.
+10. Execute the numbered Time & Attendance scenarios from `tests/time-and-attendance/` after existing non-logout scenarios and before logout scenarios. These numbered TA scenarios are required role coverage and are separate from the conditional AM-origin App Switcher workflow.
+11. Use the authoritative Time & Attendance numbering map in `role-scenario-matrix.md`: repository scenario 30 / TA ordinal 2 is ROVO scenario 1, and the mapping continues through repository scenario 39 / TA ordinal 11 / ROVO scenario 10.
+12. Every Time & Attendance report must include credential-free video evidence and a sanitized redirect sequence as defined in `instructions/time-and-attendance-details.md`.
 10. After Passport authentication, apply `stage-ml-application-launch.md`. Treat the `absence.stage-k12.ss.frontlineeducation.com` launcher as intermediate, rescan Chrome tabs after activating the Absence Management tile, and continue from the approved responsive tab whose URL contains `requiredUrlContains`.
 11. At every workflow's final evidence checkpoint, apply `url-evidence-validation.md`, capture the complete Chrome window including the address bar, and report a configured URL mismatch as a separate warning unless it also causes a functional failure.
 12. Before any controller finalizes a **FAIL**, apply the shared 60-second failure-observation policy in `instructions/project-instructions.md`. Poll the expected UI state for the full interval, capture evidence at or after timeout, and state the 60-second expiration in the failed workflow. Do not delay or reclassify genuine BLOCKED or NOT TESTED prerequisites.

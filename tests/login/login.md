@@ -30,8 +30,16 @@ Verify that the dedicated test user can sign in to the configured non-production
    - Expected: The password field accepts the value.
 4. Select the visible sign-in or login control.
    - Expected: Authentication is submitted once.
-5. Wait for the authenticated landing page.
-   - Expected: The URL no longer represents the login page and the configured post-login identifier is visible.
+5. Handle browser permission prompts.
+   - If Chrome displays a Local Network Access permission prompt, pause the landing-page timer.
+   - Do not automatically allow or block the request.
+   - Ask the user to resolve the prompt unless the selected choice is explicitly approved in the shared application instructions.
+   - Resume or restart the landing-page timer after the prompt is resolved.
+   - Reporting: Record the permission-resolution time separately from application load time.
+
+6. Wait for the authenticated landing page.
+   - Start measuring application load time after authentication is submitted and all blocking browser prompts are resolved.
+   - Wait up to 180 seconds for the configured post-login identifier.
 6. Confirm that no authentication error is displayed.
    - Expected: The user is signed in successfully.
 

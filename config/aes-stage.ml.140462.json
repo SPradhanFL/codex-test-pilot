@@ -6,10 +6,10 @@
   "requiredUrlContains": "stage-k12.ss",
   "username": "SSDManualSetup86_4",
   "testUsernames": {
-    "org_username": "vtqamail+SSDManualSetupOU86ML@dev.frontlineed.com",
-    "campusUser": "",
-    "employee": "vtqamail+SSD_EmployeeUserML@dev.frontlineed.com",
-    "substitute": "vtqamail+SSDManualSetupSub86ML@dev.frontlineed.com",
+    "org_username": "vtqamail+stageSSDManualSetup86_1@dev.frontlineed.com",
+    "campusUser": "vtqamail+stage140463CU@dev.frontlineed.com",
+    "employee": "vtqamail+stage140463Emp01@dev.frontlineed.com",
+    "substitute": "vtqamail+stageSSDMultiOrgSubSub3@dev.frontlineed.com",
     "userRoleSwitcher": "vtqamail+multicuempssdML@dev.frontlineed.com",
     "multiRoleOrgEmployee": "vtqamail+stageSSDManualSetup86MU@dev.frontlineed.com",
     "multiRoleEmployeeEmployeeSubstitute": "vtqamail+stageSSDManualSetup86MRemp@dev.frontlineed.com",
@@ -37,9 +37,12 @@
   },
   "approvedHosts": [
     "login.stage-k12.ss.frontlineeducation.com",
+    "stage-k12.ss.frontlineeducation.com",
+    "time.stage-k12.ss.frontlineeducation.com",
     "absence.stage-k12.ss.frontlineeducation.com",
     "absence-adminweb.stage-k12.ss.frontlineeducation.com",
     "absence-adminwebui.stage-k12.ss.frontlineeducation.com",
+    "fl-admin.stage-k12.ss.frontlineeducation.com",
     "absence-emp.stage-k12.ss.frontlineeducation.com",
     "absence-sub.stage-k12.ss.frontlineeducation.com",
     "aesstage.flqa.net",
@@ -50,5 +53,15 @@
     "supersuitawsstage.flqa.net",
     "vtstage.flqa.net",
     "adminwebreact-stage.flqa.net"
-  ]
+  ],
+  "prohibitedHosts": [
+    "qaestar.flqa.net"
+  ],
+  "timeAttendanceScenarioContextSelections": {
+    "29": {
+      "organization": "Manualsetup86 SSD1",
+      "expectedDestinationRole": "Organization User",
+      "allowKnownParentUserResolution": true
+    }
+  }
 }

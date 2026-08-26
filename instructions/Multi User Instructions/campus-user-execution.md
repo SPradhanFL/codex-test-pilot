@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Execute only Campus User scenarios **3, 7, 14, 16, 17, 20, and 21** from `role-scenario-matrix.md`. Scenarios 20 and 21 are Campus User-only navigation validations defined in this controller.
+Execute only Campus User scenarios **3, 7, 14, 16, 17, 20, 21, 30, and 37** from `role-scenario-matrix.md`. Scenarios 20 and 21 are Campus User-only navigation validations defined in this controller; scenarios 30 and 37 cover Time & Attendance.
 
 ## Mandatory preparation
 
@@ -16,6 +16,9 @@ Before opening the browser, read completely:
 6. `tests/navigation/cross-application-navigation-matrix.md`
 7. `tests/navigation/absence-tab.md`
 8. `tests/logout/logout-navigation-matrix.md`
+9. `instructions/time-and-attendance-details.md`
+10. `tests/time-and-attendance/app-switcher-navigation-matrix.md`
+11. `tests/time-and-attendance/logout-navigation-matrix.md`
 
 Execute directly in Chrome through Playwright MCP. Run unattended in safe mode, with only Scenario 14's temporary absence create-and-cleanup exception. Do not generate browser-automation source code.
 
@@ -31,7 +34,7 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 2. Read the Stage ML URL and `testUsernames.campusUser` only from `config/aes-stage.ml.<OrgId>.json`.
 3. Read `campus_password` only from `.secrets/aes-stage.ml.<OrgId>.credentials.json`.
 4. If either value is missing or is a placeholder, create a **BLOCKED** report and stop before browser actions.
-5. Use this same Campus User identity for all seven workflows. Do not fall back to the default Organization User.
+5. Use this same Campus User identity for all nine workflows. Do not fall back to the default Organization User.
 6. Never print, display, log, screenshot, report, or copy credentials or session secrets.
 
 ## Shared safety and execution rules
@@ -104,6 +107,12 @@ Use the read-only `Absences` → `Modify` navigation established by `tests/navig
 
 Expected: Every available detail tab for the selected absence can be viewed successfully and no record is changed.
 
+## Scenario 30 — Time & Attendance to Absence Management and back
+
+Execute the Campus User flow from `tests/time-and-attendance/app-switcher-navigation-matrix.md`.
+
+Expected: Time & Attendance is established as the starting application, Absence Management opens with the same Campus User context, and Time & Attendance is restored successfully.
+
 ## Scenario 16 — Logout from React Home
 
 Start a fresh Campus User session and execute **Flow 1 — Logout from React Home** from `tests/logout/logout-navigation-matrix.md`, including the shared authentication, logout, and session-termination checks.
@@ -116,19 +125,25 @@ Start a fresh Campus User session and execute **Flow 2 — Logout from Angular D
 
 Expected: Logout reaches the approved login page, browser Back does not restore an authenticated session, and direct Daily Report access requires authentication.
 
+## Scenario 37 — Logout from Time & Attendance
+
+Start a fresh Campus User session and execute the Campus User flow from `tests/time-and-attendance/logout-navigation-matrix.md`.
+
+Expected: Logout reaches the approved login page, browser Back does not restore Time & Attendance, and direct access requires authentication.
+
 ## Result classification and reporting
 
 Create the canonical report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/campus-user/` with linked scenario pages, screenshots, and the organization run's continuous video. Archive older runs only within `reports/full-suite/<OrgId>/old-reports/`. Include:
 
 - Campus User as the execution role
-- One outcome card for each of scenarios 3, 7, 14, 16, 17, 20, and 21
+- One outcome card for each of scenarios 3, 7, 14, 16, 17, 20, 21, 30, and 37
 - Detailed action, expected result, actual result, and status rows
 - PASS, FAIL, BLOCKED, and NOT TESTED totals
 - Safe route observations and screenshot paths
 - Numbered reproduction steps for failures
 - Restoration, session termination, and cleanup results
 
-Mark each scenario independently. The overall result is **PASS** only when all seven authorized scenarios pass. Never include credentials, sensitive redirect data, or absence personal data.
+Mark each scenario independently. The overall result is **PASS** only when all nine authorized scenarios pass. Never include credentials, sensitive redirect data, or absence personal data.
 
 ## Invocation
 

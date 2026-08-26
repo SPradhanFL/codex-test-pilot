@@ -1,4 +1,7 @@
 # Project-scoped Playwright MCP server for live browser execution.
+# --isolated creates a new in-memory Chrome profile for each MCP lifecycle and
+# prevents cookies, cache, and other browser state from persisting to disk.
+# Do not add --extension, --user-data-dir, --storage-state, or --save-session.
 [mcp_servers.playwright]
 command = "node"
 args = [

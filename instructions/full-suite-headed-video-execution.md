@@ -55,6 +55,7 @@ Choose one mode before opening the browser:
 
 ## Browser and single continuous video
 
+- Before starting the recording or first navigation, run `scripts/check-disposable-playwright-profile.ps1`, close any prior MCP browser session once, and let the next navigation create the suite's clean isolated Chrome profile. Keep that one profile for the full suite so continuous recording is not interrupted.
 - Run Chrome in headed mode. The project MCP configuration intentionally omits `--headless`.
 - Use one isolated browser context and one controlled tab for the entire suite. Reset logical application state between scenarios and re-authenticate when a scenario logs out.
 - Start one `1280x720` recording before scenario 1 and stop it only after scenario 15 reaches its final state.
@@ -65,6 +66,16 @@ Choose one mode before opening the browser:
 - Record the monotonic elapsed-video start and end offsets for each scenario. Pauses outside the recording do not count as execution time.
 - Do not start or stop per-scenario recordings during a normal full-suite run.
 - Do not record the desktop, terminal, credential file, or tool output. Browser video may show only the masked password control during authentication.
+- After stopping and finalizing the continuous recording and collecting the final browser evidence, close the MCP browser to discard the suite's in-memory profile.
+
+## Sanitized URL navigation trail
+
+- Capture the browser's navigation sequence for every scenario and include it on the scenario HTML page.
+- Record only the action/source, evidence classification, approved origin, sanitized path, query-parameter names, and result.
+- Never record query values, URL fragments, tokens, authorization codes, `state`, `nonce`, sign-in handles, session identifiers, personal identifiers, or opaque/tokenized path values. Replace sensitive path segments with `{REDACTED}`.
+- Classify a redirect as `Observed` only when the current run proves it. Mark user-provided, expected protocol, or too-fast transitions as `Expected/inferred`; do not present them as captured evidence.
+- Use focused history inspection only for the known hosts and run window when URL sampling misses a fast transition. Sanitize in memory before writing any artifact.
+- Include the stable starting URL, every observed intermediate redirect/bootstrap route, the stable destination, and the final return or logout route.
 
 ## Credentials
 

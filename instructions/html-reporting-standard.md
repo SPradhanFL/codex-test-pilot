@@ -23,7 +23,7 @@ reports/<suite-name>/<YYYYMMDD-HHMMSS>/
     └── <suite-name>.webm
 ```
 
-Keep only the current run in its timestamped folder. Move older runs and intermediate recording segments into the suite's `old-runs/` folder. The current report must expose only one consolidated video.
+Keep only the current run in its timestamped folder. Move older runs and intermediate recording segments into the suite's `old-runs/` folder. The current report must expose only one consolidated user-facing video. The `.webm` filename in the example is preferred for native continuous recording; a verified `.mp4` is allowed when the applicable execution instructions permit frame-based rendering.
 
 ## Dashboard requirements
 
@@ -55,6 +55,16 @@ Each scenario name on the dashboard must open a separate HTML page containing:
 - The shared execution video with a button that seeks to the scenario start and stops at the scenario end.
 - A link back to the main dashboard.
 
+For every Time & Attendance scenario, also include:
+
+- the exact configured non-production login username in a clearly labeled `Test username` field on both the dashboard and scenario page;
+- a `Sanitized redirect sequence` table containing sequence, evidence classification, action/source, approved origin and sanitized path, query-key names only, and result;
+- an `HTTP 404 observations` table containing evidence classification, action/product phase, HTTP status, approved origin and sanitized path, query-key names only, and functional impact; show an explicit no-404 state when none were observed;
+- a clear assessment of whether any IDM authorization hop was silent and expected or caused re-authentication;
+- the initial application/role context, every cross-product destination, and the final application/role context;
+- an explicit prohibited-host result for `qaestar.flqa.net`; and
+- performance or console observations that did not change the functional result.
+
 ## Evidence rules
 
 - For Stage ML multi-user runs, capture Chrome's complete outer window for every scenario so the tab strip, address bar, and application result are visible together. Use `scripts/capture-browser-window-screenshot.ps1`; do not use a page-only screenshot for report evidence.
@@ -77,9 +87,10 @@ Before sharing a report, verify:
 3. The dashboard counts match the detailed workflow/scenario statuses across every role and login combination; login-combination summary statuses must not be counted as scenario outcomes.
 4. Every video range is within the final video duration.
 5. The final video decodes successfully and the current run contains only one user-facing video.
-6. A credential and token scan of all text artifacts returns no findings.
+6. A credential and token scan of all text artifacts returns no password, token, cookie, session secret, or unapproved identity finding. The exact configured Stage test username is required and must be allowlisted only in HTML `Test username` fields.
 7. A shareable ZIP contains the dashboard, all scenario pages, screenshots, and the single final video.
-8. Multi-user `run-data.json` and `timeline.json` declare `measured-video-events-v1`, and every account/workflow range comes from `video-events.json` rather than an equal-time estimate.
-9. The video and every multi-user screenshot include the complete Chrome window and address bar, while excluding surrounding desktop content.
-10. Warning totals match all workflow `warnings` arrays, and each warning screenshot resolves.
-11. Every failed workflow records `failureObservationSeconds: 60`, includes its 60-second observation in the executed-step evidence, and has a final screenshot captured at or after timeout.
+8. No HTML, JSON, filename, screenshot, or video contains raw `state`, `nonce`, authorization code, token, sign-in handle, session identifier, query value, tokenized URL path segment, or password. The configured Stage test username may appear only in the required HTML `Test username` fields; no other username is permitted.
+9. Multi-user `run-data.json` and `timeline.json` declare `measured-video-events-v1`, and every account/workflow range comes from `video-events.json` rather than an equal-time estimate.
+10. The video and every multi-user screenshot include the complete Chrome window and address bar, while excluding surrounding desktop content.
+11. Warning totals match all workflow `warnings` arrays, and each warning screenshot resolves.
+12. Every failed workflow records `failureObservationSeconds: 60`, includes its 60-second observation in the executed-step evidence, and has a final screenshot captured at or after timeout.

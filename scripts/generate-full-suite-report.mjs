@@ -17,6 +17,27 @@ const formatTime = (seconds) => {
   const secs = rounded % 60;
   return `${minutes}:${String(secs).padStart(2, '0')}`;
 };
+const normalizeNavigation = (item) => {
+  const navigation = Array.isArray(item.navigation) ? item.navigation : [];
+  const allowedEvidence = new Set(['Observed', 'Expected/inferred', 'Not observed']);
+  for (const [eventIndex, event] of navigation.entries()) {
+    if (!allowedEvidence.has(event.evidence)) throw new Error(`Invalid navigation evidence classification for execution ${item.execution} event ${eventIndex + 1}.`);
+    if (!/^https:\/\/[A-Za-z0-9.-]+(?::\d+)?$/.test(event.origin ?? '')) throw new Error(`Navigation origin must contain only scheme and host for execution ${item.execution} event ${eventIndex + 1}.`);
+    if (!/^\/[^?#]*$/.test(event.path ?? '')) throw new Error(`Navigation path must exclude query/fragment data for execution ${item.execution} event ${eventIndex + 1}.`);
+    if (/\/token\/(?!\{REDACTED\}(?:\/|$))/i.test(event.path)) throw new Error(`Navigation token path is not redacted for execution ${item.execution} event ${eventIndex + 1}.`);
+    if (!Array.isArray(event.queryKeys) || event.queryKeys.some((key) => !/^[A-Za-z0-9_.!~-]+$/.test(key))) throw new Error(`Navigation queryKeys are invalid for execution ${item.execution} event ${eventIndex + 1}.`);
+    if (typeof event.action !== 'string' || typeof event.result !== 'string') throw new Error(`Navigation action/result is missing for execution ${item.execution} event ${eventIndex + 1}.`);
+  }
+  return navigation;
+};
+const navigationMarkup = (navigation) => {
+  if (!navigation.length) return '<p class="muted">No sanitized navigation events were recorded.</p>';
+  const rows = navigation.map((event, index) => {
+    const query = event.queryKeys.length ? `?[${event.queryKeys.map(esc).join(', ')}]=REDACTED` : '';
+    return `<tr><td>${index + 1}</td><td>${esc(event.evidence)}</td><td>${esc(event.action)}</td><td><code>${esc(event.origin)}${esc(event.path)}${query}</code></td><td>${esc(event.result)}</td></tr>`;
+  }).join('');
+  return `<div class="table-wrap"><table><thead><tr><th>#</th><th>Evidence</th><th>Action/source</th><th>Sanitized URL</th><th>Result</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+};
 
 const scale = data.recordedDurationSeconds / (data.sourceElapsedMilliseconds / 1000);
 const chapterOffsetMs = Number(data.chapterOffsetMs ?? 0);
@@ -26,6 +47,7 @@ const executions = data.executions.map((item, index) => {
   const endSeconds = index + 1 < starts.length ? starts[index + 1] : data.recordedDurationSeconds;
   return {
     ...item,
+    navigation: normalizeNavigation(item),
     startSeconds: Number(startSeconds.toFixed(2)),
     endSeconds: Number(endSeconds.toFixed(2)),
     start: formatTime(startSeconds),
@@ -74,6 +96,7 @@ for (const item of executions) {
   <section class="cards"><div class="card"><div class="metric">${item.execution}</div><div class="label">Execution</div></div><div class="card"><div class="metric">${esc(item.range)}</div><div class="label">Continuous-video range</div></div><div class="card"><div class="metric">${esc(data.mode)}</div><div class="label">Execution mode</div></div></section>
   <section class="panel"><h2>Scenario outcome</h2><p>${esc(item.summary)}</p><button onclick="playRange(${item.startSeconds},${item.endSeconds})">Play this execution (${esc(item.range)})</button></section>
   ${failures}
+  <section class="panel"><h2>Sanitized redirect sequence</h2>${navigationMarkup(item.navigation)}</section>
   <section class="panel"><h2>Continuous video evidence</h2><video id="suite-video" controls preload="metadata" src="../videos/full-suite-execution.webm"></video></section>
   <section class="panel"><h2>Screenshot evidence</h2><div class="evidence">${screenshots}</div></section>
   <section class="panel"><h2>Complete test structure</h2><p class="muted">Source: ${esc(item.source)}</p><pre>${esc(source)}</pre></section>

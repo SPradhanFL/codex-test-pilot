@@ -31,10 +31,22 @@ AT-AI-Test-Automation/
 
 ## Playwright MCP configuration
 
-The project-scoped `.codex/config.toml` starts Playwright MCP. Alternatively, register it through the CLI:
+The project-scoped `.codex/config.toml` starts Playwright MCP in headed Chrome with `--isolated`. This creates a disposable in-memory browser profile for the MCP lifecycle, so cookies, cache, and site data are not inherited from or written to the developer's normal Chrome profile.
+
+Before a browser run, verify the disposable profile configuration:
 
 ```powershell
-codex mcp add playwright -- npx -y @playwright/mcp@latest --browser chrome --codegen none
+powershell -ExecutionPolicy Bypass -File scripts/check-disposable-playwright-profile.ps1
+```
+
+Do not add `--extension`, `--user-data-dir`, `--storage-state`, `--shared-browser-context`, or `--save-session` to this project's Playwright MCP configuration. Those options would make the fresh-session guarantee ambiguous or persistent.
+
+At each run boundary, call Playwright MCP's browser-close operation before the first navigation and again after final browser evidence is captured. In isolated mode, closing the browser discards the session and all of its storage state; the next navigation starts a clean profile.
+
+Alternatively, register an equivalent isolated server through the CLI:
+
+```powershell
+codex mcp add playwright -- npx -y @playwright/mcp@latest --browser chrome --isolated --codegen none
 ```
 
 Open this directory as a trusted Codex project, then restart or refresh Codex if the MCP server is not immediately available.

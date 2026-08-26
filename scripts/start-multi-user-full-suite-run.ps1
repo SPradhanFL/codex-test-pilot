@@ -92,7 +92,7 @@ New-Item -ItemType Directory -Path $runDirectory | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $runDirectory 'roles') | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $runDirectory 'videos') | Out-Null
 
-$manifestAccounts = for ($index = 0; $index -lt $selected.Count; $index++) {
+$manifestAccounts = @(for ($index = 0; $index -lt $selected.Count; $index++) {
     $controllerInfo = $selected[$index]
     $slug = $controllerInfo.File -replace '-execution\.md$', ''
     [ordered]@{
@@ -103,7 +103,7 @@ $manifestAccounts = for ($index = 0; $index -lt $selected.Count; $index++) {
         report = 'roles/' + $slug + '/index.html'
         status = 'PENDING'
     }
-}
+})
 
 foreach ($role in $manifestAccounts) {
     $roleDirectory = Join-Path (Join-Path $runDirectory 'roles') $role.slug

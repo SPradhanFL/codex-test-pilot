@@ -8,3 +8,8 @@
 node_modules/
 .playwright-mcp/
 reports/playwright-mcp-artifacts/
+reports/login
+reports/role-executions
+reports/full-suite
+.vscode
+/.vs

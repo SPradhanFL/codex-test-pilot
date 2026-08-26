@@ -7,6 +7,7 @@ Use this guide before running the AES Stage browser-automation scenarios in this
 - Pull the latest project changes from Git.
 - Open the repository as a trusted project in Codex.
 - Ensure Chrome and Playwright MCP browser automation are available.
+- Run `powershell -ExecutionPolicy Bypass -File scripts/check-disposable-playwright-profile.ps1` and require a `READY` result. Browser runs must use the project MCP's disposable in-memory Chrome profile, not the connected persistent Chrome-extension profile.
 - Use only the approved AES Stage test environment and test account.
 
 The Stage URL and username are already configured in:

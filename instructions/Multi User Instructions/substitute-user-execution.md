@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Execute only Substitute scenarios **14 and 16** from `role-scenario-matrix.md`: validate the Substitute schedule/history views, then verify logout from React Home. Scenario 14 is role-adapted for the Substitute portal and does not require opening an individual absence or job-detail page.
+Execute only Substitute scenarios **14, 16, 32, and 39** from `role-scenario-matrix.md`: validate the Substitute schedule/history views, validate Time & Attendance application switching, and verify logout from React Home and Time & Attendance. Scenario 14 is role-adapted for the Substitute portal and does not require opening an individual absence or job-detail page.
 
 ## Mandatory preparation
 
@@ -15,6 +15,9 @@ Before opening the browser, read completely:
 5. `instructions/Multi User Instructions/role-scenario-matrix.md`
 6. `tests/navigation/absence-tab.md`
 7. `tests/logout/logout-navigation-matrix.md`
+8. `instructions/time-and-attendance-details.md`
+9. `tests/time-and-attendance/app-switcher-navigation-matrix.md`
+10. `tests/time-and-attendance/logout-navigation-matrix.md`
 
 Execute directly in Chrome through Playwright MCP. Run unattended in safe, read-only mode. Do not generate browser-automation source code.
 
@@ -30,7 +33,7 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 2. Read the Stage ML URL and `testUsernames.substitute` only from `config/aes-stage.ml.<OrgId>.json`.
 3. Read `substitute_password` only from `.secrets/aes-stage.ml.<OrgId>.credentials.json`.
 4. If either value is missing or is a placeholder, create a **BLOCKED** report and stop before browser actions.
-5. Use this same Substitute identity for both workflows. Do not fall back to the default Organization User.
+5. Use this same Substitute identity for all four workflows. Do not fall back to the default Organization User.
 6. Never print, display, log, screenshot, report, or copy credentials or session secrets.
 
 ## Shared safety and execution rules
@@ -62,18 +65,30 @@ Expected: Available Jobs, Scheduled Jobs/Schedule, Past Jobs/History Jobs, and N
 
 Classification: Mark **PASS** when all four required views work, including valid empty states. Mark **FAIL** after the mandatory 60-second failure observation when an exposed view cannot be selected or render correctly. Mark **BLOCKED** only when authentication, role selection, entitlement, or environment restrictions prevent access to a required Substitute view.
 
+## Scenario 32 — Time & Attendance to Absence Management and back
+
+Execute the Substitute flow from `tests/time-and-attendance/app-switcher-navigation-matrix.md`.
+
+Expected: Time & Attendance is established as the starting application, Absence Management opens with the same Substitute context, and Time & Attendance is restored successfully.
+
 ## Scenario 16 — Logout from React Home
 
 Start a fresh Substitute session and apply **Flow 1 — Logout from React Home** plus the shared authentication, logout, and session-termination checks from `tests/logout/logout-navigation-matrix.md` to the Substitute React Home page.
 
 Expected: Logout reaches the approved login page, browser Back does not restore an authenticated session, and direct access to the captured React Home route requires authentication.
 
+## Scenario 39 — Logout from Time & Attendance
+
+Start a fresh Substitute session and execute the Substitute flow from `tests/time-and-attendance/logout-navigation-matrix.md`.
+
+Expected: Logout reaches the approved login page, browser Back does not restore Time & Attendance, and direct access requires authentication.
+
 ## Result classification and reporting
 
 Create the canonical report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/substitute-user/` with linked scenario pages, screenshots, and the organization run's continuous video. Archive older runs only within `reports/full-suite/<OrgId>/old-reports/`. Include:
 
 - Substitute as the execution role
-- One outcome card for scenario 14 and one for scenario 16
+- One outcome card for each of scenarios 14, 16, 32, and 39
 - The four Substitute schedule/history views and a result for each, without personal data
 - Detailed action, expected result, actual result, and status rows
 - PASS, FAIL, BLOCKED, and NOT TESTED totals
@@ -81,7 +96,7 @@ Create the canonical report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/
 - Numbered reproduction steps for failures
 - Session termination and cleanup results
 
-Mark each scenario independently. The overall result is **PASS** only when scenarios 14 and 16 both pass. Never include credentials, sensitive redirect data, or absence personal data.
+Mark each scenario independently. The overall result is **PASS** only when scenarios 14, 16, 32, and 39 pass. Never include credentials, sensitive redirect data, or absence personal data.
 
 ## Invocation
 

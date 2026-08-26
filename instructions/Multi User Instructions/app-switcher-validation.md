@@ -4,7 +4,7 @@
 
 Validate every application that is actually available in the authenticated account's App Switcher. Do not require a fixed application list: application visibility is entitlement-dependent and may differ by user, role, and organization. Run this shared validation for every single-role, multi-role, and multi-organization login controller in this directory.
 
-This is a conditional supplemental workflow, not one of the numbered scenarios 1–19 in `role-scenario-matrix.md`.
+This is a conditional supplemental workflow, not one of the numbered scenarios in `role-scenario-matrix.md`. Numbered scenarios 29–32 validate the distinct reverse direction that starts in Time & Attendance and must not be deduplicated against this AM-origin workflow.
 
 ## Execution checkpoints
 
@@ -34,6 +34,7 @@ If both checkpoints resolve to the same page and the same switcher instance, rec
 - A target may open in the same tab or a new tab/window. Detect and use the actual active target, and close only an extra target tab after the return path has been validated.
 - Scroll each switcher, application entry, destination identity element, and return control into view before interaction and before taking evidence.
 - Capture screenshots of each visible switcher menu, each destination application, and the restored Absence Management page. Never capture credentials, tokens, cookies, personal data, or sensitive redirect fragments.
+- Capture and report the sanitized URL-navigation sequence for each switch using `instructions/time-and-attendance-details.md`. Record origins, sanitized paths, and query-key names only; classify unobserved IDM authorization as expected/inferred rather than observed.
 - At every destination and return checkpoint, apply `url-evidence-validation.md` and use complete-browser-window evidence. A missing configured URL substring is a warning when switching and required elements still work.
 
 ## Switching loop
@@ -95,6 +96,8 @@ When the switcher is present, report the supplemental workflow once per distinct
 - a separate result for every enabled alternate application that was displayed;
 - confirmation that no comparison against a fixed expected-application list was performed;
 - exact continuous-video start/end offsets;
+- screenshot evidence for the switcher, both destination applications, and both returns to Absence Management;
+- a sanitized redirect sequence for each destination and return, including the silent-IDM/re-authentication assessment;
 - screenshot evidence for the switcher, every tested destination application, and every return to Absence Management;
 - expected and actual results for every step;
 - numbered reproduction steps for FAIL or BLOCKED results; and

@@ -6,9 +6,9 @@ Execute the clubbed role-specific scenario sets for the account that exposes Cam
 
 The required outcomes are:
 
-- Campus User: scenarios **3, 7, 14, 16, 17, 20, and 21**
-- Employee: scenarios **14 and 16**
-- Organization User: scenarios **1–19**
+- Campus User: scenarios **3, 7, 14, 16, 17, 20, 21, 30, and 37**
+- Employee: scenarios **14, 16, 31, and 38**
+- Organization User: scenarios **1–19, 29, and 33–36**
 
 Shared scenario IDs are repeated in every applicable role and must not be deduplicated.
 
@@ -19,12 +19,15 @@ Read completely before opening the browser:
 1. `instructions/project-instructions.md`
 2. `instructions/html-reporting-standard.md`
 3. `instructions/Multi User Instructions/role-scenario-matrix.md`
-4. `instructions/Multi User Instructions/campus-user-execution.md`, using only its Scenario 20 and Scenario 21 definitions
-5. `config/aes-stage.ml.<OrgId>.json`
-6. Every source Markdown test mapped to Organization User scenarios 1–19
-7. `tests/navigation/cross-application-navigation-matrix.md`
-8. `tests/navigation/absence-tab.md`
-9. `tests/logout/logout-navigation-matrix.md`
+4. `config/aes-stage.ml.<OrgId>.json`
+5. Every source Markdown test mapped to Organization User scenarios 1–19, 29, and 33–36
+6. `tests/navigation/cross-application-navigation-matrix.md`
+7. `tests/navigation/absence-tab.md`
+8. `tests/logout/logout-navigation-matrix.md`
+9. `instructions/time-and-attendance-details.md`
+10. `tests/time-and-attendance/app-switcher-navigation-matrix.md`
+11. `tests/time-and-attendance/organization-user-navigation.md`
+12. `tests/time-and-attendance/logout-navigation-matrix.md`
 
 Execute directly in headed Chrome through Playwright MCP. Keep the run read-only except for Scenario 14's temporary absence create-and-cleanup lifecycle, and do not generate automation source code.
 
@@ -52,28 +55,28 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 
 1. Select Campus User and verify Campus Dashboard or the approved Campus React Home, active role label, organization label, permitted navigation, and account control.
 2. Execute scenario **3**: React Home to Angular Daily Report.
-3. Execute scenario **7**: Angular Daily Report to global search for `report`, confirm the Search page and navigation elements display, then navigate to React Home. Do not validate search-result data or counts.
-4. Execute Campus-only scenario **20** exactly as defined in `campus-user-execution.md`: React Home → `Reports` → `Report Writer`; confirm the destination and primary controls load without modifying report data.
-5. Execute Campus-only scenario **21** exactly as defined in `campus-user-execution.md`: React Home → `Settings` → `My Profile` → `Account Settings`; validate the destination, return to the prior page, and return to Campus React Home without modifying account data.
-6. Execute scenario **14**. Prefer an existing absence read-only; if none is accessible, execute the temporary create-and-cleanup fallback in `tests/navigation/absence-tab.md` when this Campus context exposes safe creation and cleanup controls.
-7. Execute scenario **16** from a fresh login to this same account with Campus User reselected.
-8. Execute scenario **17** from another fresh login to this same account with Campus User reselected.
-9. Do not execute Campus scenario 8 or any Organization-only scenario while Campus User is active.
+3. Execute scenario **7**: Angular Daily Report to global search for `report`, confirm matching results or the explicit `0 results` state, then navigate to React Home.
+4. Execute scenario **14** read-only. If no existing absence is accessible, mark it **BLOCKED** and do not create data.
+5. Execute Campus-only scenarios **20 and 21** exactly as defined in `campus-user-execution.md`.
+6. Execute scenario **30** from the verified Campus User context.
+7. Execute logout scenarios **16, 17, and 37** independently from fresh logins to this same account with Campus User reselected.
+7. Do not execute Campus scenario 8 or any Organization-only scenario while Campus User is active.
 
 ## Role block 2 — Employee
 
 1. After the final Campus logout, authenticate again with this same account and select Employee.
 2. Verify Employee Home, active role label, organization label, permitted navigation, and account control.
-3. Execute Employee scenario **14**. Prefer an existing absence read-only; if none is available, create one temporary self-service absence for this configured test identity, validate it, delete/cancel it, and verify it is absent as documented in `tests/navigation/absence-tab.md`.
-4. Execute Employee scenario **16** from a fresh login with Employee reselected.
+3. Execute Employee scenario **14** read-only. If no existing absence is available, mark it **BLOCKED** and do not create data.
+4. Execute Employee scenario **31** from the verified Employee context.
+5. Execute logout scenarios **16 and 38** independently from fresh logins with Employee reselected.
 
 ## Role block 3 — Organization User
 
 1. After the Employee logout, authenticate again with this same account and select Organization User.
 2. Verify React Home, active role label, organization label, global navigation, and account control.
-3. Execute Organization User scenarios **1–15** in numerical and dependency-safe order.
-4. Execute logout scenarios **16, 17, 18, and 19** independently. Start each with a fresh login to this same account and reselect Organization User.
-5. In scenario 14, prefer an existing absence read-only. If none exists, execute the documented temporary create-and-cleanup fallback and do not pass until deletion is verified.
+3. Execute Organization User non-logout scenarios **1–15, 29, and 33–35** in numerical and dependency-safe order.
+4. Execute logout scenarios **16, 17, 18, 19, and 36** independently. Start each with a fresh login to this same account and reselect Organization User.
+5. In scenario 14, use an existing absence in unattended safe mode. If none exists, mark the scenario **BLOCKED** unless the invocation explicitly authorizes the documented create-and-cleanup fallback.
 
 For every switch, confirm the active role and destination together. A changed role label on the wrong portal does not pass the switch or the dependent scenario.
 
@@ -91,13 +94,13 @@ Follow `instructions/html-reporting-standard.md`. Create the role report under `
 The report must:
 
 - group results in Campus User → Employee → Organization User order;
-- include seven Campus outcomes, two Employee outcomes, and nineteen Organization User outcomes;
+- include nine Campus outcomes, four Employee outcomes, and twenty-four Organization User outcomes;
 - include screenshots and exact continuous-video ranges for every scenario;
 - keep duplicate scenario IDs separate by active role;
 - include numbered reproduction steps for every failure and exact reasons for blocked scenarios; and
 - omit credentials, personal data, and sensitive redirect/session data.
 
-The controller is **PASS** only when all three roles exist and all 28 role-specific scenario outcomes pass.
+The controller is **PASS** only when all three roles exist and all 37 role-specific scenario outcomes pass.
 
 ## Invocation
 

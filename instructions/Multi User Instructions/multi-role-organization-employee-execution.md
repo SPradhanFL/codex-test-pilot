@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Execute the clubbed Organization User and Employee scenario sets for an account that has both roles. Run all Organization User scenarios **1–19** first, then switch to Employee and run scenarios **14 and 16**. Shared scenarios 14 and 16 are repeated in both role contexts.
+Execute the clubbed Organization User and Employee scenario sets for an account that has both roles. Run Organization User scenarios **1–19, 29, and 33–36** first, then switch to Employee and run scenarios **14, 16, 31, and 38**. Shared scenarios 14 and 16 are repeated in both role contexts.
 
 ## Mandatory preparation
 
@@ -12,9 +12,13 @@ Read completely before opening the browser:
 2. `instructions/html-reporting-standard.md`
 3. `config/aes-stage.ml.<OrgId>.json`
 4. `instructions/Multi User Instructions/role-scenario-matrix.md`
-5. Every source test mapped to Organization User scenarios 1–19
+5. Every source test mapped to Organization User scenarios 1–19, 29, and 33–36
 6. `tests/navigation/absence-tab.md`
 7. `tests/logout/logout-navigation-matrix.md`
+8. `instructions/time-and-attendance-details.md`
+9. `tests/time-and-attendance/app-switcher-navigation-matrix.md`
+10. `tests/time-and-attendance/organization-user-navigation.md`
+11. `tests/time-and-attendance/logout-navigation-matrix.md`
 
 Execute directly in headed Chrome through Playwright MCP. Keep the run read-only except for Scenario 14's temporary absence create-and-cleanup lifecycle, and do not generate automation source code.
 
@@ -42,17 +46,18 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 ### Role block 1 — Organization User
 
 1. Select Organization User and verify React Home, the active role label, global navigation, and account control.
-2. Execute scenarios **1–15** from `role-scenario-matrix.md` in numerical and dependency-safe order.
-3. Execute Organization User logout scenarios **16, 17, 18, and 19** independently. Start each one with a fresh login to this same account and reselect Organization User.
-4. Record an independent result, screenshot set, and video range for each of the 19 Organization User scenarios.
+2. Execute non-logout scenarios **1–15, 29, and 33–35** from `role-scenario-matrix.md` in numerical and dependency-safe order.
+3. Execute Organization User logout scenarios **16, 17, 18, 19, and 36** independently. Start each one with a fresh login to this same account and reselect Organization User.
+4. Record an independent result, screenshot set, and video range for each of the 24 Organization User scenarios.
 
 ### Role block 2 — Employee
 
 1. After the final Organization User logout, authenticate again with this same account and select Employee.
 2. Verify Employee Home, the active role label, permitted navigation, and account control.
-3. Execute Employee scenario **14**. Prefer an existing absence read-only; if none is available, create one temporary self-service absence for this configured test identity, validate it, delete/cancel it, and verify it is absent as documented in `tests/navigation/absence-tab.md`.
-4. Execute Employee scenario **16** from a fresh login to this same account with Employee reselected.
-5. Record separate Employee results for scenarios 14 and 16 even though those IDs were already executed as Organization User.
+3. Execute Employee scenario **14** read-only. If no existing absence is available, mark it **BLOCKED** and do not create data.
+4. Execute Employee scenario **31** from the same verified Employee context.
+5. Execute Employee logout scenarios **16 and 38** independently from fresh logins to this same account with Employee reselected.
+6. Record separate Employee results for scenarios 14, 16, 31, and 38.
 
 ### Completion
 
@@ -64,7 +69,7 @@ Do not create, edit, approve, reconcile, assign, import, invite, or delete busin
 
 ## Reporting
 
-Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-organization-employee/` with role-grouped outcomes for all 19 Organization User scenarios and both Employee scenarios, screenshots of each role context, one continuous video, expected/actual results, and reproduction steps for failures. Do not collapse duplicate scenario IDs across roles and do not expose credentials or sensitive identity data.
+Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-organization-employee/` with role-grouped outcomes for all 24 Organization User scenarios and all four Employee scenarios, screenshots of each role context, one continuous video, expected/actual results, and reproduction steps for failures. Do not collapse duplicate scenario IDs across roles and do not expose passwords, session secrets, or sensitive identity data. The configured Stage test username is the sole narrow exception and is required only in the labeled HTML `Test username` fields for Time & Attendance.
 
 ## Invocation
 

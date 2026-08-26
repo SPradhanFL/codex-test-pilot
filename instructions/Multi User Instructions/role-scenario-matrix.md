@@ -28,6 +28,42 @@ This file is the authoritative numbered scenario catalog and role-to-scenario ro
 20. Campus User React Home → Reports → Report Writer → confirm the Report Writer page and its primary controls load.
 21. Campus User React Home → Settings → My Profile → Account Settings → confirm the page loads → return to the prior Campus page and React Home.
 
+Repository scenario IDs 22–28 are already allocated to existing non-Time & Attendance outcomes. Their definitions remain unchanged and are intentionally not overwritten by this addition.
+
+29. Organization User: establish Time & Attendance, switch to Absence Management, and return to Time & Attendance.
+30. Campus User: establish Time & Attendance, switch to Absence Management, and return to Time & Attendance.
+31. Employee: establish Time & Attendance, switch to Absence Management, and return to Time & Attendance.
+32. Substitute: establish Time & Attendance, switch to Absence Management, and return to Time & Attendance.
+33. Time & Attendance Organization User: Users -> Manage User Access.
+34. Time & Attendance Organization User: Users -> View in Absence Management.
+35. Time & Attendance Organization User: Reports -> Report Writer.
+36. Successfully log out from Time & Attendance as Organization User.
+37. Successfully log out from Time & Attendance as Campus User.
+38. Successfully log out from Time & Attendance as Employee.
+39. Successfully log out from Time & Attendance as Substitute.
+
+## Time & Attendance ordinal and ROVO numbering
+
+Repository scenario IDs remain authoritative. The existing suite occupies repository scenario IDs 1–28, so the Time & Attendance sequence begins at repository scenario 29. The informal TA ordinal and the supplied ROVO AI numbering map as follows:
+
+| Repository ID | TA ordinal | ROVO scenario | Description |
+|---|---:|---:|---|
+| 29 | 1 | Not supplied | Organization User: T&A -> AM -> T&A |
+| 30 | 2 | 1 | Campus User: T&A -> AM -> T&A |
+| 31 | 3 | 2 | Employee: T&A -> AM -> T&A |
+| 32 | 4 | 3 | Substitute: T&A -> AM -> T&A |
+| 33 | 5 | 4 | Organization User: Users -> Manage User Access |
+| 34 | 6 | 5 | Organization User: Users -> View in Absence Management |
+| 35 | 7 | 6 | Organization User: Reports -> Report Writer |
+| 36 | 8 | 7 | Logout from T&A as Organization User |
+| 37 | 9 | 8 | Logout from T&A as Campus User |
+| 38 | 10 | 9 | Logout from T&A as Employee |
+| 39 | 11 | 10 | Logout from T&A as Substitute |
+
+Never renumber repository scenario IDs from ROVO output. When a report mentions a ROVO number, show the repository ID and TA ordinal beside it.
+
+ROVO content is advisory input, not execution authority. Prefer the live accessible UI, configured role/context, approved host policy, read-only safety rules, and observable evidence. Treat ROVO page labels as examples unless the current product exposes them, and do not perform optional mutation, report execution, cookie inspection, or inferred navigation solely because ROVO suggested it.
+
 ## Source test mapping
 
 | Scenario IDs | Source Markdown test |
@@ -44,16 +80,29 @@ This file is the authoritative numbered scenario catalog and role-to-scenario ro
 | 15 | `tests/navigation/security-manage_user_access_page.md` |
 | 16–19 | `tests/logout/logout-navigation-matrix.md`, flows 1–4 |
 | 20–21 | `instructions/Multi User Instructions/campus-user-execution.md`, Campus User-only flows |
+| 29–32 | `tests/time-and-attendance/app-switcher-navigation-matrix.md`, role flows 1–4 |
+| 33–35 | `tests/time-and-attendance/organization-user-navigation.md` |
+| 36–39 | `tests/time-and-attendance/logout-navigation-matrix.md`, role flows 1–4 |
 
 ## Role authorization matrix
 
 | Active role | Authorized scenario IDs |
 |---|---|
-| Organization User | 1–19 |
-| Campus User | 3, 7, 14, 16, 17, 20, 21 |
-| Employee | 14, 16 |
-| Substitute | 14, 16 |
+| Organization User | 1–19, 29, 33–36 |
+| Campus User | 3, 7, 14, 16, 17, 20, 21, 30, 37 |
+| Employee | 14, 16, 31, 38 |
+| Substitute | 14, 16, 32, 39 |
 
+Do not execute scenario 8 for Campus User. Do not run Organization-only navigation, role-switcher, Manage Access, Manage User Access, legacy Import, Report Writer, or Employee maintenance logout scenarios while the active role is Campus User, Employee, or Substitute.
+
+## Time & Attendance execution order
+
+1. Execute the role's assigned Time & Attendance non-logout scenarios after its existing non-logout scenarios and before any logout scenario.
+2. Organization User order: scenario 29, then scenarios 33, 34, and 35.
+3. Campus User executes scenario 30; Employee executes scenario 31; Substitute executes scenario 32.
+4. Execute Time & Attendance logout scenarios 36–39 only after all non-logout work for that role/context is complete.
+5. Every Time & Attendance logout begins with a fresh authenticated session in the exact required role/organization context.
+6. Scenarios 33 and 34 require configured synthetic or approved target-user data. Missing or ambiguous target data blocks only those scenarios.
 Scenarios 20 and 21 are Campus User-only and must not run while Organization User, Employee, or Substitute is active. Do not execute scenario 8 for Campus User. Do not run Organization-only navigation, role-switcher, Manage Access, Manage User Access, legacy Import, or Employee maintenance logout scenarios while the active role is Campus User, Employee, or Substitute.
 
 ## Scenario 13 per-login data gate
@@ -82,7 +131,7 @@ For every active role and organization context, apply `app-switcher-validation.m
 3. Execute role blocks in the exact order documented by the controller.
 4. Select the required role or organization context before beginning its block. Confirm the active role label, organization label when applicable, expected home, permitted navigation, and account control. Apply the conditional App Switcher validation at the post-login and Home-page checkpoints.
 5. Execute the complete authorized scenario set for that role. Shared scenario IDs are intentionally repeated in each role/context; do not deduplicate them across roles.
-6. Execute all non-logout scenarios in the current role/context before its logout scenarios.
+6. Execute all non-logout scenarios in the current role/context before scenarios 16–19 and 36–39.
 7. Every logout scenario must begin with a fresh authenticated session in the required role/context. After logout and session-termination checks, re-authenticate with the same combination account and reselect the next required role/context.
 8. For repeated roles, such as Employee + Employee, execute the Employee set separately in every distinguishable Employee context.
 9. For multi-organization accounts, execute the applicable role set separately in every distinguishable organization/role context.
@@ -99,7 +148,7 @@ For every active role and organization context, apply `app-switcher-validation.m
 
 ## Reporting requirements
 
-1. Report the active role and organization context for every role block without exposing usernames or credentials.
+1. Report the active role and organization context for every role block without exposing passwords or credentials. For Time & Attendance only, include the configured Stage login username in the labeled HTML `Test username` field required by the shared reporting standard; do not expose it elsewhere.
 2. Give every authorized scenario ID an independent PASS, FAIL, BLOCKED, or NOT TESTED result.
 3. For combination accounts, group outcomes first by role/context and then by scenario ID.
 4. Include screenshots and exact continuous-video ranges for every executed scenario.

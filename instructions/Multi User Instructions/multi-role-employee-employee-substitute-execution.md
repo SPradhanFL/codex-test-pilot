@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Execute the clubbed scenario sets for two distinct Employee contexts and one Substitute context. Run Employee scenarios **14 and 16** separately in the first Employee context, repeat **14 and 16** in the second Employee context, then switch to Substitute and run **14 and 16** again.
+Execute the clubbed scenario sets for two distinct Employee contexts and one Substitute context. Run Employee scenarios **14, 16, 31, and 38** separately in each Employee context, then switch to Substitute and run scenarios **14, 16, 32, and 39**.
 
 ## Mandatory preparation
 
@@ -14,6 +14,9 @@ Read completely before opening the browser:
 4. `instructions/Multi User Instructions/role-scenario-matrix.md`
 5. `tests/navigation/absence-tab.md`
 6. `tests/logout/logout-navigation-matrix.md`
+7. `instructions/time-and-attendance-details.md`
+8. `tests/time-and-attendance/app-switcher-navigation-matrix.md`
+9. `tests/time-and-attendance/logout-navigation-matrix.md`
 
 Execute directly in headed Chrome through Playwright MCP. Keep the run read-only except for Scenario 14's temporary absence create-and-cleanup lifecycle, and do not generate automation source code.
 
@@ -41,30 +44,30 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 ### Context block 1 — first Employee
 
 1. Select the first Employee context and verify Employee Home, its active context, permitted navigation, and account control.
-2. Execute Employee scenario **14** read-only.
-3. Execute Employee scenario **16** from a fresh session with the first Employee context reselected.
+2. Execute Employee scenarios **14 and 31** read-only.
+3. Execute logout scenarios **16 and 38** independently from fresh sessions with the first Employee context reselected.
 
 ### Context block 2 — second Employee
 
 1. Re-authenticate with the same account and select the second Employee context.
 2. Confirm it is distinguishable from the first and does not show stale content from the first context.
-3. Execute Employee scenario **14** read-only.
-4. Execute Employee scenario **16** from a fresh session with the second Employee context reselected.
+3. Execute Employee scenarios **14 and 31** read-only.
+4. Execute logout scenarios **16 and 38** independently from fresh sessions with the second Employee context reselected.
 
 ### Context block 3 — Substitute
 
 1. Re-authenticate with the same account and select Substitute.
 2. Verify Substitute Home, the active context, permitted navigation, and account control. A Substitute label on Employee Home does not satisfy this check.
-3. Execute Substitute scenario **14** using the Substitute-specific four-view validation: Available Jobs, Scheduled Jobs/Schedule, Past Jobs/History Jobs, and Non Work Days. Do not require an individual job-detail page and do not accept, reject, cancel, create, assign, or change work.
-4. Execute Substitute scenario **16** from a fresh session with Substitute reselected.
+3. Execute Substitute scenarios **14 and 32** read-only without accepting, rejecting, canceling, or changing work.
+4. Execute logout scenarios **16 and 39** independently from fresh sessions with Substitute reselected.
 
-For each Employee context, prefer an existing viewable absence and use Scenario 14's temporary absence fallback only when safe creation, unique reopening, and cleanup are supported. For the Substitute context, never run the fallback and never require an individual job; validate the four required schedule/history views, accepting valid empty states. Mark only the affected scenario **BLOCKED** when its role-specific prerequisite is unavailable, then continue to scenario 16. Record all six scenario outcomes separately; do not deduplicate scenario IDs across contexts.
+For every context, if no existing viewable absence, assignment, or job is available, mark only scenario 14 **BLOCKED** and continue with independent scenarios. Record all twelve scenario outcomes separately; do not deduplicate scenario IDs across contexts.
 
 Do not accept, reject, cancel, create, edit, assign, save, or delete an absence, job, employee, or substitute record except for an Employee-context Scenario 14 exact temporary absence create-and-cleanup lifecycle. Never create, accept, or assign Substitute work merely to create evidence.
 
 ## Reporting
 
-Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-employee-employee-substitute/`. Group results by first Employee, second Employee, and Substitute; include separate outcomes for scenarios 14 and 16 in each context, evidence for all contexts, one continuous video, expected/actual results, and failure reproduction steps without personal data.
+Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-employee-employee-substitute/`. Group results by first Employee, second Employee, and Substitute; include all four assigned outcomes in each context, evidence for all contexts, one continuous video, expected/actual results, and failure reproduction steps without personal data.
 
 ## Invocation
 
