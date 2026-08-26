@@ -43,6 +43,8 @@ Do not add `--extension`, `--user-data-dir`, `--storage-state`, `--shared-browse
 
 At each run boundary, call Playwright MCP's browser-close operation before the first navigation and again after final browser evidence is captured. In isolated mode, closing the browser discards the session and all of its storage state; the next navigation starts a clean profile.
 
+If the disposable browser is unavailable after a successful preflight, retry the project-scoped browser at least three times after the initial failure (four total attempts). Recheck the Playwright MCP backend and close any partial disposable session before each retry when possible. Only mark the run **BLOCKED** after all four attempts fail, and never substitute the connected persistent Chrome-extension profile.
+
 Alternatively, register an equivalent isolated server through the CLI:
 
 ```powershell
