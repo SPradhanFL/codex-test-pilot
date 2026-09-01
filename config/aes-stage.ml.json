@@ -1,0 +1,67 @@
+{
+  "environment": "stageML",
+  "application": "AES Stage ML",
+  "organizationId": "140462",
+  "url": "https://login.stage-k12.ss.frontlineeducation.com/",
+  "requiredUrlContains": "stage-k12.ss",
+  "username": "vtqamail+SSDManualSetupOU86ML@dev.frontlineed.com",
+  "testUsernames": {
+    "org_username": "vtqamail+SSDManualSetupOU86ML@dev.frontlineed.com",
+    "campusUser": "",
+    "employee": "vtqamail+SSD_EmployeeUserML@dev.frontlineed.com",
+    "substitute": "vtqamail+SSDManualSetupSub86ML@dev.frontlineed.com",
+    "userRoleSwitcher": "vtqamail+multicuempssdML@dev.frontlineed.com",
+    "multiRoleOrgEmployee": "vtqamail+stageSSDManualSetup86MU@dev.frontlineed.com",
+    "multiRoleEmployeeEmployeeSubstitute": "vtqamail+stageSSDManualSetup86MRemp@dev.frontlineed.com",
+    "multiOrgEmployeeSubstitute": "vtqamail+stageMOSSD0@dev.frontlineed.com",
+    "multiOrgEmployeeEmployee": "vtqamail+stageSSDMultiOrgEMPEMP@dev.frontlineed.com",
+    "multiOrgOrgCampus": "vtqamail+stageSSDMultiOrgOUCU@dev.frontlineed.com"
+  },
+  "enabledControllers": [
+    "organization-user-execution.md",
+    "employee-user-execution.md",
+    "substitute-user-execution.md",
+    "multi-role-campus-employee-organization-execution.md",
+    "multi-role-organization-employee-execution.md",
+    "multi-role-employee-employee-substitute-execution.md",
+    "multi-org-employee-substitute-execution.md",
+    "multi-org-employee-employee-execution.md",
+    "multi-org-organization-campus-execution.md"
+  ],
+  "scenarioData": {
+    "manageAccess": {
+      "enabled": false,
+      "unconfiguredLoginStatus": "NOT TESTED",
+      "reason": "No safe Manage Access employee is configured for this organization or login."
+    }
+  },
+  "approvedHosts": [
+    "login.stage-k12.ss.frontlineeducation.com",
+    "stage-k12.ss.frontlineeducation.com",
+    "time.stage-k12.ss.frontlineeducation.com",
+    "absence.stage-k12.ss.frontlineeducation.com",
+    "absence-adminweb.stage-k12.ss.frontlineeducation.com",
+    "absence-adminwebui.stage-k12.ss.frontlineeducation.com",
+    "fl-admin.stage-k12.ss.frontlineeducation.com",
+    "absence-emp.stage-k12.ss.frontlineeducation.com",
+    "absence-sub.stage-k12.ss.frontlineeducation.com",
+    "aesstage.flqa.net",
+    "idgatewayawsstage.flqa.net",
+    "adminwebstage2.flqa.net",
+    "aesempstage.flqa.net",
+    "aessubstage.flqa.net",
+    "supersuitawsstage.flqa.net",
+    "vtstage.flqa.net",
+    "adminwebreact-stage.flqa.net"
+  ],
+  "prohibitedHosts": [
+    "qaestar.flqa.net"
+  ],
+  "timeAttendanceScenarioContextSelections": {
+    "29": {
+      "organization": "Manualsetup86 SSD",
+      "expectedDestinationRole": "Organization User",
+      "allowKnownParentUserResolution": true
+    }
+  }
+}
