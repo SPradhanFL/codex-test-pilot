@@ -28,6 +28,7 @@ Read completely before opening the browser:
 10. `tests/time-and-attendance/app-switcher-navigation-matrix.md`
 11. `tests/time-and-attendance/organization-user-navigation.md`
 12. `tests/time-and-attendance/logout-navigation-matrix.md`
+13. `tests/time-and-attendance/multi-role-multi-org-context-matrix.md`
 
 Execute directly in headed Chrome through Playwright MCP. Keep the run read-only except for Scenario 14's temporary absence create-and-cleanup lifecycle, and do not generate automation source code.
 
@@ -89,18 +90,20 @@ For every switch, confirm the active role and destination together. A changed ro
 
 ## Reporting
 
+Before reporting, execute controller-level scenarios **40, 41, 42, and 46** once for this combination account. Use Campus User -> Employee -> Organization User as the required context sequence. Include both forward switches and the return to Campus User, preserve the newly selected role through the TA -> AM -> TA round-trip, and execute scenario 46 last. These four outcomes are additional controller-level results and must not be duplicated inside the three role blocks.
+
 Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-campus-employee-organization/`.
 
 The report must:
 
 - group results in Campus User → Employee → Organization User order;
-- include nine Campus outcomes, four Employee outcomes, and twenty-four Organization User outcomes;
+- include nine Campus outcomes, four Employee outcomes, twenty-four Organization User outcomes, and four controller-level context outcomes;
 - include screenshots and exact continuous-video ranges for every scenario;
 - keep duplicate scenario IDs separate by active role;
 - include numbered reproduction steps for every failure and exact reasons for blocked scenarios; and
 - omit credentials, personal data, and sensitive redirect/session data.
 
-The controller is **PASS** only when all three roles exist and all 37 role-specific scenario outcomes pass.
+The controller is **PASS** only when all three roles exist and all 41 role-specific and controller-level scenario outcomes pass.
 
 ## Invocation
 

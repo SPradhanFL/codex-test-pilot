@@ -8,6 +8,7 @@ Use this directory as the authoritative scenario and credential-routing source f
 - Passwords: `.secrets/aes-stage.ml.<OrgId>.credentials.json`
 - Report format: `instructions/html-reporting-standard.md`
 - Role/scenario routing: `instructions/Multi User Instructions/role-scenario-matrix.md`
+- TA multi-context scope decision: `instructions/Multi User Instructions/time-and-attendance-multi-context-scope.md`
 - Conditional cross-product switching: `instructions/Multi User Instructions/app-switcher-validation.md`
 - Stage ML login-to-application handoff: `instructions/Multi User Instructions/stage-ml-application-launch.md`
 - Full-browser URL evidence and warning policy: `instructions/Multi User Instructions/url-evidence-validation.md`
@@ -46,17 +47,19 @@ The configuration's `enabledControllers` array is authoritative. Organization `1
    - Employee: scenarios 14, 16, 31, and 38
    - Substitute: scenarios 14, 16, 32, and 39
 4. For a combination account, execute each role/context block in the controller's order. Repeat shared scenario IDs in every applicable role/context; do not deduplicate them.
+   - Every `multi-role-*` controller also executes controller-level TA scenarios 40, 41, 42, and 46 once.
+   - Every `multi-org-*` controller also executes controller-level TA scenarios 43, 44, 45, and 46 once.
 5. Complete each logout's session-termination checks, then re-authenticate with the same combination account and select the next required role/context.
 6. Do not fall back to another identity when a username, password, role, organization, or permission is missing.
 7. A controller's read-only restriction overrides optional creation or cleanup branches in a shared scenario.
 8. Record role and organization labels only to the extent necessary to prove context switching; omit credentials and personal data.
 9. After every successful login/context selection and at the Home-page top-left checkpoint, apply `app-switcher-validation.md`. Execute its switching loops only when an App Switcher is visible.
 10. Execute the numbered Time & Attendance scenarios from `tests/time-and-attendance/` after existing non-logout scenarios and before logout scenarios. These numbered TA scenarios are required role coverage and are separate from the conditional AM-origin App Switcher workflow.
-11. Use the authoritative Time & Attendance numbering map in `role-scenario-matrix.md`: repository scenario 30 / TA ordinal 2 is ROVO scenario 1, and the mapping continues through repository scenario 39 / TA ordinal 11 / ROVO scenario 10.
+11. Use the authoritative Time & Attendance numbering map in `role-scenario-matrix.md`: repository scenario 30 / TA ordinal 2 is ROVO scenario 1, the supplied ROVO mapping continues through repository scenario 39 / TA ordinal 11 / ROVO scenario 10, and repository scenarios 40-46 are the reviewed multi-context additions.
 12. Every Time & Attendance report must include credential-free video evidence and a sanitized redirect sequence as defined in `instructions/time-and-attendance-details.md`.
-10. After Passport authentication, apply `stage-ml-application-launch.md`. Treat the `absence.stage-k12.ss.frontlineeducation.com` launcher as intermediate, rescan Chrome tabs after activating the Absence Management tile, and continue from the approved responsive tab whose URL contains `requiredUrlContains`.
-11. At every workflow's final evidence checkpoint, apply `url-evidence-validation.md`, capture the complete Chrome window including the address bar, and report a configured URL mismatch as a separate warning unless it also causes a functional failure.
-12. Before any controller finalizes a **FAIL**, apply the shared 60-second failure-observation policy in `instructions/project-instructions.md`. Poll the expected UI state for the full interval, capture evidence at or after timeout, and state the 60-second expiration in the failed workflow. Do not delay or reclassify genuine BLOCKED or NOT TESTED prerequisites.
+13. After Passport authentication, apply `stage-ml-application-launch.md`. Treat the `absence.stage-k12.ss.frontlineeducation.com` launcher as intermediate, rescan Chrome tabs after activating the Absence Management tile, and continue from the approved responsive tab whose URL contains `requiredUrlContains`.
+14. At every workflow's final evidence checkpoint, apply `url-evidence-validation.md`, capture the complete Chrome window including the address bar, and report a configured URL mismatch as a separate warning unless it also causes a functional failure.
+15. Before any controller finalizes a **FAIL**, apply the shared 60-second failure-observation policy in `instructions/project-instructions.md`. Poll the expected UI state for the full interval, capture evidence at or after timeout, and state the 60-second expiration in the failed workflow. Do not delay or reclassify genuine BLOCKED or NOT TESTED prerequisites.
 
 ## Run every controller
 

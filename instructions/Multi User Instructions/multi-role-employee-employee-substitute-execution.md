@@ -17,6 +17,7 @@ Read completely before opening the browser:
 7. `instructions/time-and-attendance-details.md`
 8. `tests/time-and-attendance/app-switcher-navigation-matrix.md`
 9. `tests/time-and-attendance/logout-navigation-matrix.md`
+10. `tests/time-and-attendance/multi-role-multi-org-context-matrix.md`
 
 Execute directly in headed Chrome through Playwright MCP. Keep the run read-only except for Scenario 14's temporary absence create-and-cleanup lifecycle, and do not generate automation source code.
 
@@ -67,7 +68,9 @@ Do not accept, reject, cancel, create, edit, assign, save, or delete an absence,
 
 ## Reporting
 
-Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-employee-employee-substitute/`. Group results by first Employee, second Employee, and Substitute; include all four assigned outcomes in each context, evidence for all contexts, one continuous video, expected/actual results, and failure reproduction steps without personal data.
+Before reporting, execute controller-level scenarios **40, 41, 42, and 46** once for this combination account. Use first Employee -> second Employee -> Substitute as the required context sequence. Scenario 40 must prove the two Employee entries have a stable visible differentiator; an ambiguous duplicate selected only by position is **BLOCKED**. Preserve the selected context through the TA -> AM -> TA round-trip and execute scenario 46 last. Do not duplicate these four results inside the context blocks.
+
+Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-employee-employee-substitute/`. Group results by first Employee, second Employee, and Substitute; include all four assigned outcomes in each context plus four controller-level context outcomes, evidence for all contexts, one continuous video, expected/actual results, and failure reproduction steps without personal data.
 
 ## Invocation
 

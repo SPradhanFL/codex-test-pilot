@@ -12,11 +12,12 @@ Before opening the browser, read completely:
 2. `instructions/html-reporting-standard.md`
 3. `instructions/Multi User Instructions/README.md`
 4. `instructions/Multi User Instructions/role-scenario-matrix.md`
-5. `instructions/Multi User Instructions/app-switcher-validation.md`
-6. `instructions/Multi User Instructions/stage-ml-application-launch.md`
-7. `instructions/Multi User Instructions/url-evidence-validation.md`
-8. `config/aes-stage.ml.<OrgId>.json`
-9. Every discovered `instructions/Multi User Instructions/*-execution.md` controller
+5. `instructions/Multi User Instructions/time-and-attendance-multi-context-scope.md`
+6. `instructions/Multi User Instructions/app-switcher-validation.md`
+7. `instructions/Multi User Instructions/stage-ml-application-launch.md`
+8. `instructions/Multi User Instructions/url-evidence-validation.md`
+9. `config/aes-stage.ml.<OrgId>.json`
+10. Every discovered `instructions/Multi User Instructions/*-execution.md` controller
 
 Read passwords only from `.secrets/aes-stage.ml.<OrgId>.credentials.json`, resolving only the keys required by the enabled controllers. Never display or copy a resolved password. If one selected account is missing a role, organization, or permission after readiness passes, generate its **BLOCKED** role/login-combination report and continue with the next account.
 

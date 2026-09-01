@@ -17,6 +17,7 @@ Read completely before opening the browser:
 7. `instructions/time-and-attendance-details.md`
 8. `tests/time-and-attendance/app-switcher-navigation-matrix.md`
 9. `tests/time-and-attendance/logout-navigation-matrix.md`
+10. `tests/time-and-attendance/multi-role-multi-org-context-matrix.md`
 
 Execute directly in headed Chrome through Playwright MCP. Keep the run read-only except for Scenario 14's temporary absence create-and-cleanup lifecycle, and do not generate automation source code.
 
@@ -53,7 +54,9 @@ Do not create, accept, reject, cancel, edit, assign, save, or delete business da
 
 ## Reporting
 
-Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-org-employee-substitute/`. Group results by organization and role, with all four assigned outcomes for every context. Report organization labels only to the extent needed to prove context separation; omit personal and secret data. Include screenshots, one continuous video, expected/actual results, and failure reproduction steps.
+Before reporting, execute controller-level scenarios **43, 44, 45, and 46** once for this combination account across every required Employee and Substitute organization context. Verify both organization data isolation and destination-role validity, preserve the selected organization/role through the TA -> AM -> TA round-trip, and execute scenario 46 last. Do not duplicate these four results inside the per-context blocks.
+
+Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-org-employee-substitute/`. Group results by organization and role, with all four assigned outcomes for every context plus four controller-level context outcomes. Report organization labels only to the extent needed to prove context separation; omit personal and secret data. Include screenshots, one continuous video, expected/actual results, and failure reproduction steps.
 
 ## Invocation
 
