@@ -19,6 +19,7 @@ Read completely before opening the browser:
 9. `tests/time-and-attendance/app-switcher-navigation-matrix.md`
 10. `tests/time-and-attendance/organization-user-navigation.md`
 11. `tests/time-and-attendance/logout-navigation-matrix.md`
+12. `tests/time-and-attendance/multi-role-multi-org-context-matrix.md`
 
 Execute directly in headed Chrome through Playwright MCP. Keep the run read-only except for Scenario 14's temporary absence create-and-cleanup lifecycle, and do not generate automation source code.
 
@@ -69,7 +70,9 @@ Do not create, edit, approve, reconcile, assign, import, invite, or delete busin
 
 ## Reporting
 
-Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-organization-employee/` with role-grouped outcomes for all 24 Organization User scenarios and all four Employee scenarios, screenshots of each role context, one continuous video, expected/actual results, and reproduction steps for failures. Do not collapse duplicate scenario IDs across roles and do not expose passwords, session secrets, or sensitive identity data. The configured Stage test username is the sole narrow exception and is required only in the labeled HTML `Test username` fields for Time & Attendance.
+Before reporting, execute controller-level scenarios **40, 41, 42, and 46** once for this combination account. Use Organization User -> Employee as the required context sequence, switch back to Organization User to prove consistency, preserve the newly selected role through the TA -> AM -> TA round-trip, and execute scenario 46 last. Do not duplicate these four results in either role block.
+
+Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-organization-employee/` with role-grouped outcomes for all 24 Organization User scenarios, all four Employee scenarios, and four controller-level context scenarios, screenshots of each role context, one continuous video, expected/actual results, and reproduction steps for failures. Do not collapse duplicate scenario IDs across roles and do not expose passwords, session secrets, or sensitive identity data. The configured Stage test username is the sole narrow exception and is required only in the labeled HTML `Test username` fields for Time & Attendance.
 
 ## Invocation
 

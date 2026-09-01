@@ -10,18 +10,24 @@
     "campusUser": "vtqamail+stage140463CU@dev.frontlineed.com",
     "employee": "vtqamail+stage140463Emp01@dev.frontlineed.com",
     "substitute": "vtqamail+stage140463Sub01@dev.frontlineed.com",
-    "userRoleSwitcher": "",
-    "multiRoleOrgEmployee": "",
-    "multiRoleEmployeeEmployeeSubstitute": "",
-    "multiOrgEmployeeSubstitute": "",
-    "multiOrgEmployeeEmployee": "",
-    "multiOrgOrgCampus": ""
+    "userRoleSwitcher": "vtqamail+stage140463CU_OU_EMP@dev.frontlineed.com",
+    "multiRoleOrgEmployee": "vtqamail+stage140463CU_OU_EMP@dev.frontlineed.com",
+    "multiRoleEmployeeEmployeeSubstitute": "vtqamail+stageSSD1SubEmpMultiRoles@dev.frontlineed.com",
+    "multiOrgEmployeeSubstitute": "vtqamail+stageMOSSD1_2@dev.frontlineed.com",
+    "multiOrgEmployeeEmployee": "vtqamail+stageMOEMPEMPSSD01_2@dev.frontlineed.com",
+    "multiOrgOrgCampus": "vtqamail+MOOU1CU2SSD@dev.frontlineed.com"
   },
   "enabledControllers": [
     "organization-user-execution.md",
     "campus-user-execution.md",
     "employee-user-execution.md",
-    "substitute-user-execution.md"
+    "substitute-user-execution.md",
+    "multi-role-campus-employee-organization-execution.md",
+    "multi-role-organization-employee-execution.md",
+    "multi-role-employee-employee-substitute-execution.md",
+    "multi-org-employee-substitute-execution.md",
+    "multi-org-employee-employee-execution.md",
+    "multi-org-organization-campus-execution.md"
   ],
   "scenarioData": {
     "manageAccess": {
@@ -30,6 +36,14 @@
       "employeeFirstName": "Employee_sub",
       "employeeLastName": "Employee_sub_last",
       "unconfiguredLoginStatus": "NOT TESTED"
+    },
+    "timeAttendanceOrganizationUserNavigation": {
+      "enabled": true,
+      "loginUsernameKey": "org_username",
+      "searchIdentifier": "Employee_sub_last",
+      "expectedDisplayName": "Employee_sub_last, Employee_sub",
+      "expectedOrganizationId": "140463",
+      "expectedRoleUserType": "substitute"
     }
   },
   "approvedHosts": [
@@ -47,6 +61,7 @@
     "supersuitawsstage.flqa.net",
     "vtstage.flqa.net",
     "adminwebreact-stage.flqa.net",
-    "time.stage-k12.ss.frontlineeducation.com"
+    "time.stage-k12.ss.frontlineeducation.com",
+    "fl-admin.stage-k12.ss.frontlineeducation.com"
   ]
 }

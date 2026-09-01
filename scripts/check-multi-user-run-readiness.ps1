@@ -19,7 +19,8 @@ $timeAttendanceFiles = @(
     (Join-Path $workspaceRoot 'instructions\time-and-attendance-details.md'),
     (Join-Path $workspaceRoot 'tests\time-and-attendance\app-switcher-navigation-matrix.md'),
     (Join-Path $workspaceRoot 'tests\time-and-attendance\organization-user-navigation.md'),
-    (Join-Path $workspaceRoot 'tests\time-and-attendance\logout-navigation-matrix.md')
+    (Join-Path $workspaceRoot 'tests\time-and-attendance\logout-navigation-matrix.md'),
+    (Join-Path $workspaceRoot 'tests\time-and-attendance\multi-role-multi-org-context-matrix.md')
 )
 $timelineScriptPaths = @(
     (Join-Path $workspaceRoot 'scripts\write-multi-user-video-event.ps1'),

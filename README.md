@@ -201,7 +201,7 @@ The standard provides a summary dashboard, linked scenario-detail pages, expecte
 
 Use `instructions/multi-user-full-suite-execution.md` with an explicit organization ID to execute the controllers enabled in `config/aes-stage.ml.<OrgId>.json`. The catalog contains ten possible controllers; each organization configuration enables only the login combinations available for that organization.
 
-Role coverage is defined in `instructions/Multi User Instructions/role-scenario-matrix.md`: Organization User runs scenarios 1–19; Campus User runs 3, 7, 14, 16, 17, 20, and 21, including Campus-only Report Writer and Account Settings navigation; and Employee/Substitute run 14 and 16. Combination controllers execute each role/context separately and repeat shared scenario IDs instead of deduplicating them.
+Role coverage is defined in `instructions/Multi User Instructions/role-scenario-matrix.md`: Organization User runs scenarios 1–19; Campus User runs 3, 7, 14, 16, 17, 20, and 21, including Campus-only Report Writer and Account Settings navigation; and Employee/Substitute run 14 and 16. Combination controllers execute each role/context separately and repeat shared scenario IDs instead of deduplicating them. Multi-role controllers additionally execute TA scenarios 40, 41, 42, and 46 once per account; multi-organization controllers execute TA scenarios 43, 44, 45, and 46 once per account.
 
 Choose the organization by passing only its ID to the readiness and start commands. The organization configuration supplies the enabled login combinations:
 

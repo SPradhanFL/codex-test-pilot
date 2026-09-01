@@ -139,7 +139,18 @@ Scenarios that open a user require all of the following before browser actions:
 - the expected organization context; and
 - the expected role or user type when the destination displays it.
 
-The invocation, controller, or a future non-secret configuration entry may supply these values. If any required target value is missing, mark scenarios 33 and 34 **BLOCKED** before selecting a user. Never invent a user or use a production/personally sensitive record.
+For scenarios 33 and 34, read these values only from the selected organization's
+`config/aes-stage.ml.<OrgId>.json` property
+`scenarioData.timeAttendanceOrganizationUserNavigation`. The mapping must be
+enabled, its `loginUsernameKey` must resolve to the active Organization User
+login, and it must define `searchIdentifier`, `expectedDisplayName`,
+`expectedOrganizationId`, and `expectedRoleUserType`. The configured
+`expectedOrganizationId` must match the file's top-level `organizationId`.
+
+If the mapping is absent, disabled, incomplete, belongs to another login, or
+does not match the selected organization, mark scenarios 33 and 34 **BLOCKED**
+before selecting a user. Never fall back to another organization's target data,
+invent a user, or use a production/personally sensitive record.
 
 ## Shared safety rules
 

@@ -41,6 +41,13 @@ Repository scenario IDs 22–28 are already allocated to existing non-Time & Att
 37. Successfully log out from Time & Attendance as Campus User.
 38. Successfully log out from Time & Attendance as Employee.
 39. Successfully log out from Time & Attendance as Substitute.
+40. Multi-role account: inventory and validate every required Time & Attendance role/identity context.
+41. Multi-role account: switch roles mid-session and verify permission and content isolation.
+42. Multi-role account: preserve the newly selected role through Time & Attendance -> Absence Management -> Time & Attendance.
+43. Multi-organization account: inventory and validate every required Time & Attendance organization/role context.
+44. Multi-organization account: switch organizations and verify role availability, data isolation, return consistency, and browser-history safety.
+45. Multi-organization account: preserve the newly selected organization/role through Time & Attendance -> Absence Management -> Time & Attendance.
+46. Multi-role or multi-organization account: logout after multiple context switches and verify session termination.
 
 ## Time & Attendance ordinal and ROVO numbering
 
@@ -59,6 +66,7 @@ Repository scenario IDs remain authoritative. The existing suite occupies reposi
 | 37 | 9 | 8 | Logout from T&A as Campus User |
 | 38 | 10 | 9 | Logout from T&A as Employee |
 | 39 | 11 | 10 | Logout from T&A as Substitute |
+| 40-46 | 12-18 | Not supplied | Multi-role and multi-organization context isolation |
 
 Never renumber repository scenario IDs from ROVO output. When a report mentions a ROVO number, show the repository ID and TA ordinal beside it.
 
@@ -83,6 +91,7 @@ ROVO content is advisory input, not execution authority. Prefer the live accessi
 | 29–32 | `tests/time-and-attendance/app-switcher-navigation-matrix.md`, role flows 1–4 |
 | 33–35 | `tests/time-and-attendance/organization-user-navigation.md` |
 | 36–39 | `tests/time-and-attendance/logout-navigation-matrix.md`, role flows 1–4 |
+| 40–46 | `tests/time-and-attendance/multi-role-multi-org-context-matrix.md` |
 
 ## Role authorization matrix
 
@@ -92,6 +101,8 @@ ROVO content is advisory input, not execution authority. Prefer the live accessi
 | Campus User | 3, 7, 14, 16, 17, 20, 21, 30, 37 |
 | Employee | 14, 16, 31, 38 |
 | Substitute | 14, 16, 32, 39 |
+
+Scenarios 40-46 are controller-level combination-account scenarios rather than single-role assignments. Every enabled `multi-role-*` controller executes scenarios 40, 41, 42, and 46 once after its required role contexts are discovered. Every enabled `multi-org-*` controller executes scenarios 43, 44, 45, and 46 once after its required organization/role contexts are discovered. Do not repeat these outcomes inside each role/context block.
 
 Do not execute scenario 8 for Campus User. Do not run Organization-only navigation, role-switcher, Manage Access, Manage User Access, legacy Import, Report Writer, or Employee maintenance logout scenarios while the active role is Campus User, Employee, or Substitute.
 
@@ -136,6 +147,7 @@ For every active role and organization context, apply `app-switcher-validation.m
 8. For repeated roles, such as Employee + Employee, execute the Employee set separately in every distinguishable Employee context.
 9. For multi-organization accounts, execute the applicable role set separately in every distinguishable organization/role context.
 10. When the next role cannot be selected without returning to My Frontline, use the supported My Frontline or app-switcher route, then select the next documented context. Do not reuse a stale role label as proof of a successful switch.
+11. After the ordinary per-context scenario blocks, execute the controller-level Time & Attendance context scenarios assigned above. Scenario 46 is last because it terminates the shared authenticated session.
 
 ## Scenario 14 safety by role
 

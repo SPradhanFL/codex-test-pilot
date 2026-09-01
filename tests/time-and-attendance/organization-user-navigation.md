@@ -27,12 +27,22 @@ This file is read-only. Do not edit a user, change access, send an invitation, r
 
 ## Shared target-user navigation
 
+For scenarios 33 and 34, read the target only from
+`scenarioData.timeAttendanceOrganizationUserNavigation` in the selected
+`config/aes-stage.ml.<OrgId>.json`.
+
+Proceed only when the mapping is enabled, `loginUsernameKey` resolves to the
+active Organization User login, all expected target fields are present, and
+`expectedOrganizationId` matches the selected configuration's top-level
+`organizationId`. If any condition fails, mark scenarios 33 and 34 **BLOCKED**
+before searching. Do not fall back to another organization's target data.
+
 1. From Time & Attendance, select the visible `Users` navigation.
    - Expected: A responsive user search or list page opens.
-2. Search using the configured synthetic or approved user identifier.
-   - Expected: The search result uniquely identifies the configured target.
+2. Search using the configured `searchIdentifier`.
+   - Expected: The search result uniquely identifies the configured `expectedDisplayName`.
 3. Verify the target's non-sensitive expected attributes before continuing.
-   - Expected: Display identity, organization, and role/type match the configured target data.
+   - Expected: Display name, organization, and role/user type match `expectedDisplayName`, `expectedOrganizationId`, and `expectedRoleUserType` from the selected organization configuration.
 
 If the result is absent, ambiguous, or mismatched, stop the affected scenario. Do not select another user.
 

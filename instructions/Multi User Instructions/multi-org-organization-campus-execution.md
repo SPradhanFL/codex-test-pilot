@@ -20,6 +20,7 @@ Read completely before opening the browser:
 10. `tests/time-and-attendance/app-switcher-navigation-matrix.md`
 11. `tests/time-and-attendance/organization-user-navigation.md`
 12. `tests/time-and-attendance/logout-navigation-matrix.md`
+13. `tests/time-and-attendance/multi-role-multi-org-context-matrix.md`
 
 Execute directly in headed Chrome through Playwright MCP. Keep the run read-only except for Scenario 14's temporary absence create-and-cleanup lifecycle, and do not generate automation source code.
 
@@ -72,7 +73,9 @@ Do not create, edit, approve, reconcile, import, invite, or delete business data
 
 ## Reporting
 
-Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-org-organization-campus/`. Group results by organization and role, include all 24 outcomes for every Organization User context and all nine outcomes for every Campus User context, screenshots, one continuous video, expected/actual results, and failure reproduction steps without credentials or personal data.
+Before reporting, execute controller-level scenarios **43, 44, 45, and 46** once for this combination account across every required Organization User and Campus User organization context. Verify role availability changes together with organization changes, preserve the selected organization/role through the TA -> AM -> TA round-trip, and execute scenario 46 last. These four outcomes are additional controller-level results and must not be duplicated inside each organization block.
+
+Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-org-organization-campus/`. Group results by organization and role, include all 24 outcomes for every Organization User context, all nine outcomes for every Campus User context, and four controller-level context outcomes, screenshots, one continuous video, expected/actual results, and failure reproduction steps without credentials or personal data.
 
 ## Invocation
 
