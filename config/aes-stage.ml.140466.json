@@ -1,0 +1,170 @@
+{
+  "environment": "stageIDM",
+  "application": "AES Stage IDM",
+  "organizationId": "140466",
+  "url": "https://aesstage.flqa.net",
+  "applicationHubUrl": "https://aesstage.flqa.net",
+  "authenticationMode": "IDM",
+  "applicationLaunchMode": "direct",
+  "requiredUrlContains": "flqa.net",
+  "browserIsolation": {
+    "required": true,
+    "controlSurface": "playwright-mcp",
+    "browser": "chrome",
+    "profileMode": "isolated-in-memory",
+    "dedicatedWindow": true,
+    "reuseExistingTabs": false,
+    "reuseExistingSessionState": false,
+    "initialControlledTabCount": 1,
+    "requireContextReset": true,
+    "requirePageControlProbe": true
+  },
+  "username": "SSDManualSetup86_4",
+  "testUsernames": {
+    "org_username": "SSDManualSetup86_4",
+    "campusUser": "SSD4_CampusUser2",
+    "employee": "SSD4_EmployeeUser",
+    "substitute": "SSD4_SubstituteUser",
+    "userRoleSwitcher": "ssd3_orgcampusemp",
+    "multiRoleOrgEmployee": "ssd4_organdempuser",
+    "multiRoleEmployeeEmployeeSubstitute": "",
+    "multiOrgEmployeeSubstitute": "",
+    "multiOrgEmployeeEmployee": "",
+    "multiOrgOrgCampus": "",
+    "multiRoleEmployeeSubstitute": "ssd4_empandsubs",
+    "multiRoleOrganizationEmployeeSubstitute": "manualsetuporgemp",
+    "multiRoleEmployeeEmployee": "multiroleemp69",
+    "multiOrgSubstituteSubstitute": "MOSub3Sub4SSD"
+  },
+  "enabledControllers": [
+    "organization-user-execution.md",
+    "campus-user-execution.md",
+    "employee-user-execution.md",
+    "substitute-user-execution.md",
+    "multi-role-campus-employee-organization-execution.md",
+    "multi-role-organization-employee-execution.md"
+  ],
+  "pendingControllerMappings": [
+    {
+      "label": "Multi-role Employee + Substitute",
+      "usernameKey": "multiRoleEmployeeSubstitute",
+      "passwordKey": "multi_role_employee_substitute_password",
+      "reason": "No exact Employee + Substitute controller currently exists."
+    },
+    {
+      "label": "Multi-role Organization User + Employee + Substitute",
+      "usernameKey": "multiRoleOrganizationEmployeeSubstitute",
+      "passwordKey": "multi_role_organization_employee_substitute_password",
+      "reason": "No exact Organization User + Employee + Substitute controller currently exists."
+    },
+    {
+      "label": "Multi-role Employee + Employee",
+      "usernameKey": "multiRoleEmployeeEmployee",
+      "passwordKey": "multi_role_employee_employee_password",
+      "reason": "The existing Employee + Employee controller is multi-organization-specific and cannot be assumed for this account."
+    },
+    {
+      "label": "Multi-organization Substitute + Substitute",
+      "usernameKey": "multiOrgSubstituteSubstitute",
+      "passwordKey": "multi_org_substitute_substitute_password",
+      "reason": "No exact multi-organization Substitute + Substitute controller currently exists."
+    }
+  ],
+  "scenarioData": {
+    "manageAccess": {
+      "enabled": false,
+      "reason": "Manage Access validation is intentionally scoped only to the configured Organization 140462 Organization User login."
+    },
+    "logoutBrowserBack": {
+      "enabled": true,
+      "loginUsernameKey": "org_username",
+      "role": "Organization User",
+      "controller": "organization-user-execution.md",
+      "workflowSlug": "organization-user-logout-browser-back-after-logout",
+      "executionsPerOrganization": 1
+    },
+    "absenceTabs": {
+      "enabled": true,
+      "searchOrder": [
+        "header-global-search",
+        "role-appropriate-scheduled-absence-list",
+        "confirmation-number-search",
+        "dashboard-quick-action"
+      ],
+      "entries": [
+        {
+          "loginUsernameKey": "org_username",
+          "role": "Organization User",
+          "confirmationNumber": "215847474",
+          "absenceDate": "2026-11-30",
+          "listName": "Scheduled Absences"
+        },
+        {
+          "loginUsernameKey": "campusUser",
+          "role": "Campus User",
+          "confirmationNumber": "215847475",
+          "absenceDate": "2026-11-27",
+          "listName": "Scheduled Absences"
+        },
+        {
+          "loginUsernameKey": "employee",
+          "role": "Employee",
+          "executionDirective": "NOT TESTED",
+          "reason": "Scenario 14 is intentionally skipped for the standalone SSD4_EmployeeUser login."
+        },
+        {
+          "loginUsernameKey": "userRoleSwitcher",
+          "role": "Campus User",
+          "confirmationNumber": "215847476",
+          "absenceDate": "2026-11-26",
+          "listName": "Scheduled Absences"
+        },
+        {
+          "loginUsernameKey": "userRoleSwitcher",
+          "role": "Employee",
+          "confirmationNumber": "215847476",
+          "absenceDate": null,
+          "listName": "Scheduled Absences",
+          "dateClarification": "The same confirmation was supplied with November 26 for Campus User and November 30 for Employee. Search by confirmation number first; do not rely on date navigation for this Employee context until clarified."
+        },
+        {
+          "loginUsernameKey": "userRoleSwitcher",
+          "role": "Organization User",
+          "confirmationNumber": "215847474",
+          "absenceDate": "2026-11-30",
+          "listName": "Scheduled Absences"
+        },
+        {
+          "loginUsernameKey": "multiRoleOrgEmployee",
+          "role": "Organization User",
+          "confirmationNumber": "215847474",
+          "absenceDate": "2026-11-30",
+          "listName": "Scheduled Absences"
+        },
+        {
+          "loginUsernameKey": "multiRoleOrgEmployee",
+          "role": "Employee",
+          "confirmationNumber": "215847474",
+          "absenceDate": "2026-11-30",
+          "listName": "Scheduled Absences"
+        }
+      ]
+    }
+  },
+  "approvedHosts": [
+    "aesstage.flqa.net",
+    "idgatewayawsstage.flqa.net",
+    "adminwebstage2.flqa.net",
+    "aesempstage.flqa.net",
+    "aessubstage.flqa.net",
+    "supersuitawsstage.flqa.net",
+    "vtstage.flqa.net",
+    "adminwebreact-stage.flqa.net",
+    "login.stage-k12.ss.frontlineeducation.com",
+    "absence.stage-k12.ss.frontlineeducation.com",
+    "absence-adminweb.stage-k12.ss.frontlineeducation.com",
+    "absence-adminwebui.stage-k12.ss.frontlineeducation.com",
+    "absence-emp.stage-k12.ss.frontlineeducation.com",
+    "absence-sub.stage-k12.ss.frontlineeducation.com"
+  ]
+}

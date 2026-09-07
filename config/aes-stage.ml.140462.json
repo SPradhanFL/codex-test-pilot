@@ -3,6 +3,7 @@
   "application": "AES Stage ML",
   "organizationId": "140462",
   "url": "https://login.stage-k12.ss.frontlineeducation.com/",
+  "applicationHubUrl": "https://stage-k12.ss.frontlineeducation.com/app",
   "requiredUrlContains": "stage-k12.ss",
   "browserIsolation": {
     "required": true,
@@ -42,9 +43,97 @@
   ],
   "scenarioData": {
     "manageAccess": {
-      "enabled": false,
-      "unconfiguredLoginStatus": "NOT TESTED",
-      "reason": "No safe Manage Access employee is configured for this organization or login."
+      "enabled": true,
+      "organizationId": "140462",
+      "loginUsernameKey": "org_username",
+      "role": "Organization User",
+      "requiredUrlContains": "stage-k12.ss",
+      "cases": [
+        {
+          "caseId": "migrated-organization-migrated-user",
+          "workflowSlug": "organization-scenario-13-migrated-organization-migrated-user",
+          "migrationContext": "Organization and employee user are migrated",
+          "employeeSearchText": "EmployeeUser",
+          "expectedResultName": "EmployeeUser, SSD",
+          "employeeIdentifier": "ssdemp",
+          "workId": "9343911",
+          "expectedSelectedApplication": "Frontline Administration",
+          "expectedOrganizationDetailsContains": ["SSD Patty EmployeeUser", "Manualsetup86 SSD"]
+        },
+        {
+          "caseId": "migrated-organization-non-migrated-user",
+          "workflowSlug": "organization-scenario-13-migrated-organization-non-migrated-user",
+          "migrationContext": "Organization is migrated and employee user is non-migrated",
+          "employeeSearchText": "DontmigrateSSD0EMP",
+          "expectedResultName": "DontmigrateSSD0EMP, SSD",
+          "employeeIdentifier": "DontMigemp0",
+          "workId": "9343914",
+          "expectedSelectedApplication": "Absence Management",
+          "expectedOrganizationDetailsContains": ["SSD DontmigrateSSD0EMP", "Manualsetup86 SSD"]
+        }
+      ]
+    },
+    "logoutBrowserBack": {
+      "enabled": true,
+      "loginUsernameKey": "org_username",
+      "role": "Organization User",
+      "controller": "organization-user-execution.md",
+      "workflowSlug": "organization-user-logout-browser-back-after-logout",
+      "executionsPerOrganization": 1
+    },
+    "absenceTabs": {
+      "enabled": true,
+      "searchOrder": [
+        "header-global-search",
+        "role-appropriate-scheduled-absence-list",
+        "confirmation-number-search",
+        "dashboard-quick-action"
+      ],
+      "entries": [
+        {
+          "loginUsernameKey": "multiRoleOrgEmployee",
+          "role": "Employee",
+          "confirmationNumber": "215847467",
+          "absenceDate": "2026-11-30",
+          "listName": "Scheduled Absences",
+          "detailsUrl": "https://absence-emp.stage-k12.ss.frontlineeducation.com/AbsenceRequest/215847467/Details/View?availableSubTab=False&approverLogTab=False&editMode=False"
+        },
+        {
+          "loginUsernameKey": "multiOrgEmployeeSubstitute",
+          "role": "Employee",
+          "organizationContext": "Manualsetup86 SSD",
+          "confirmationNumber": "215847468",
+          "absenceDate": "2026-11-30",
+          "listName": "Scheduled Absences"
+        },
+        {
+          "loginUsernameKey": "multiOrgEmployeeEmployee",
+          "role": "Employee",
+          "organizationContext": "Manualsetup86 SSD1",
+          "confirmationNumber": "215847469",
+          "absenceDate": "2026-11-30",
+          "listName": "Scheduled Absences"
+        },
+        {
+          "loginUsernameKey": "multiOrgOrgCampus",
+          "role": "Campus User",
+          "organizationContext": "Manualsetup86 SSD1",
+          "confirmationNumber": "215847470",
+          "absenceDate": "2026-11-30",
+          "listName": "Scheduled Absences",
+          "detailsUrl": "https://absence-adminweb.stage-k12.ss.frontlineeducation.com/absences/detail/215847470/view"
+        }
+      ]
+    },
+    "roleRecovery": {
+      "multiRoleEmployeeEmployeeSubstitute": {
+        "targetRole": "Substitute",
+        "verifyActiveRoleFromProfileOnHome": true,
+        "reselectFromProfileWhenMismatched": true,
+        "maximumReselectionsPerLanding": 1,
+        "scenario14Mode": "history-navigation-only",
+        "returnHomeBeforeScenario16": true
+      }
     }
   },
   "approvedHosts": [

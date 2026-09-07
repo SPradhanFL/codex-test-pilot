@@ -1,105 +1,121 @@
-# Manage Access
+# Employee Manage Access Validation — Organization 140462
 
-## Execution directive
+## Purpose and scope
 
-Before any browser action, read:
+Validate **Employee General Information → Access → Manage Access** only for Organization `140462`, the configured standalone Organization User login, and the two exact employee records in `config/aes-stage.ml.140462.json` → `scenarioData.manageAccess.cases`.
 
-1. `instructions/project-instructions.md`
-2. `instructions/application-details.md`
-3. `instructions/test-data.md`
-4. `config/aes-stage.ml.<OrgId>.json`
+This is Scenario 13. It is not the retired **Security → Manage User Access** scenario. Do not execute this test for another organization, controller login, role, or employee. When the exact gate below does not match, omit Scenario 13 from the run; do not create a PASS, FAIL, BLOCKED, or NOT TESTED result.
 
-Execute this scenario directly in the controlled Stage browser. Do not generate test code. This is a read-only validation: do not edit the employee, change access, send an invitation, or submit an access form.
+## Exact execution gate
 
-## Objective
+Proceed only when every condition is true:
 
-Verify that an explicitly configured Stage ML Organization User can find the configured employee, open **Manage User Access**, and confirm that the destination belongs to the selected employee.
+1. The selected `OrgId` is `140462`.
+2. `scenarioData.manageAccess.enabled` is `true`.
+3. The active controller is `organization-user-execution.md`.
+4. The active role is **Organization User**.
+5. `loginUsernameKey` is `org_username`, and the active login exactly matches `testUsernames.org_username` from the same organization-scoped config.
+6. The config contains the two complete `cases` entries described below.
 
-## Per-login data gate
+If any gate condition is false, omit Scenario 13 entirely and continue with the next authorized scenario. Never borrow this data for a combination account or another organization.
 
-Read `scenarioData.manageAccess` only from `config/aes-stage.ml.<OrgId>.json`.
+## Safety and shared behavior
 
-Execute Scenario 13 only when all of the following are true:
+- Resolve the URL and username from `config/aes-stage.ml.140462.json` and the password from `.secrets/aes-stage.ml.140462.credentials.json`.
+- Never expose the username, password, tokens, cookies, or authentication query fragments in evidence or reports.
+- Keep both cases read-only. Do not edit access, send invitations, save, or submit business data.
+- Before every action, scroll the target element into view and verify it is visible, enabled, and interactable.
+- Dismiss an unrelated popup safely when it obstructs a documented control, then continue.
+- After selecting **Manage Access**, refresh the controlled-tab inventory, select the newly opened tab, and wait up to 120 seconds for loading overlays to disappear and the Person Management page to become responsive. After 60 seconds, one safe refresh is permitted.
+- A destination URL must contain `stage-k12.ss`. Apply the shared URL-evidence warning rule, but fail the case when the wrong destination also prevents the required Person Management validations.
 
-1. `scenarioData.manageAccess.enabled` is `true`.
-2. `loginUsernameKey` resolves to a non-placeholder entry in `testUsernames`.
-3. The active login username exactly matches that resolved configured username.
-4. `employeeFirstName` and `employeeLastName` are both present.
+## Case A — migrated organization and migrated user
 
-When any condition is not satisfied, do not search for a substitute employee and do not reuse another login's data. Record Scenario 13 as **NOT TESTED** with the reason: `No safe Manage Access employee data is configured for this login.` Continue with independent scenarios.
+Configuration expectations:
 
-For Organization `140463`, the configured data is:
+- Search text: `EmployeeUser`
+- Exact result name: `EmployeeUser, SSD`
+- Employee identifier: `ssdemp`
+- Expected work ID: `9343911`
+- Expected selected application: `Frontline Administration`
+- Organization Details must contain both `SSD Patty EmployeeUser` and `Manualsetup86 SSD`
 
-- Login key: `org_username`
-- Employee first name: `Employee_sub`
-- Employee last name: `Employee_sub_last`
+Steps:
 
-Do not copy a username or password into this scenario file or its report.
+1. Authenticate through the configured Stage ML flow and establish the **Organization User** context.
+   - Expected: Responsive Absence Management Home with the intended Organization User context.
+2. Select **Find Employee**.
+   - Expected: Employee search opens with a visible and enabled search control.
+3. Search for `EmployeeUser`.
+   - Expected: The result `EmployeeUser, SSD (ssdemp)` is displayed.
+4. Select only that exact result and verify the stable employee record identifies work ID `9343911`.
+   - Expected: Employee General Information opens for `EmployeeUser, SSD (ssdemp)`.
+5. Scroll **Access** into view and select **Manage Access**.
+   - Expected: Exactly one new browser tab opens for this employee.
+6. Select the new tab and wait for the Person Management page to become responsive.
+   - Expected: Person Management loads without access denied, page not found, or a persistent loading overlay.
+7. Open or inspect the application switcher without changing the selected application.
+   - Expected: `Frontline Administration` is selected.
+8. Inspect **Organization Details**.
+   - Expected: The visible details contain `SSD Patty EmployeeUser` and `Manualsetup86 SSD`.
+9. Inspect the complete destination URL in the Chrome address bar.
+   - Expected: The URL contains `stage-k12.ss`.
+10. Confirm the validation remained read-only, capture full-browser evidence, close the Person Management tab, and return to the original employee tab.
+    - Expected: No data changed and the same Employee General Information record remains available.
 
-## Preconditions
+## Case B — migrated organization and non-migrated user
 
-- Work only in the selected Stage ML organization and approved linked Stage applications.
-- The active role is **Organization User**.
-- The **Find Employee** or **Master Data > Employee > General Information** search page is available.
-- The configured first and last name identify exactly one safe test employee.
-- Do not select **Send Invitation**, edit access, or save any change.
+Configuration expectations:
 
-## Steps
+- Search text: `DontmigrateSSD0EMP`
+- Exact result name: `DontmigrateSSD0EMP, SSD`
+- Employee identifier: `DontMigemp0`
+- Expected work ID: `9343914`
+- Expected selected application: `Absence Management`
+- Organization Details must contain both `SSD DontmigrateSSD0EMP` and `Manualsetup86 SSD`
 
-1. Authenticate with the selected organization's configured Organization User and wait for Home to become responsive.
-   - Expected: Authenticated Absence Management navigation and the Organization User context are visible.
-2. Apply the per-login data gate above.
-   - Expected: Only the explicitly configured matching login proceeds; every other login records **NOT TESTED**.
-3. Select **Find Employee**. If that control is not exposed, navigate through **Master Data > Employee > General Information**.
-   - Expected: The Employee search page opens with enabled employee-search controls.
-4. Enter the configured `employeeFirstName` and `employeeLastName`, then select the visible **Search** or **Go** control.
-   - Expected: Exactly one matching employee result is displayed.
-5. Open the matching employee and verify the record before continuing.
-   - Expected: The displayed first and last name exactly match the configured values.
-   - Expected: The Employee General Information page is responsive and its stable URL identifies a specific employee record.
-6. Scroll the access section into view and locate the visible **Manage User Access**, **Manage User’s Access**, or equivalent Manage Access link.
-   - Expected: Exactly one enabled access-management link for the selected employee is visible.
-   - Expected: Its destination is an approved Stage host.
-7. Select the Manage Access link and wait for loading indicators to disappear.
-   - Expected: The Stage Manage User Access destination opens successfully.
-   - Recovery: If a transient loading or route error appears, reload once, wait for loading to finish, and reassess the stable visible state.
-8. Verify the Manage User Access destination without changing data.
-   - Expected: A **Manage User Access** heading or primary access-management region is visible.
-   - Expected: The displayed employee identity matches the employee selected in step 5.
-   - Expected: Visible application, role/type, and access-status details load without an access-denied, page-not-found, or persistent application error.
-9. Confirm the validation remained read-only.
-   - Expected: No invitation was sent and no employee or access value was edited or submitted.
-10. Return to the original Employee General Information page using browser **Back**.
-    - Recovery: If browser Back cannot restore the cross-application page, use the exact sanitized Employee General Information URL captured in step 5. Do not guess an employee identifier.
-    - Expected: The same configured employee record is restored and remains unchanged.
+Steps:
 
-## Result classification
+1. Restore or establish the same configured **Organization User** context, then select **Find Employee**.
+   - Expected: Employee search is responsive.
+2. Search for `DontmigrateSSD0EMP`.
+   - Expected: The result `DontmigrateSSD0EMP, SSD (DontMigemp0)` is displayed.
+3. Select only that exact result and verify the stable employee record identifies work ID `9343914`.
+   - Expected: Employee General Information opens for `DontmigrateSSD0EMP, SSD (DontMigemp0)`.
+4. Scroll **Access** into view and select **Manage Access**.
+   - Expected: Exactly one new browser tab opens for this employee.
+5. Select the new tab and wait for the Person Management page to become responsive.
+   - Expected: Person Management loads without access denied, page not found, or a persistent loading overlay.
+6. Open or inspect the application switcher without changing the selected application.
+   - Expected: `Absence Management` is selected.
+7. Inspect **Organization Details**.
+   - Expected: The visible details contain `SSD DontmigrateSSD0EMP` and `Manualsetup86 SSD`.
+8. Inspect the complete destination URL in the Chrome address bar.
+   - Expected: The URL contains `stage-k12.ss`.
+9. Confirm the validation remained read-only and capture full-browser evidence.
+   - Expected: No invitation, access edit, or save action occurred.
 
-- **PASS:** The configured employee opens, the Manage Access link works, the destination belongs to that employee, the primary access details load, and the flow returns without changing data.
-- **FAIL:** Search returns the wrong or ambiguous employee, the exposed Manage Access navigation fails, required access details do not load after one recovery reload, or a persistent application error remains.
-- **BLOCKED:** Authentication, authorization, browser availability, or missing configured data for the otherwise enabled matching login prevents safe validation.
-- **NOT TESTED:** The active login is not the explicitly configured Manage Access login, or the selected organization intentionally has `manageAccess.enabled` set to `false`.
+## Independent outcomes and classification
+
+Create two independent Scenario 13 workflow outcomes:
+
+- `organization-scenario-13-migrated-organization-migrated-user`
+- `organization-scenario-13-migrated-organization-non-migrated-user`
+
+For each case:
+
+- **PASS:** The exact employee is found, Employee General Information opens, Manage Access opens a responsive Person Management tab, the expected application is selected, both expected Organization Details values are present, the URL contains `stage-k12.ss`, and no data changes.
+- **FAIL:** The exact search returns the wrong or ambiguous record, the exposed navigation fails after the 120-second recovery rule, the expected selected application or Organization Details values are wrong, a functional destination error remains, or the stable URL does not contain `stage-k12.ss` and the required destination cannot be validated.
+- **BLOCKED:** Authentication, entitlement, missing required UI, unavailable browser control, or incomplete configured case data prevents safe execution.
+
+Do not use **NOT TESTED** for unrelated accounts because Scenario 13 must be omitted from those runs.
 
 ## Report requirements
 
-Record:
+For each case, record its migration context, search text, exact result identity and identifier, observed work ID, sanitized Employee General Information origin/path, Manage Access link state, new-tab behavior, sanitized Person Management origin/path, selected application, observed Organization Details checks, URL-substring result, recovery action if used, read-only confirmation, screenshots, video range, and final status.
 
-- Selected organization ID and active role, without the login username
-- Whether the per-login data gate allowed execution
-- Configured employee first and last name
-- Employee search result count and identity match
-- Sanitized Employee General Information origin and pathname
-- Manage Access link text and approved destination host
-- Sanitized Manage User Access origin and pathname
-- Visible access-management heading and available application/role/status details
-- Whether one recovery reload was required
-- Visible-error check
-- Successful return to the same employee record
-- Confirmation that no invitation was sent and no data was changed
-- Overall status: PASS, FAIL, BLOCKED, or NOT TESTED
-
-Never record passwords, full login usernames, tokens, query strings, cookies, or browser-session information.
+Do not place a full login username, password, token, cookie, session ID, or query string in the report.
 
 ## Cleanup
 
-Return to and leave the original Employee General Information page open. Do not change access, send an invitation, edit the employee, or sign out when another authenticated scenario may follow.
+Close the Person Management tab after Case B and leave the original authenticated Employee General Information tab unchanged for the next scenario.

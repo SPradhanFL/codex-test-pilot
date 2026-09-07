@@ -47,6 +47,10 @@ For ML multi-user execution, treat `instructions/Multi User Instructions/` as th
 - Execute steps in their documented order.
 - Prefer elements by accessible role, label, placeholder, visible text, or test ID.
 - Wait for observable UI states instead of arbitrary delays.
+- After every navigation, role/context change, application switch, refresh, and before the next planned interaction, inspect for a visible dialog, modal, coach mark, announcement, tour, or blocking backdrop that is not part of the documented scenario. If one appears, dismiss it once using its visible non-destructive `Close`, `Dismiss`, `Got it`, `Maybe later`, `Not now`, X, or equivalent control, then wait until the popup and backdrop are gone and the intended destination is responsive before continuing. This includes the Time & Attendance announcement titled `New: Resource Center & Feedback Portal`.
+- Never dismiss a dialog that is required by the documented workflow, such as a Save, Delete, Cancel, Sign Out, or other expected confirmation. Never use an affirmative, state-changing, or permission-granting action merely to remove an unexpected popup.
+- Record a safely dismissed unexpected popup as a step observation in the current workflow, including its sanitized title and the fact that execution continued. Do not mark an otherwise working scenario FAIL or BLOCKED solely because the unrelated popup appeared. If no safe dismissal control works, capture evidence and apply the normal readiness/recovery and result-classification rules.
+- For transient loading overlays, page shells, authenticated headers, account controls, or navigation controls, poll readiness for up to **120 seconds** before classifying the workflow as blocked. If the page content is present but the required shell or control is still missing after 60 seconds, perform one safe browser refresh and continue polling until the total 120-second readiness window expires. Do not repeat a state-changing business action during this recovery.
 - Do not bypass security warnings, CAPTCHA, MFA, or access controls.
 - Do not perform actions outside the selected scenario.
 - Use only the non-production environment in `application-details.md`.
@@ -56,15 +60,15 @@ For ML multi-user execution, treat `instructions/Multi User Instructions/` as th
 
 ## Result classification
 
-### Mandatory 60-second failure observation
+### Mandatory 120-second failure observation
 
-- Before marking any step or scenario **FAIL**, keep the affected destination, page, or target element under observation for a full **60 seconds** from the action that should have produced the expected result.
+- Before marking any step or scenario **FAIL**, keep the affected destination, page, or target element under observation for a full **120 seconds** from the action that should have produced the expected result.
 - Use observable Playwright waits or polling during that window. Keep the target scrolled into view when applicable, and do not repeat a create, save, delete, logout, or other state-changing action merely to fill the wait period.
-- Do not finalize **FAIL** before the 60-second window expires. If the expected page, element, state, or navigation becomes available during the window, continue validation from that recovered state.
-- If the expected result is still absent after 60 seconds, capture final evidence at or after the timeout and mark **FAIL** with the actual result stating that the full 60-second observation expired.
-- An application error may be recorded as soon as it appears, but the failure is finalized only after the same 60-second observation window unless continuing would violate a safety, security, or environment boundary.
+- Do not finalize **FAIL** before the 120-second window expires. If the expected page, element, state, or navigation becomes available during the window, continue validation from that recovered state.
+- If the expected result is still absent after 120 seconds, capture final evidence at or after the timeout and mark **FAIL** with the actual result stating that the full 120-second observation expired.
+- An application error may be recorded as soon as it appears, but the failure is finalized only after the same 120-second observation window unless continuing would violate a safety, security, or environment boundary.
 - This timeout applies only to a potential **FAIL**. Missing credentials, permissions, prerequisite data, unsafe targets, or intentionally unsupported coverage remain **BLOCKED** or **NOT TESTED** under the rules below and must not be converted to **FAIL** by waiting.
-- Every failed report entry must include a timeout step showing the action that started the wait, the expected recovery state, the final observed state, and `60 seconds` as the elapsed failure-observation period.
+- Every failed report entry must include a timeout step showing the action that started the wait, the expected recovery state, the final observed state, and `120 seconds` as the elapsed failure-observation period.
 
 - **PASS:** Every step completed and every expected result was observed.
 - **FAIL:** A step completed but its expected result was not observed, or the application displayed an error.

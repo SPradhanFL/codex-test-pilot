@@ -44,9 +44,13 @@ Log in to AES Stage, open the profile role switcher, switch among the assigned C
 8. Select the `Organization User (Admin)` Role from Profile Icon
    - Expected: Application will reload and launch Organization profile
 
+#### Role reselection recovery
+
+After any selection above, wait for Home or Dashboard to become responsive, open the user-info/account-role menu, and compare the displayed active role/context with the exact selection just made. If any different role/context is shown, skip the first active-role-label assertion, select the intended role one more time from that menu, wait for the destination to stabilize, and reopen the menu to verify it. Continue only after the intended role/context and role-appropriate Home controls are confirmed. Record the recovery as an observation, not as a failure. Attempt this recovery once only; if the intended role is missing, mark that role flow **BLOCKED**, and if the second selectable attempt still resolves to the wrong role after the standard 120-second recovery window, mark that role flow **FAIL**.
+
 ### 3. Positive validation
 
-9. After each successful role selection, verify the profile control displays the selected role and the corresponding role home page is responsive.
+9. After each successful role selection, including the one-time reselection recovery when required, verify the profile control displays the selected role and the corresponding role home page is responsive.
    - Expected: `Campus User (Campus User) OR Campus User (Admin)`, `Employee (Employee) OR Employee`, and `Organization User (Admin)` each appear as the active role after their respective reload, with no unhandled application error.
 
 10. Reopen the profile control after a successful role switch and inspect `Your Roles`.

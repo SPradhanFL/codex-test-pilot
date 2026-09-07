@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Execute the clubbed Organization User and Campus User scenario sets across multiple organizations. Run Organization User scenarios **1–19** in every Organization User context, then run Campus User scenarios **3, 7, 14, 16, 17, 20, and 21** in every Campus User context.
+Execute the clubbed Organization User and Campus User scenario sets across multiple organizations. Run Organization User scenarios **1–12, 14, and 16–19** in every Organization User context, then run Campus User scenarios **3, 7, 14, 16, 17, 20, and 21** in every Campus User context. Scenario 13 is restricted to a different exact standalone login, and Scenario 15 is retired.
 
 ## Mandatory preparation
 
@@ -13,7 +13,7 @@ Read completely before opening the browser:
 3. `config/aes-stage.ml.<OrgId>.json`
 4. `instructions/Multi User Instructions/role-scenario-matrix.md`
 5. `instructions/Multi User Instructions/campus-user-execution.md`, using only its Scenario 20 and Scenario 21 definitions
-6. Every source test mapped to Organization User scenarios 1–19
+6. Every source test mapped to the active Organization User scenarios
 7. `tests/navigation/cross-application-navigation-matrix.md`
 8. `tests/navigation/absence-tab.md`
 9. `tests/logout/logout-navigation-matrix.md`
@@ -46,9 +46,9 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 For every Organization User organization context, in visible order:
 
 1. Select the context and verify React Home, active organization/role labels, global navigation, and account control.
-2. Execute Organization User scenarios **1–15** in numerical and dependency-safe order.
+2. Execute Organization User scenarios **1–12 and 14** in numerical and dependency-safe order. Omit Scenario 13 for this combination login and do not execute retired Scenario 15.
 3. Execute scenarios **16, 17, 18, and 19** independently. Each logout begins with a fresh login to this same account and the exact Organization User organization context reselected.
-4. Record all 19 results separately for this context. Do not merge them with another organization.
+4. Record all 17 results separately for this context. Do not merge them with another organization.
 
 ### Campus User context blocks
 
@@ -70,7 +70,7 @@ Do not create, edit, approve, reconcile, import, invite, or delete business data
 
 ## Reporting
 
-Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-org-organization-campus/`. Group results by organization and role, include all 19 outcomes for every Organization User context and all seven outcomes for every Campus User context, screenshots, one continuous video, expected/actual results, and failure reproduction steps without credentials or personal data.
+Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-org-organization-campus/`. Group results by organization and role, include all 17 outcomes for every Organization User context and all seven outcomes for every Campus User context, screenshots, one continuous video, expected/actual results, and failure reproduction steps without credentials or personal data.
 
 ## Invocation
 

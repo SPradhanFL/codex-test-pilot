@@ -116,6 +116,10 @@ $manifest = [ordered]@{
     runId = $RunId
     organizationId = $OrgId
     configuration = "config/aes-stage.ml.$OrgId.json"
+    environment = [string]$context.Config.environment
+    application = [string]$context.Config.application
+    authenticationMode = [string]$context.Config.authenticationMode
+    applicationLaunchMode = [string]$context.Config.applicationLaunchMode
     createdAt = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss zzz')
     mode = 'multi-user unattended safe mode'
     reportFormat = 'migrated-user-navigation-reference-v3'
@@ -167,7 +171,7 @@ $manifest = [ordered]@{
     }
     failurePolicy = [ordered]@{
         appliesTo = 'FAIL'
-        observationTimeoutSeconds = 60
+        observationTimeoutSeconds = 120
         requireFinalEvidence = $true
         preserveBlockedAndNotTested = $true
     }

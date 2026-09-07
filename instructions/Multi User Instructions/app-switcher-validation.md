@@ -4,7 +4,7 @@
 
 Validate every application that is actually available in the authenticated account's App Switcher. Do not require a fixed application list: application visibility is entitlement-dependent and may differ by user, role, and organization. Run this shared validation for every single-role, multi-role, and multi-organization login controller in this directory.
 
-This is a conditional supplemental workflow, not one of the numbered scenarios 1–19 in `role-scenario-matrix.md`.
+This is a conditional supplemental workflow, not one of the active numbered scenarios in `role-scenario-matrix.md`.
 
 ## Execution checkpoints
 
@@ -58,12 +58,14 @@ For each visible, enabled alternate application, in the order displayed:
 1. Record the target application's exact visible label.
 2. Scroll the target entry into view and select it once.
 3. Wait for the same-tab navigation or new target tab/window to settle.
-4. Confirm the destination visibly identifies the selected application, remains in a non-production Frontline environment, is responsive, and retains an authenticated session without an application error or access-denied state.
-5. Capture screenshot evidence of the destination without exposing credentials, personal data, or sensitive authentication fragments.
-6. Use the destination's App Switcher to select `Absence Management` when that return entry is available.
-7. If the destination does not expose a return switcher, use the supported My Frontline application launcher or the recovery procedure below. Do not construct or guess an application URL.
-8. Wait for navigation to settle and confirm Absence Management is restored with the same authorized role/organization context.
-9. Reopen the App Switcher and continue with the next enabled alternate application from the original inventory.
+4. Inspect the loaded destination for any visible dialog, modal, coach mark, product announcement, tour, or blocking backdrop that is unrelated to this switching workflow. When present, close it using a visible non-destructive dismissal control and wait until both the popup and its backdrop are gone. In Time & Attendance, explicitly close `New: Resource Center & Feedback Portal` when it appears. Record the sanitized popup title and dismissal as an observation, then continue; its appearance alone is not a failure or blocker.
+5. Do not dismiss any dialog required by the application-switching flow or use Save, Submit, Accept, Delete, permission-granting, or other state-changing actions to remove a popup. If an unrelated popup cannot be safely dismissed, capture evidence and follow Recovery.
+6. Confirm the destination visibly identifies the selected application, remains in a non-production Frontline environment, is responsive, and retains an authenticated session without an application error or access-denied state.
+7. Capture screenshot evidence of the destination without exposing credentials, personal data, or sensitive authentication fragments.
+8. Use the destination's App Switcher to select `Absence Management` when that return entry is available.
+9. If the destination does not expose a return switcher, use the supported My Frontline application launcher or the recovery procedure below. Do not construct or guess an application URL.
+10. Wait for navigation to settle, apply the same unexpected-popup check again, and confirm Absence Management is restored with the same authorized role/organization context.
+11. Reopen the App Switcher and continue with the next enabled alternate application from the original inventory.
 
 Expected: Every enabled alternate application displayed for the current account/context opens successfully and returns to a responsive Absence Management page without losing the selected context.
 
@@ -81,7 +83,7 @@ If a destination opens but its return switcher is missing or unusable:
 
 1. Record the failure and capture safe evidence.
 2. If the destination opened a separate tab, close only that destination tab and return to the existing Absence Management tab.
-3. Otherwise, re-authenticate through the parent controller's configured Stage ML URL and reselect the exact role/organization context.
+3. Otherwise, re-authenticate through the parent controller's configured Stage ML URL and reselect the exact role/organization context. After Home or Dashboard loads, verify the selected role/context in the user-info menu. If any different role/context is active, apply the one-time account/role-menu reselection recovery in `role-scenario-matrix.md`; do not classify that first mismatch as a separate failure.
 4. Confirm the recovered Absence Management page is responsive before continuing the parent controller.
 
 Recovery allows later independent scenarios to continue; it does not convert the App Switcher failure to PASS.

@@ -84,8 +84,16 @@ if ($context.Config.browserIsolation.requirePageControlProbe -eq $true -and -not
 }
 
 $configuredInitialUrl = [uri][string]$context.Config.url
-if (-not [string]::Equals($InitialUrl.Scheme, $configuredInitialUrl.Scheme, [System.StringComparison]::OrdinalIgnoreCase) -or
-    -not [string]::Equals($InitialUrl.Host, $configuredInitialUrl.Host, [System.StringComparison]::OrdinalIgnoreCase)) {
+$sameConfiguredOrigin = [string]::Equals($InitialUrl.Scheme, $configuredInitialUrl.Scheme, [System.StringComparison]::OrdinalIgnoreCase) -and
+    [string]::Equals($InitialUrl.Host, $configuredInitialUrl.Host, [System.StringComparison]::OrdinalIgnoreCase)
+$isIdmDirect = [string]::Equals([string]$context.Config.environment, 'stageIDM', [System.StringComparison]::OrdinalIgnoreCase) -and
+    [string]::Equals([string]$context.Config.applicationLaunchMode, 'direct', [System.StringComparison]::OrdinalIgnoreCase)
+$approvedHosts = @($context.Config.approvedHosts | ForEach-Object { [string]$_ })
+$approvedIdmRedirect = $isIdmDirect -and
+    [string]::Equals($InitialUrl.Scheme, 'https', [System.StringComparison]::OrdinalIgnoreCase) -and
+    [string]::Equals($InitialUrl.Host, 'idgatewayawsstage.flqa.net', [System.StringComparison]::OrdinalIgnoreCase) -and
+    $InitialUrl.Host -in $approvedHosts
+if (-not $sameConfiguredOrigin -and -not $approvedIdmRedirect) {
     throw "The first controlled page must remain on the configured Stage login origin before credentials are entered. Observed host: $($InitialUrl.Host)"
 }
 

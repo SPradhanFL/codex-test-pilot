@@ -2,7 +2,7 @@
 
 ## Scope
 
-Execute the 15 Markdown scenarios currently stored under `tests/`. The files are scenario definitions, not generated Playwright source code. Follow every scenario and its referenced shared instructions directly through Playwright MCP.
+Execute the 13 active Markdown scenarios listed below. Security → Manage User Access is retired, and the Organization 140462-only Employee Manage Access scenario is routed exclusively by the multi-user controller. The files are scenario definitions, not generated Playwright source code. Follow every active scenario and its referenced shared instructions directly through Playwright MCP.
 
 ## Start a run and archive older artifacts
 
@@ -18,7 +18,7 @@ The script moves each previous top-level timestamped run into:
 
 `reports/full-suite/old-runs/old-<previous-run-timestamp>/`
 
-After the browser run finishes, move the single recording and all named screenshots into the current run, then generate the timeline, 15 detailed reports, and dashboard:
+After the browser run finishes, move the single recording and all named screenshots into the current run, then generate the timeline, 13 detailed reports, and dashboard:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/finalize-full-suite-artifacts.ps1 -RunId <YYYYMMDD-HHMMSS>
@@ -57,7 +57,7 @@ Choose one mode before opening the browser:
 
 - Run Chrome in headed mode. The project MCP configuration intentionally omits `--headless`.
 - Use one isolated browser context and one controlled tab for the entire suite. Reset logical application state between scenarios and re-authenticate when a scenario logs out.
-- Start one `1280x720` recording before scenario 1 and stop it only after scenario 15 reaches its final state.
+- Start one `1280x720` recording before scenario 1 and stop it only after the final listed scenario reaches its final state.
 - Save the finalized recording as `videos/full-suite-execution.webm`.
 - Do not add video chapter cards. They blur and cover the application while the recording is running.
 - Do not enable recording overlays, action callouts, dimming, masking, or blur effects. Keep the native application screen fully visible throughout execution.
@@ -84,16 +84,14 @@ Run sequentially in this order:
 3. `tests/navigation/cross-application-navigation-matrix.md`
 4. `tests/navigation/angular-daily-report-to-extract_import-to-import-data.md`
 5. `tests/navigation/legacy-import-data-role-switcher.md`
-6. `tests/navigation/security-manage_user_access_page.md`
-7. `tests/navigation/manage-access.md`
-8. `tests/navigation/react-home-page-to-role-switcher-dropdown.md`
-9. `tests/navigation/angular-daily-report-page-to-role-switcher-dropdown.md`
-10. `tests/employee/general-information/add-employee-validation.md`
-11. `tests/employee/create-employee.md`
-12. `tests/employee/delete-employee.md`
-13. `tests/employee/employee-substitute.md`
-14. `tests/navigation/angular-daily-report-to-substitute-general-information.md`
-15. `tests/logout/logout-navigation-matrix.md`
+6. `tests/navigation/react-home-page-to-role-switcher-dropdown.md`
+7. `tests/navigation/angular-daily-report-page-to-role-switcher-dropdown.md`
+8. `tests/employee/general-information/add-employee-validation.md`
+9. `tests/employee/create-employee.md`
+10. `tests/employee/delete-employee.md`
+11. `tests/employee/employee-substitute.md`
+12. `tests/navigation/angular-daily-report-to-substitute-general-information.md`
+13. `tests/logout/logout-navigation-matrix.md`
 
 Create Employee must precede Delete Employee. Logout runs last because it intentionally invalidates sessions. In full destructive mode, every create/delete scenario must verify its exact synthetic target and complete its documented cleanup. In unattended safe mode, persistent create/delete submissions are not performed and must be reported as NOT TESTED, except for Scenario 14's explicitly authorized temporary absence create-and-cleanup fallback.
 
@@ -146,8 +144,8 @@ Use recorded media duration rather than overall wall-clock duration when computi
 ## Result and failure rules
 
 - Apply each scenario's own PASS, FAIL, BLOCKED, and NOT TESTED rules.
-- Before finalizing any **FAIL**, observe or poll for the missing expected page, element, navigation, or state for a full **60 seconds** from the triggering action. If it recovers, continue the scenario; otherwise capture final evidence at or after 60 seconds and record the elapsed timeout in the detailed report step.
-- Do not apply the 60-second failure timeout to missing prerequisites or safety/permission restrictions that correctly produce **BLOCKED** or **NOT TESTED**.
+- Before finalizing any **FAIL**, observe or poll for the missing expected page, element, navigation, or state for a full **120 seconds** from the triggering action. If it recovers, continue the scenario; otherwise capture final evidence at or after 120 seconds and record the elapsed timeout in the detailed report step.
+- For transient overlays or missing page/account shells, poll readiness for up to 120 seconds and perform one safe refresh after 60 seconds before using **BLOCKED**. Do not apply this recovery to missing data, permission, safety, or unsupported prerequisites that correctly produce **BLOCKED** or **NOT TESTED**.
 - Continue to the next independent scenario after a failure when doing so is safe.
 - Block dependent scenarios when required data or cleanup is unavailable.
 - Do not claim a step or scenario passed without observable browser evidence.

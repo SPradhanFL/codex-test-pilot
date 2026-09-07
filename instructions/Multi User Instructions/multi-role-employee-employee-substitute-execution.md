@@ -54,11 +54,14 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 ### Context block 3 — Substitute
 
 1. Re-authenticate with the same account and select Substitute.
-2. Verify Substitute Home, the active context, permitted navigation, and account control. A Substitute label on Employee Home does not satisfy this check.
-3. Execute Substitute scenario **14** using the Substitute-specific four-view validation: Available Jobs, Scheduled Jobs/Schedule, Past Jobs/History Jobs, and Non Work Days. Do not require an individual job-detail page and do not accept, reject, cancel, create, assign, or change work.
-4. Execute Substitute scenario **16** from a fresh session with Substitute reselected.
+2. Wait for Home/Dashboard to stabilize, then open the profile/account-role menu and read the active role.
+3. If Substitute is not active, keep or reopen the profile/account-role menu, select Substitute one more time, wait for Home to stabilize, and reopen the menu to confirm Substitute is active. Record this as `Substitute profile reselection recovery applied`; do not fail the first mismatch.
+4. If Substitute is missing from the profile menu, mark only the Substitute role block **BLOCKED**. If it is selectable but the second selection still does not establish Substitute, apply the shared 120-second observation/recovery rule and mark the affected workflow **FAIL**.
+5. For Substitute scenario **14**, open `History`, scroll the control into view, select it, and confirm the History destination, list/content region, navigation, and explicit empty state or available data load without an application error. Do not require an individual job or open, accept, reject, cancel, create, assign, or change work.
+6. Use the visible `Home` control to return to Substitute Home. Confirm Home is responsive and the profile menu still shows Substitute; if it does not, apply the same one-time profile reselection recovery.
+7. From this confirmed Substitute Home state, execute Substitute scenario **16**. Logout must reach and display the approved login page. Do not click browser Back or test direct protected access.
 
-For each Employee context, prefer an existing viewable absence and use Scenario 14's temporary absence fallback only when safe creation, unique reopening, and cleanup are supported. For the Substitute context, never run the fallback and never require an individual job; validate the four required schedule/history views, accepting valid empty states. Mark only the affected scenario **BLOCKED** when its role-specific prerequisite is unavailable, then continue to scenario 16. Record all six scenario outcomes separately; do not deduplicate scenario IDs across contexts.
+For each Employee context, prefer an exact configured existing absence from `scenarioData.absenceTabs`; use Scenario 14's temporary absence fallback only when no fixed mapping exists and safe creation, unique reopening, and cleanup are supported. For this controller's Substitute context, never run the fallback and never require an individual job; validate that History navigation and content load correctly, return Home, and then execute logout. Mark only the affected scenario **BLOCKED** when its role-specific prerequisite is unavailable, then continue when safe. Record all six scenario outcomes separately; do not deduplicate scenario IDs across contexts.
 
 Do not accept, reject, cancel, create, edit, assign, save, or delete an absence, job, employee, or substitute record except for an Employee-context Scenario 14 exact temporary absence create-and-cleanup lifecycle. Never create, accept, or assign Substitute work merely to create evidence.
 

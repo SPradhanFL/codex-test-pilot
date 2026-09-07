@@ -12,7 +12,7 @@ Execute this scenario directly in Chrome using Playwright MCP. Do not generate P
 
 ## Objective
 
-Log in to AES Stage, find an existing absence that can be viewed safely, open it, and validate every visible absence tab. If no absence is available, create one fresh absence for the verified synthetic employee, use it for the tab validation, and clean up only that exact record after validation.
+Log in to AES Stage, resolve and open the exact organization-scoped configured absence when one exists, and validate every visible absence tab. When no fixed mapping exists, find another existing absence that can be viewed safely. Only when neither a fixed mapping nor another existing absence is available may the test create one fresh absence for the verified synthetic employee, validate it, and clean up only that exact current-run record.
 
 ## Preconditions and safety
 
@@ -20,6 +20,8 @@ Log in to AES Stage, find an existing absence that can be viewed safely, open it
 - For standalone execution, work only on AES Stage at `https://aesstage.flqa.net`; the authentication redirect to `https://adminwebstage2.flqa.net/` is approved. For Multi User execution, use the Stage ML URL and `approvedHosts` from `config/aes-stage.ml.<OrgId>.json`.
 - For a Multi User invocation, the organization-scoped credential file replaces the manual-password-entry instruction in `instructions/test-data.md`.
 - When this file is invoked by a Multi User execution controller, that controller's Stage ML URL, credential keys, active role, and organization context replace the standalone URL and credential sources below. Do not change identity or organization merely to obtain easier test data.
+- For a Multi User invocation, first resolve an exact `scenarioData.absenceTabs.entries` mapping from `config/aes-stage.ml.<OrgId>.json` using the active login's username key, active role, and organization context. A configured confirmation number is the preferred read-only record and must be tried before generic searching or temporary creation.
+- Treat `absenceDate` as the scheduled date of the configured absence, not as an expiration date. A configured record is read-only and must never be deleted or cleaned up by this test.
 - Do not record, display, repeat, or screenshot the password.
 - Persistent creation and deletion are authorized only for the temporary fallback setup described in this scenario. This narrow create-and-cleanup lifecycle is also authorized during unattended safe-mode runs.
 - Never create an absence for a realistic-looking, unverified, or production employee.
@@ -43,13 +45,24 @@ Log in to AES Stage, find an existing absence that can be viewed safely, open it
 
 ### 2. Find an absence to view
 
-5. Navigate through `Absences` → `Modify`.
-   - Expected: The absence search or modify page is displayed without an error.
-6. Search the default date range and any safe adjacent date range supported by the page.
-   - Expected: The application returns matching absence rows or a clear zero-result state.
-7. If one or more rows are returned, select one record that can be opened read-only and record its identifier for evidence. Do not change it.
-   - Expected: The selected existing absence opens successfully and the scenario continues at step 14.
-8. If no absence is returned, record the zero-result state and execute the fallback creation steps below. A zero-result search is not a blocker by itself.
+5. For Multi User execution, resolve the exact configured absence entry before navigating:
+   - Match `loginUsernameKey` to the configuration key that supplied the active username.
+   - Match `role` to the confirmed active role.
+   - When `organizationContext` is present, require the exact active organization context.
+   - Never borrow a confirmation number from another login, role, organization, or `OrgId`.
+   - Expected: At most one exact entry matches. If multiple entries match, mark the workflow **BLOCKED** as ambiguous and do not open or create a record.
+6. If the exact entry contains `executionDirective: NOT TESTED`, record Scenario 14 as **NOT TESTED** using its configured reason and continue with independent scenarios. Do not search for or create an absence for that context.
+7. When the exact entry contains a confirmation number, find that record in this order:
+   1. Start from the responsive role-appropriate Home or Dashboard page and locate the header Search input by accessible role/name or placeholder: `textbox` with accessible name `Search` or placeholder `Search`. The currently observed markup is `<input class="search" type="text" placeholder="Search" aria-label="Search">`; use `input.search` only as a fallback when it resolves to exactly one visible element.
+   2. Scroll the header Search input into view, focus it, clear any existing value, and enter only the configured confirmation number. Confirm the input contains the complete number.
+   3. Wait for the search suggestion/results UI. Select the result containing the exact confirmation number. If the control requires submission and no suggestion is available, press `Enter` once, wait for the Search results page, and select only the exact confirmation-number match. Do not select a partial or ambiguous result.
+   4. If the header Search is unavailable or does not return the exact record, open the role-appropriate `Scheduled Absences`, `Absences` → `Modify`, or Campus absence/reconciliation view named by the visible navigation.
+   5. When `absenceDate` is configured, set the list/search date to that exact scheduled date and search for the configured confirmation number. When the date is not configured, search by confirmation number without treating the default date-range zero state as proof that the record is missing.
+   6. If the list does not expose the record or a usable confirmation search, return to Dashboard/Home and locate the **Quick Action** text box. Search using only the configured confirmation number.
+   7. If an approved `detailsUrl` is configured and header Search, normal list, and Quick Action discovery do not open the record, navigate to that URL only in the already authenticated matching role/context and only when its host is in `approvedHosts`.
+   8. Confirm the opened record displays the exact configured confirmation number before traversing tabs.
+   - Expected: The configured absence opens read-only in the correct role and organization context. If it cannot be found after every supported route, mark Scenario 14 **BLOCKED**, record the missing configured confirmation, and do not create a replacement automatically.
+8. When no exact configured entry exists, navigate through the role-appropriate absence list or `Absences` → `Modify`, search the default date range and safe adjacent range, and select one record that can be opened read-only. If no absence is returned, record the zero-result state and execute the fallback creation steps below. A zero-result search is not a blocker by itself when no fixed mapping exists.
 
 ### 3. Fallback setup — create a fresh absence only when needed
 

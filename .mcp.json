@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "node_modules/@playwright/mcp/cli.js",
+        "--browser",
+        "chrome",
+        "--codegen",
+        "none",
+        "--isolated",
+        "--viewport-size",
+        "1280x720",
+        "--output-dir",
+        "reports/playwright-mcp-artifacts",
+        "--caps",
+        "devtools"
+      ]
+    }
+  }
+}

@@ -3,6 +3,7 @@
   "application": "AES Stage ML",
   "organizationId": "140463",
   "url": "https://login.stage-k12.ss.frontlineeducation.com/",
+  "applicationHubUrl": "https://stage-k12.ss.frontlineeducation.com/app",
   "requiredUrlContains": "stage-k12.ss",
   "browserIsolation": {
     "required": true,
@@ -37,11 +38,49 @@
   ],
   "scenarioData": {
     "manageAccess": {
+      "enabled": false,
+      "reason": "Manage Access validation is intentionally scoped only to the configured Organization 140462 Organization User login."
+    },
+    "logoutBrowserBack": {
       "enabled": true,
       "loginUsernameKey": "org_username",
-      "employeeFirstName": "Employee_sub",
-      "employeeLastName": "Employee_sub_last",
-      "unconfiguredLoginStatus": "NOT TESTED"
+      "role": "Organization User",
+      "controller": "organization-user-execution.md",
+      "workflowSlug": "organization-user-logout-browser-back-after-logout",
+      "executionsPerOrganization": 1
+    },
+    "absenceTabs": {
+      "enabled": true,
+      "searchOrder": [
+        "header-global-search",
+        "role-appropriate-scheduled-absence-list",
+        "confirmation-number-search",
+        "dashboard-quick-action"
+      ],
+      "entries": [
+        {
+          "loginUsernameKey": "org_username",
+          "role": "Organization User",
+          "confirmationNumber": "215847471",
+          "absenceDate": "2026-11-27",
+          "listName": "Scheduled Absences",
+          "detailsUrl": "https://absence-adminweb.stage-k12.ss.frontlineeducation.com/absences/detail/215847471/view"
+        },
+        {
+          "loginUsernameKey": "campusUser",
+          "role": "Campus User",
+          "confirmationNumber": "215847472",
+          "absenceDate": "2026-11-26",
+          "listName": "Scheduled Absences"
+        },
+        {
+          "loginUsernameKey": "employee",
+          "role": "Employee",
+          "confirmationNumber": "215847473",
+          "absenceDate": "2026-11-30",
+          "listName": "Scheduled Absences"
+        }
+      ]
     }
   },
   "approvedHosts": [

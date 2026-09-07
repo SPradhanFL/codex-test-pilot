@@ -3,6 +3,7 @@
 !.secrets/aes-stage.credentials.example.json
 !.secrets/aes-stage.ml.140462.credentials.example.json
 !.secrets/aes-stage.ml.140463.credentials.example.json
+!.secrets/aes-stage.ml.140466.credentials.example.json
 
 # Local browser/runtime artifacts.
 node_modules/

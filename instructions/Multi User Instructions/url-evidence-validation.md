@@ -6,11 +6,12 @@ At every workflow's final evidence checkpoint, validate the stable browser URL a
 
 ## Required value
 
-Read `requiredUrlContains` only from `config/aes-stage.ml.<OrgId>.json`. The current Stage ML policy requires the case-insensitive substring:
+Read `requiredUrlContains` only from `config/aes-stage.ml.<OrgId>.json` and compare it case-insensitively. The environment policies are:
 
-`stage-k12.ss`
+- `stageML`: `stage-k12.ss`
+- `stageIDM`: `flqa.net`
 
-This shared marker intentionally covers the role-specific Stage ML application hosts, including Organization User, Campus User, Employee, Substitute, and supported launcher destinations. Do not require one product-specific hostname.
+These shared markers cover the approved role-specific application hosts for their respective authentication environments. Do not substitute a marker from another organization or environment and do not require one product-specific hostname.
 
 Do not hard-code a different environment or infer a host from a previous account.
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Execute only Campus User scenarios **3, 7, 14, 16, 17, 20, and 21** from `role-scenario-matrix.md`. Scenarios 20 and 21 are Campus User-only navigation validations defined in this controller.
+Execute only Campus User scenarios **3, 7, 14, 16, 17, 20, and 21** from `role-scenario-matrix.md` plus the required standalone Home menu navigation workflow in `tests/navigation/standalone-home-menu-navigation.md`. Scenarios 20 and 21 are Campus User-only navigation validations defined in this controller.
 
 ## Mandatory preparation
 
@@ -16,6 +16,7 @@ Before opening the browser, read completely:
 6. `tests/navigation/cross-application-navigation-matrix.md`
 7. `tests/navigation/absence-tab.md`
 8. `tests/logout/logout-navigation-matrix.md`
+9. `tests/navigation/standalone-home-menu-navigation.md`
 
 Execute directly in Chrome through Playwright MCP. Run unattended in safe mode, with only Scenario 14's temporary absence create-and-cleanup exception. Do not generate browser-automation source code.
 
@@ -31,7 +32,7 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 2. Read the Stage ML URL and `testUsernames.campusUser` only from `config/aes-stage.ml.<OrgId>.json`.
 3. Read `campus_password` only from `.secrets/aes-stage.ml.<OrgId>.credentials.json`.
 4. If either value is missing or is a placeholder, create a **BLOCKED** report and stop before browser actions.
-5. Use this same Campus User identity for all seven workflows. Do not fall back to the default Organization User.
+5. Use this same Campus User identity for all seven numbered scenarios and the standalone Home menu workflow. Do not execute Campus workflows under another active role. After each post-selection Home or Dashboard landing, open the user-info menu and confirm Campus User is active. If any other role is displayed, apply the one-time role reselection recovery in `role-scenario-matrix.md` and continue only after Campus User is confirmed.
 6. Never print, display, log, screenshot, report, or copy credentials or session secrets.
 
 ## Shared safety and execution rules
@@ -42,6 +43,10 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 - Continue after a failed independent workflow when it is safe to do so.
 - If the Campus User lacks a required permission, mark that workflow **BLOCKED**, record the missing destination or control, and continue with independent workflows.
 - Restore all changed read-only filters, views, and search fields.
+
+## Required standalone supplemental workflow — Home menu navigation
+
+After the first responsive Campus Home/Dashboard landing and Campus User role confirmation, execute `tests/navigation/standalone-home-menu-navigation.md` before Scenario 3. Validate `Staff Directory`, `My Staff Profile`, and all three `Resource Library` submenus as one independent supplemental result. This workflow applies to this standalone controller only and must not be inherited by a combination controller that reuses Campus scenario definitions.
 
 ## Scenario 3 — React Home to Angular Daily Report
 
@@ -106,15 +111,15 @@ Expected: Every available detail tab for the selected absence can be viewed succ
 
 ## Scenario 16 — Logout from React Home
 
-Start a fresh Campus User session and execute **Flow 1 — Logout from React Home** from `tests/logout/logout-navigation-matrix.md`, including the shared authentication, logout, and session-termination checks.
+Start a fresh Campus User session and execute **Flow 1 — Logout from React Home** from `tests/logout/logout-navigation-matrix.md`, including only its authentication, source-page, logout, and login-page checks.
 
-Expected: Logout reaches the approved login page, browser Back does not restore an authenticated session, and direct React Home access requires authentication.
+Expected: Logout reaches and displays the approved login page. Do not click browser Back or test direct protected access.
 
 ## Scenario 17 — Logout from Angular Daily Report
 
-Start a fresh Campus User session and execute **Flow 2 — Logout from Angular Daily Report** from `tests/logout/logout-navigation-matrix.md`, including the shared authentication, logout, and session-termination checks.
+Start a fresh Campus User session and execute **Flow 2 — Logout from Angular Daily Report** from `tests/logout/logout-navigation-matrix.md`, including only its authentication, source-page, logout, and login-page checks.
 
-Expected: Logout reaches the approved login page, browser Back does not restore an authenticated session, and direct Daily Report access requires authentication.
+Expected: Logout reaches and displays the approved login page. Do not click browser Back or test direct protected access.
 
 ## Result classification and reporting
 
@@ -122,13 +127,14 @@ Create the canonical report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/
 
 - Campus User as the execution role
 - One outcome card for each of scenarios 3, 7, 14, 16, 17, 20, and 21
+- One independent `Campus User · Standalone Home menu navigation` outcome with destination-level steps, screenshots, and measured video range
 - Detailed action, expected result, actual result, and status rows
 - PASS, FAIL, BLOCKED, and NOT TESTED totals
 - Safe route observations and screenshot paths
 - Numbered reproduction steps for failures
 - Restoration, session termination, and cleanup results
 
-Mark each scenario independently. The overall result is **PASS** only when all seven authorized scenarios pass. Never include credentials, sensitive redirect data, or absence personal data.
+Mark each scenario independently. The overall result is **PASS** only when all seven authorized numbered scenarios and the required standalone Home menu navigation workflow pass. Never include credentials, sensitive redirect data, or absence personal data.
 
 ## Invocation
 

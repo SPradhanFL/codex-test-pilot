@@ -46,7 +46,7 @@ function Resolve-MultiUserOrganizationContext {
         throw 'The organization report root resolved outside reports/full-suite.'
     }
     if (-not (Test-Path -LiteralPath $configPath)) {
-        throw "Missing Stage ML organization configuration: $configPath"
+        throw "Missing Stage organization configuration: $configPath"
     }
 
     $config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
@@ -59,8 +59,21 @@ function Resolve-MultiUserOrganizationContext {
     if (-not (Test-MultiUserConfiguredValue ([string]$config.requiredUrlContains))) {
         throw "Configuration $configPath must define requiredUrlContains for workflow evidence validation."
     }
-    if (-not [string]::Equals([string]$config.requiredUrlContains, 'stage-k12.ss', [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "Configuration $configPath must use stage-k12.ss as requiredUrlContains."
+    $environment = [string]$config.environment
+    $isStageMl = [string]::Equals($environment, 'stageML', [System.StringComparison]::OrdinalIgnoreCase)
+    $isStageIdm = [string]::Equals($environment, 'stageIDM', [System.StringComparison]::OrdinalIgnoreCase)
+    if (-not $isStageMl -and -not $isStageIdm) {
+        throw "Configuration $configPath must use environment stageML or stageIDM."
+    }
+    $expectedUrlMarker = if ($isStageIdm) { 'flqa.net' } else { 'stage-k12.ss' }
+    if (-not [string]::Equals([string]$config.requiredUrlContains, $expectedUrlMarker, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Configuration $configPath must use $expectedUrlMarker as requiredUrlContains for $environment."
+    }
+    if ($isStageIdm -and (
+        -not [string]::Equals([string]$config.authenticationMode, 'IDM', [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not [string]::Equals([string]$config.applicationLaunchMode, 'direct', [System.StringComparison]::OrdinalIgnoreCase)
+    )) {
+        throw "IDM configuration $configPath must use authenticationMode IDM and applicationLaunchMode direct."
     }
 
     $browserIsolation = $config.browserIsolation
@@ -99,6 +112,8 @@ function Resolve-MultiUserOrganizationContext {
         SecretPath = $secretPath
         FullSuiteRoot = $fullSuiteRoot
         Config = $config
+        Environment = $environment
+        ExpectedUrlMarker = $expectedUrlMarker
         EnabledControllers = $enabledControllers
         ControllerCatalog = $script:MultiUserControllerCatalog
     }

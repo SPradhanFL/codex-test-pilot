@@ -49,7 +49,7 @@ Each scenario name on the dashboard must open a separate HTML page containing:
 - Expected result and observed actual result.
 - Every executed step in order.
 - Failure or blocked reason with numbered reproduction steps when applicable.
-- For every FAIL, a visible `Failure observation: 60 seconds` statement and an executed timeout step showing that the expected UI state was polled for the full interval before the failure was finalized.
+- For every FAIL, a visible `Failure observation: 120 seconds` statement and an executed timeout step showing that the expected UI state was polled for the full interval before the failure was finalized.
 - One or more full, readable screenshot evidence images.
 - URL warnings, when present, with the affected validation step, expected/actual result, and linked screenshot.
 - The shared execution video with a button that seeks to the scenario start and stops at the scenario end.
@@ -82,4 +82,4 @@ Before sharing a report, verify:
 8. Multi-user `run-data.json` and `timeline.json` declare `measured-video-events-v1`, and every account/workflow range comes from `video-events.json` rather than an equal-time estimate.
 9. The video and every multi-user screenshot include the complete Chrome window and address bar, while excluding surrounding desktop content.
 10. Warning totals match all workflow `warnings` arrays, and each warning screenshot resolves.
-11. Every failed workflow records `failureObservationSeconds: 60`, includes its 60-second observation in the executed-step evidence, and has a final screenshot captured at or after timeout.
+11. Every failed workflow records `failureObservationSeconds: 120`, includes its 120-second observation in the executed-step evidence, and has a final screenshot captured at or after timeout.

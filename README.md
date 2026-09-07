@@ -128,7 +128,7 @@ That scenario automatically:
 
 Codex reads the selected scenario and shared files, opens the application, performs the browser actions, verifies the expected results, and writes the requested reports. If required configuration is missing, it stops before making changes and reports what must be supplied.
 
-Before any scenario is marked **FAIL**, the runner observes or polls the missing expected page, element, navigation, or state for a full 60 seconds. If it remains unavailable, the runner captures final evidence at or after the timeout and records the 60-second expiration in the report. This wait does not change genuine **BLOCKED** or **NOT TESTED** prerequisite outcomes.
+Before any scenario is marked **FAIL**, the runner observes or polls the missing expected page, element, navigation, or state for a full 120 seconds. If it remains unavailable, the runner captures final evidence at or after the timeout and records the 120-second expiration in the report. Transient overlays and missing page/account shells also receive up to 120 seconds, with one safe refresh after 60 seconds, before **BLOCKED** is used. This recovery does not change genuine missing-data, permission, safety, or unsupported **BLOCKED**/**NOT TESTED** outcomes.
 
 ## Execute the complete suite with one video
 
@@ -187,7 +187,9 @@ The standard provides a summary dashboard, linked scenario-detail pages, expecte
 
 Use `instructions/multi-user-full-suite-execution.md` with an explicit organization ID to execute the controllers enabled in `config/aes-stage.ml.<OrgId>.json`. The catalog contains ten possible controllers; each organization configuration enables only the login combinations available for that organization.
 
-Role coverage is defined in `instructions/Multi User Instructions/role-scenario-matrix.md`: Organization User runs scenarios 1–19; Campus User runs 3, 7, 14, 16, 17, 20, and 21, including Campus-only Report Writer and Account Settings navigation; and Employee/Substitute run 14 and 16. Combination controllers execute each role/context separately and repeat shared scenario IDs instead of deduplicating them.
+Role coverage is defined in `instructions/Multi User Instructions/role-scenario-matrix.md`: Organization User runs scenarios 1–12, 14, and 16–19; only the exact standalone Organization 140462 `org_username` login also runs the two Scenario 13 Manage Access cases. Scenario 15 is retired. Campus User runs 3, 7, 14, 16, 17, 20, and 21, including Campus-only Report Writer and Account Settings navigation; Employee/Substitute run 14 and 16. Combination controllers execute each role/context separately and repeat shared scenario IDs instead of deduplicating them.
+
+Numbered logout scenarios validate only that the approved login page displays after logout. Browser Back after logout is tested separately exactly once through the standalone Organization User controller for each of organizations 140462, 140463, and 140466, producing three organization-scoped validations in total.
 
 Choose the organization by passing only its ID to the readiness and start commands. The organization configuration supplies the enabled login combinations:
 

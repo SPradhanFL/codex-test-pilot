@@ -39,7 +39,7 @@ $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 if ([string]$manifest.organizationId -ne $OrgId -or $AccountSlug -notin @($manifest.accounts.slug)) {
     throw 'The organization or account slug does not match the run manifest.'
 }
-$isolationEvidencePath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory [string]$manifest.capture.isolationEvidence))
+$isolationEvidencePath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory ([string]$manifest.capture.isolationEvidence)))
 if (-not $isolationEvidencePath.StartsWith($runDirectory, [System.StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $isolationEvidencePath)) {
     throw 'Missing confirmed browser-isolation evidence for screenshot capture.'
 }
@@ -81,22 +81,24 @@ if ($window.ProcessId -ne [int]$isolationEvidence.chromeProcessId) {
     throw 'The confirmed isolated Chrome process is no longer available. Refusing to capture another Chrome window.'
 }
 Add-Type -AssemblyName System.Drawing
+$screenCopySucceeded = $false
 $bitmap = New-Object System.Drawing.Bitmap($window.Width, $window.Height)
 $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-$screenCopyFailed = $false
 try {
-    try {
-        $graphics.CopyFromScreen($window.X, $window.Y, 0, 0, $bitmap.Size, [System.Drawing.CopyPixelOperation]::SourceCopy)
-        $bitmap.Save($destination, [System.Drawing.Imaging.ImageFormat]::Png)
-    } catch {
-        $screenCopyFailed = $true
-    }
+    # Capture the composed desktop surface first. Chrome's GPU-backed content can
+    # make PrintWindow return a stale frame even though the title and URL have
+    # already changed, which produces evidence for the previous workflow.
+    $graphics.CopyFromScreen($window.X, $window.Y, 0, 0, $bitmap.Size, [System.Drawing.CopyPixelOperation]::SourceCopy)
+    $bitmap.Save($destination, [System.Drawing.Imaging.ImageFormat]::Png)
+    $screenCopySucceeded = (Test-Path -LiteralPath $destination) -and (Get-Item -LiteralPath $destination).Length -ge 1024
+} catch {
+    $screenCopySucceeded = $false
 } finally {
     $graphics.Dispose()
     $bitmap.Dispose()
 }
 
-if ($screenCopyFailed -or -not (Test-Path -LiteralPath $destination) -or (Get-Item -LiteralPath $destination -ErrorAction SilentlyContinue).Length -lt 1024) {
+if (-not $screenCopySucceeded) {
     $printBitmap = New-Object System.Drawing.Bitmap($window.Width, $window.Height)
     $printGraphics = [System.Drawing.Graphics]::FromImage($printBitmap)
     $printHdc = $printGraphics.GetHdc()

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Execute all 19 numbered Organization User scenarios in `role-scenario-matrix.md`. This file is an execution controller; it does not replace or modify the mapped source tests.
+Execute the 17 standard Organization User scenarios **1–12, 14, and 16–19** in `role-scenario-matrix.md`, the required standalone Home menu navigation workflow, and one separate Browser Back-after-logout workflow. For the exact configured Organization 140462 standalone login only, also execute both Scenario 13 Manage Access cases independently. Scenario 15 is retired. This file is an execution controller; it does not replace or modify the mapped source tests.
 
 ## Mandatory preparation
 
@@ -14,7 +14,9 @@ Before opening the browser, read completely:
 4. `instructions/full-suite-headed-video-execution.md`
 5. `config/aes-stage.ml.<OrgId>.json`
 6. `instructions/Multi User Instructions/role-scenario-matrix.md`
-7. Every source Markdown test mapped to scenarios 1–19 in that matrix
+7. Every source Markdown test mapped to the active Organization User scenarios in that matrix
+8. `tests/navigation/standalone-home-menu-navigation.md`
+9. `tests/logout/organization-user-browser-back-after-logout.md`
 
 Execute the scenarios directly in Chrome through Playwright MCP. Do not generate Playwright, TypeScript, or reusable automation source code.
 
@@ -37,13 +39,15 @@ Resolve credentials before opening the browser:
 
 ## Scenario selection and execution order
 
-1. The Organization User authorization set is exactly scenarios **1–19** in `role-scenario-matrix.md`.
-2. Execute non-logout scenarios 1–15 in numerical order unless a source test requires a dependency-safe navigation prerequisite.
-3. Execute logout scenarios 16–19 last. Each logout scenario begins with a fresh authenticated Organization User session and completes its Back and direct-route checks before the next login.
-4. Use the source test mapped to each scenario ID for its detailed steps, interaction checks, expected results, safety rules, and reporting requirements.
-5. Before Scenario 13, apply the per-login data gate in `tests/navigation/manage-access.md`. Execute it only for an enabled organization-scoped mapping whose `loginUsernameKey` exactly matches the active login. For every other login, record Scenario 13 as **NOT TESTED**, state that no safe Manage Access employee data is configured, and continue.
-6. Do not execute unrelated Markdown tests merely because they exist under `tests/`. New files enter this controller only after they are assigned a numbered Organization User scenario in `role-scenario-matrix.md`.
-7. Unless the invocation explicitly authorizes destructive mode, use unattended safe mode and do not submit a persistent create, update, delete, import, approval, reconciliation, or invitation action. Scenario 14 is the sole exception: when no existing absence is available, execute the temporary create-and-cleanup fallback in `tests/navigation/absence-tab.md` and require verified deletion before continuing.
+1. The standard Organization User authorization set is scenarios **1–12, 14, and 16–19** in `role-scenario-matrix.md`. Scenario 15 is retired.
+2. After the first responsive Organization User Home landing and role confirmation, execute `tests/navigation/standalone-home-menu-navigation.md` as one required supplemental workflow. Validate `Staff Directory`, `My Staff Profile`, and all three `Resource Library` submenus before Scenario 1.
+3. Execute non-logout scenarios **1–12 and 14** in numerical order unless a source test requires a dependency-safe navigation prerequisite.
+4. Execute logout scenarios 16–19 last. Each logout scenario begins with a fresh authenticated Organization User session and ends as soon as a stable approved login page is validated. Do not click browser Back or test direct protected access within these numbered logout scenarios.
+5. Use the source test mapped to each scenario ID for its detailed steps, interaction checks, expected results, safety rules, and reporting requirements.
+6. Between scenarios 12 and 14, apply the exact gate in `tests/navigation/manage-access.md`. Only the standalone Organization 140462 `org_username` login executes Scenario 13, and it produces two independent case outcomes. Every other login and organization omits Scenario 13 entirely without a result.
+7. Do not execute unrelated Markdown tests merely because they exist under `tests/`. The standalone Home menu test is the only required unnumbered test for this controller; other new files enter only after explicit routing in `role-scenario-matrix.md`.
+8. Unless the invocation explicitly authorizes destructive mode, use unattended safe mode and do not submit a persistent create, update, delete, import, approval, reconciliation, or invitation action. Scenario 14 is the sole exception: when no existing absence is available, execute the temporary create-and-cleanup fallback in `tests/navigation/absence-tab.md` and require verified deletion before continuing.
+9. After scenarios 16–19, execute `tests/logout/organization-user-browser-back-after-logout.md` once as a separate required supplemental workflow. This is the only Browser Back-after-logout check for the organization and must not be repeated for individual pages, roles, or combination accounts.
 
 ## Isolation and continuation rules
 
@@ -61,14 +65,16 @@ Follow the full-suite artifact and dashboard rules in `instructions/full-suite-h
 For a standalone Organization User invocation, use the organization-scoped full-suite pipeline and create the canonical role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/organization-user/`. Archive older runs only within `reports/full-suite/<OrgId>/old-reports/`.
 
 - Organization User as the execution role
-- A complete outcome for each numbered scenario 1–19 in resolved execution order
+- A complete outcome for scenarios 1–12, 14, and 16–19, plus two independent Scenario 13 case outcomes only when the exact Organization 140462 gate matches
+- One independent `Organization User · Standalone Home menu navigation` outcome with destination-level steps, screenshots, and measured video range
+- One independent `Organization User · Browser Back after logout` outcome for the selected organization
 - PASS, FAIL, BLOCKED, and NOT TESTED totals
 - A detailed result for every discovered test and every documented step
 - Screenshots and video evidence when required by the full-suite instruction
 - Numbered reproduction steps for every failure
 - Safety, restoration, and cleanup results
 
-The overall Organization User result is **PASS** only when all 19 required scenarios pass. Never include secrets or sensitive identity data in an artifact.
+The overall Organization User result is **PASS** only when every workflow authorized for the resolved organization/login gate and the required standalone Home menu navigation workflow pass. Never include secrets or sensitive identity data in an artifact.
 
 ## Invocation
 

@@ -8,7 +8,7 @@ The required outcomes are:
 
 - Campus User: scenarios **3, 7, 14, 16, 17, 20, and 21**
 - Employee: scenarios **14 and 16**
-- Organization User: scenarios **1–19**
+- Organization User: scenarios **1–12, 14, and 16–19**
 
 Shared scenario IDs are repeated in every applicable role and must not be deduplicated.
 
@@ -21,7 +21,7 @@ Read completely before opening the browser:
 3. `instructions/Multi User Instructions/role-scenario-matrix.md`
 4. `instructions/Multi User Instructions/campus-user-execution.md`, using only its Scenario 20 and Scenario 21 definitions
 5. `config/aes-stage.ml.<OrgId>.json`
-6. Every source Markdown test mapped to Organization User scenarios 1–19
+6. Every source Markdown test mapped to the active Organization User scenarios
 7. `tests/navigation/cross-application-navigation-matrix.md`
 8. `tests/navigation/absence-tab.md`
 9. `tests/logout/logout-navigation-matrix.md`
@@ -71,7 +71,7 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 
 1. After the Employee logout, authenticate again with this same account and select Organization User.
 2. Verify React Home, active role label, organization label, global navigation, and account control.
-3. Execute Organization User scenarios **1–15** in numerical and dependency-safe order.
+3. Execute Organization User scenarios **1–12 and 14** in numerical and dependency-safe order. Do not execute Scenario 13 because this combination login does not match the standalone Organization 140462 gate. Scenario 15 is retired.
 4. Execute logout scenarios **16, 17, 18, and 19** independently. Start each with a fresh login to this same account and reselect Organization User.
 5. In scenario 14, prefer an existing absence read-only. If none exists, execute the documented temporary create-and-cleanup fallback and do not pass until deletion is verified.
 
@@ -82,7 +82,7 @@ For every switch, confirm the active role and destination together. A changed ro
 - Do not create, edit, approve, reconcile, import, invite, accept, reject, assign, save, or delete business data in unattended safe mode except for Scenario 14's exact temporary absence create-and-cleanup lifecycle.
 - Restore read-only filters, searches, dates, and views before leaving a scenario.
 - Continue after independent FAIL or BLOCKED outcomes.
-- After every logout, finish Back and direct-route checks before re-authenticating.
+- After every logout, confirm the stable approved login page displays, then re-authenticate for the next independent flow. Do not click browser Back or test direct protected routes in this combination controller.
 
 ## Reporting
 
@@ -91,13 +91,13 @@ Follow `instructions/html-reporting-standard.md`. Create the role report under `
 The report must:
 
 - group results in Campus User → Employee → Organization User order;
-- include seven Campus outcomes, two Employee outcomes, and nineteen Organization User outcomes;
+- include seven Campus outcomes, two Employee outcomes, and seventeen Organization User outcomes;
 - include screenshots and exact continuous-video ranges for every scenario;
 - keep duplicate scenario IDs separate by active role;
 - include numbered reproduction steps for every failure and exact reasons for blocked scenarios; and
 - omit credentials, personal data, and sensitive redirect/session data.
 
-The controller is **PASS** only when all three roles exist and all 28 role-specific scenario outcomes pass.
+The controller is **PASS** only when all three roles exist and all 26 role-specific scenario outcomes pass.
 
 ## Invocation
 

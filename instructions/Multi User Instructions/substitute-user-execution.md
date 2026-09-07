@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Execute only Substitute scenarios **14 and 16** from `role-scenario-matrix.md`: validate the Substitute schedule/history views, then verify logout from React Home. Scenario 14 is role-adapted for the Substitute portal and does not require opening an individual absence or job-detail page.
+Execute only Substitute scenarios **14 and 16** from `role-scenario-matrix.md` plus the required standalone `My Staff Profile` navigation workflow in `tests/navigation/standalone-home-menu-navigation.md`: validate the Substitute schedule/history views, then verify logout from React Home. Scenario 14 is role-adapted for the Substitute portal and does not require opening an individual absence or job-detail page.
 
 ## Mandatory preparation
 
@@ -15,6 +15,7 @@ Before opening the browser, read completely:
 5. `instructions/Multi User Instructions/role-scenario-matrix.md`
 6. `tests/navigation/absence-tab.md`
 7. `tests/logout/logout-navigation-matrix.md`
+8. `tests/navigation/standalone-home-menu-navigation.md`
 
 Execute directly in Chrome through Playwright MCP. Run unattended in safe, read-only mode. Do not generate browser-automation source code.
 
@@ -30,7 +31,7 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 2. Read the Stage ML URL and `testUsernames.substitute` only from `config/aes-stage.ml.<OrgId>.json`.
 3. Read `substitute_password` only from `.secrets/aes-stage.ml.<OrgId>.credentials.json`.
 4. If either value is missing or is a placeholder, create a **BLOCKED** report and stop before browser actions.
-5. Use this same Substitute identity for both workflows. Do not fall back to the default Organization User.
+5. Use this same Substitute identity for both numbered scenarios and the standalone Home menu workflow. Do not execute Substitute workflows under another active role. After each post-selection Home or Dashboard landing, open the user-info menu and confirm Substitute is active. If any other role is displayed, apply the one-time role reselection recovery in `role-scenario-matrix.md` and continue only after Substitute is confirmed.
 6. Never print, display, log, screenshot, report, or copy credentials or session secrets.
 
 ## Shared safety and execution rules
@@ -40,6 +41,10 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 - Scenario 14 validates navigation and visible page content only. Empty job lists, zero-result states, and the absence of an individual job-detail link are acceptable when the required Substitute schedule/history views load successfully.
 - Continue to the independent logout workflow after an absence-workflow failure or block when authentication remains safe.
 - Start the logout workflow with a fresh Substitute session.
+
+## Required standalone supplemental workflow — My Staff Profile
+
+After the first responsive Substitute Home landing and Substitute role confirmation, execute the Substitute flow in `tests/navigation/standalone-home-menu-navigation.md` before Scenario 14. Validate only `My Staff Profile` as one independent supplemental result. Do not require or test `Staff Directory` or `Resource Library`, and do not inherit this workflow from a multi-role or multi-organization combination controller.
 
 ## Scenario 14 — Validate Substitute schedule and history views
 
@@ -60,13 +65,13 @@ This Substitute-specific flow overrides the individual-absence and detail-tab br
 
 Expected: Available Jobs, Scheduled Jobs/Schedule, Past Jobs/History Jobs, and Non Work Days can each be selected and display responsive content without changing business data. An individual job-detail page or detail-tab set is not required.
 
-Classification: Mark **PASS** when all four required views work, including valid empty states. Mark **FAIL** after the mandatory 60-second failure observation when an exposed view cannot be selected or render correctly. Mark **BLOCKED** only when authentication, role selection, entitlement, or environment restrictions prevent access to a required Substitute view.
+Classification: Mark **PASS** when all four required views work, including valid empty states. Mark **FAIL** after the mandatory 120-second failure observation when an exposed view cannot be selected or render correctly. Mark **BLOCKED** only when authentication, role selection, entitlement, or environment restrictions prevent access to a required Substitute view.
 
 ## Scenario 16 — Logout from React Home
 
-Start a fresh Substitute session and apply **Flow 1 — Logout from React Home** plus the shared authentication, logout, and session-termination checks from `tests/logout/logout-navigation-matrix.md` to the Substitute React Home page.
+Start a fresh Substitute session and apply **Flow 1 — Logout from React Home** plus only the shared authentication, source-page, logout, and login-page checks from `tests/logout/logout-navigation-matrix.md` to the Substitute React Home page.
 
-Expected: Logout reaches the approved login page, browser Back does not restore an authenticated session, and direct access to the captured React Home route requires authentication.
+Expected: Logout reaches and displays the approved login page. Do not click browser Back or test direct protected access.
 
 ## Result classification and reporting
 
@@ -74,6 +79,7 @@ Create the canonical report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/
 
 - Substitute as the execution role
 - One outcome card for scenario 14 and one for scenario 16
+- One independent `Substitute · Standalone Home menu navigation` outcome with destination-level steps, screenshot, and measured video range
 - The four Substitute schedule/history views and a result for each, without personal data
 - Detailed action, expected result, actual result, and status rows
 - PASS, FAIL, BLOCKED, and NOT TESTED totals
@@ -81,7 +87,7 @@ Create the canonical report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/
 - Numbered reproduction steps for failures
 - Session termination and cleanup results
 
-Mark each scenario independently. The overall result is **PASS** only when scenarios 14 and 16 both pass. Never include credentials, sensitive redirect data, or absence personal data.
+Mark each scenario independently. The overall result is **PASS** only when scenarios 14 and 16 and the required standalone Home menu navigation workflow all pass. Never include credentials, sensitive redirect data, or absence personal data.
 
 ## Invocation
 

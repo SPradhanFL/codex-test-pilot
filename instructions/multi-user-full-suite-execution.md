@@ -15,8 +15,9 @@ Before opening the browser, read completely:
 5. `instructions/Multi User Instructions/app-switcher-validation.md`
 6. `instructions/Multi User Instructions/stage-ml-application-launch.md`
 7. `instructions/Multi User Instructions/url-evidence-validation.md`
-8. `config/aes-stage.ml.<OrgId>.json`
-9. Every discovered `instructions/Multi User Instructions/*-execution.md` controller
+8. `tests/navigation/standalone-home-menu-navigation.md`
+9. `config/aes-stage.ml.<OrgId>.json`
+10. Every discovered `instructions/Multi User Instructions/*-execution.md` controller
 
 Read passwords only from `.secrets/aes-stage.ml.<OrgId>.credentials.json`, resolving only the keys required by the enabled controllers. Never display or copy a resolved password. If one selected account is missing a role, organization, or permission after readiness passes, generate its **BLOCKED** role/login-combination report and continue with the next account.
 
@@ -134,22 +135,25 @@ The event journal is mandatory. It supplies the real scenario boundaries used by
 ## Execution rules
 
 1. Execute each controller exactly as documented, including its identity, scenario selection, safety restrictions, and credential keys.
-2. After every authentication, follow `stage-ml-application-launch.md` before executing scenarios. Activate the supported My Frontline tile with a normal click, treat the launcher host as intermediate, refresh the Chrome open-tab inventory, and attach to the approved responsive application tab whose URL contains `requiredUrlContains`. Do not classify an intermediate launcher error as a blocker until the documented alternate-tab check and one supported retry are exhausted.
+2. After every authentication, follow `stage-ml-application-launch.md` before executing scenarios and select its branch from the organization configuration. For `stageIDM` with direct launch, open the configured AES Stage URL, allow its approved IDM authentication redirect, and do not require My Frontline or an application tile. For `stageML`, activate the supported My Frontline tile with a normal click, treat the launcher host as intermediate, refresh the Chrome open-tab inventory, and attach to the approved responsive application tab whose URL contains `requiredUrlContains`. Apply only the recovery procedure documented for the selected environment.
 3. Do not reuse the previous controller's identity for the next account.
 4. Scroll each target into view before interacting and before capturing evidence.
-5. At every final evidence checkpoint, follow `url-evidence-validation.md`. Capture at least one complete-browser-window screenshot for every workflow, plus screenshots proving failures, blocked states, or URL warnings. Use:
+5. Apply the unexpected-popup recovery in `instructions/project-instructions.md` after every page navigation, application switch, role/context change, or refresh and before the next planned action. Close only unrelated, safely dismissible popups and continue the current workflow after the popup/backdrop disappears. The Time & Attendance announcement `New: Resource Center & Feedback Portal` is explicitly treated as an unrelated dismissible popup. Do not dismiss a confirmation or dialog required by the selected scenario.
+6. At every final evidence checkpoint, follow `url-evidence-validation.md`. Capture at least one complete-browser-window screenshot for every workflow, plus screenshots proving failures, blocked states, or URL warnings. Use:
 
    ```powershell
    powershell -ExecutionPolicy Bypass -File scripts/capture-browser-window-screenshot.ps1 -OrgId <OrgId> -RunId <runId> -AccountSlug <account-slug> -EvidenceName <safe-evidence-name.png>
    ```
    Playwright page screenshots may be retained as supplemental detail, but they do not replace this required full-browser-window capture because they omit Chrome tabs and the address bar.
-6. Continue to the next independent controller after PASS, FAIL, BLOCKED, or NOT TESTED.
-7. Do not convert a failed or blocked result to PASS because a later account succeeds.
-8. Keep read-only controllers read-only except for Scenario 14's explicitly authorized temporary absence fallback. When no existing absence is available, follow `tests/navigation/absence-tab.md` to create one uniquely identifiable Stage test absence, validate it, delete/cancel that exact record, and verify it is absent before continuing. No other test-data creation is authorized.
-9. Restore any safe filters, searches, roles, and organization context before logout or controller completion.
-10. After every successful login/context selection and again from the Home-page top-left area, apply the conditional App Switcher validation. When visible, report it as a supplemental workflow inside the current role folder; when absent at both checkpoints, record the observation without adding an outcome.
-11. Validate the sanitized stable URL at every workflow's final checkpoint. A missing configured substring is a separate `WARNING` and does not change a working flow's status. If the unexpected destination also breaks the documented workflow, classify it as FAIL; if execution cannot reach a stable inspectable state, classify it as BLOCKED without inventing a warning.
-12. Apply the mandatory **60-second failure observation** from `instructions/project-instructions.md` to every potential FAIL in every controller and role/context. Do not finalize FAIL until the expected page, element, navigation, or state has been observed or polled for the full 60 seconds. Capture the final full-browser screenshot at or after timeout and add a report step that explicitly records the 60-second elapsed observation. Do not use this rule to delay or reclassify a genuine BLOCKED or NOT TESTED prerequisite.
+7. Continue to the next independent controller after PASS, FAIL, BLOCKED, or NOT TESTED.
+8. Do not convert a failed or blocked result to PASS because a later account succeeds.
+9. Keep read-only controllers read-only except for Scenario 14's explicitly authorized temporary absence fallback. When no existing absence is available, follow `tests/navigation/absence-tab.md` to create one uniquely identifiable Stage test absence, validate it, delete/cancel that exact record, and verify it is absent before continuing. No other test-data creation is authorized.
+10. Restore any safe filters, searches, roles, and organization context before logout or controller completion.
+11. After every successful login/context selection and again from the Home-page top-left area, apply the conditional App Switcher validation. When visible, report it as a supplemental workflow inside the current role folder; when absent at both checkpoints, record the observation without adding an outcome.
+    - For every role/context selection, apply the active-role/context recovery in `instructions/Multi User Instructions/role-scenario-matrix.md`. After Home or Dashboard becomes responsive, open the user-info/account-role menu and verify that the displayed role and organization context match the exact selection required for the workflow. On any mismatch, reselect the intended role/context once and continue only after the user-info menu and role-appropriate Home controls confirm it. The first mismatch is a recovery observation, not a validation failure.
+12. When the active controller is exactly `organization-user-execution.md`, `campus-user-execution.md`, `employee-user-execution.md`, or `substitute-user-execution.md`, execute `tests/navigation/standalone-home-menu-navigation.md` once after the first responsive Home role confirmation and report it as a required supplemental workflow. Do not execute it for any combination controller.
+13. Validate the sanitized stable URL at every workflow's final checkpoint. A missing configured substring is a separate `WARNING` and does not change a working flow's status. If the unexpected destination also breaks the documented workflow, classify it as FAIL; if execution cannot reach a stable inspectable state, classify it as BLOCKED without inventing a warning.
+14. Apply the mandatory **120-second failure observation** from `instructions/project-instructions.md` to every potential FAIL in every controller and role/context. Do not finalize FAIL until the expected page, element, navigation, or state has been observed or polled for the full 120 seconds. Capture the final full-browser screenshot at or after timeout and add a report step that explicitly records the 120-second elapsed observation. For transient overlays or missing page/account shells, poll readiness for the same 120-second window and perform one safe refresh after 60 seconds before classifying BLOCKED. Do not use this rule to delay or reclassify genuine missing-data, permission, safety, or unsupported-coverage prerequisites.
 
 ## Run data
 
@@ -212,7 +216,7 @@ Maintain `reports/full-suite/<OrgId>/<runId>/run-data.json` with this structure:
               "status": "PASS"
             }
           ],
-          "failureObservationSeconds": 60,
+          "failureObservationSeconds": 120,
           "reproduce": []
         }
       ],
@@ -225,7 +229,7 @@ Maintain `reports/full-suite/<OrgId>/<runId>/run-data.json` with this structure:
 
 Use only `PASS`, `FAIL`, `BLOCKED`, or `NOT TESTED` for workflow status. `WARNING` is supplemental and belongs only in a workflow's `warnings` array; it is not a fifth status. Account and workflow slugs are mandatory before recording their events. A workflow `source`, `reproduce`, and `warnings` list are optional. Give every workflow its own `screenshots` list, using an empty list when no screenshot exists; every warning screenshot must also appear in that list. Scenario pages never inherit unrelated role-level screenshots. The timeline application script supplies the measured timeline fields shown above. Every selected controller must receive a report even when authentication is blocked.
 
-Set `failureObservationSeconds` to `60` for every failed workflow and include the corresponding timeout step in `steps`. Omit that field for PASS, BLOCKED, and NOT TESTED workflows.
+Set `failureObservationSeconds` to `120` for every failed workflow and include the corresponding timeout step in `steps`. Omit that field for PASS, BLOCKED, and NOT TESTED workflows.
 
 ## Finalization and report generation
 

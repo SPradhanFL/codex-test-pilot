@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Execute the clubbed Organization User and Employee scenario sets for an account that has both roles. Run all Organization User scenarios **1–19** first, then switch to Employee and run scenarios **14 and 16**. Shared scenarios 14 and 16 are repeated in both role contexts.
+Execute the clubbed Organization User and Employee scenario sets for an account that has both roles. Run Organization User scenarios **1–12, 14, and 16–19** first, then switch to Employee and run scenarios **14 and 16**. Scenario 13 is restricted to a different exact standalone login, and Scenario 15 is retired. Shared scenarios 14 and 16 are repeated in both role contexts.
 
 ## Mandatory preparation
 
@@ -12,7 +12,7 @@ Read completely before opening the browser:
 2. `instructions/html-reporting-standard.md`
 3. `config/aes-stage.ml.<OrgId>.json`
 4. `instructions/Multi User Instructions/role-scenario-matrix.md`
-5. Every source test mapped to Organization User scenarios 1–19
+5. Every source test mapped to the active Organization User scenarios
 6. `tests/navigation/absence-tab.md`
 7. `tests/logout/logout-navigation-matrix.md`
 
@@ -42,9 +42,9 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 ### Role block 1 — Organization User
 
 1. Select Organization User and verify React Home, the active role label, global navigation, and account control.
-2. Execute scenarios **1–15** from `role-scenario-matrix.md` in numerical and dependency-safe order.
+2. Execute scenarios **1–12 and 14** from `role-scenario-matrix.md` in numerical and dependency-safe order. Omit Scenario 13 for this combination login and do not execute retired Scenario 15.
 3. Execute Organization User logout scenarios **16, 17, 18, and 19** independently. Start each one with a fresh login to this same account and reselect Organization User.
-4. Record an independent result, screenshot set, and video range for each of the 19 Organization User scenarios.
+4. Record an independent result, screenshot set, and video range for each of the 17 Organization User scenarios.
 
 ### Role block 2 — Employee
 
@@ -57,14 +57,14 @@ Also read and execute `instructions/Multi User Instructions/url-evidence-validat
 ### Completion
 
 1. Confirm the final logout reaches the approved login page.
-2. Confirm browser Back and direct access do not restore the Employee authenticated session.
+2. Do not click browser Back or test direct protected access after the final logout.
 3. Do not require a final return to Organization User after the Employee block; the required role order is Organization User followed by Employee.
 
 Do not create, edit, approve, reconcile, assign, import, invite, or delete business data except for Scenario 14's exact temporary absence create-and-cleanup lifecycle.
 
 ## Reporting
 
-Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-organization-employee/` with role-grouped outcomes for all 19 Organization User scenarios and both Employee scenarios, screenshots of each role context, one continuous video, expected/actual results, and reproduction steps for failures. Do not collapse duplicate scenario IDs across roles and do not expose credentials or sensitive identity data.
+Follow `instructions/html-reporting-standard.md`. Create the role report under `reports/full-suite/<OrgId>/<YYYYMMDD-HHMMSS>/roles/multi-role-organization-employee/` with role-grouped outcomes for all 17 Organization User scenarios and both Employee scenarios, screenshots of each role context, one continuous video, expected/actual results, and reproduction steps for failures. Do not collapse duplicate scenario IDs across roles and do not expose credentials or sensitive identity data.
 
 ## Invocation
 
