@@ -3,7 +3,11 @@ param(
     [string]$OrgId,
 
     [string[]]$Controller = @(),
-    [string[]]$ExcludeController = @()
+    [string[]]$ExcludeController = @(),
+    [ValidateSet('Full', 'TimeAndAttendance')]
+    [string]$ScenarioScope = 'Full',
+    [switch]$Parallel,
+    [ValidateRange(0, 100)][int]$MaxLanes = 0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -13,6 +17,7 @@ $workspaceRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 
 $context = Resolve-MultiUserOrganizationContext -WorkspaceRoot $workspaceRoot -OrgId $OrgId
 $selected = @(Select-MultiUserControllers -Context $context -Controller $Controller -ExcludeController $ExcludeController)
+$lanes = if ($Parallel) { @(Group-MultiUserControllerLanes -Context $context -SelectedControllers $selected -MaxLanes $MaxLanes) } else { @() }
 $controllerRoot = Join-Path $workspaceRoot 'instructions\Multi User Instructions'
 $disposableProfileCheckPath = Join-Path $workspaceRoot 'scripts\check-disposable-playwright-profile.ps1'
 $timeAttendanceFiles = @(
@@ -42,18 +47,7 @@ $secrets = if (Test-Path -LiteralPath $context.SecretPath) {
     $null
 }
 
-$credentialEnvironments = @{
-    'organization-user-execution.md' = @('AES_STAGE_ORGANIZATION_USERNAME', 'AES_STAGE_ORGANIZATION_PASSWORD')
-    'campus-user-execution.md' = @('AES_STAGE_CAMPUS_USERNAME', 'AES_STAGE_CAMPUS_PASSWORD')
-    'employee-user-execution.md' = @('AES_STAGE_EMPLOYEE_USERNAME', 'AES_STAGE_EMPLOYEE_PASSWORD')
-    'substitute-user-execution.md' = @('AES_STAGE_SUBSTITUTE_USERNAME', 'AES_STAGE_SUBSTITUTE_PASSWORD')
-    'multi-role-campus-employee-organization-execution.md' = @('AES_STAGE_ROLE_SWITCHER_ORG_USERNAME', 'AES_STAGE_ROLE_SWITCHER_ORG_PASSWORD')
-    'multi-role-organization-employee-execution.md' = @('AES_STAGE_MULTI_ROLE_ORG_EMPLOYEE_USERNAME', 'AES_STAGE_MULTI_ROLE_ORG_EMPLOYEE_PASSWORD')
-    'multi-role-employee-employee-substitute-execution.md' = @('AES_STAGE_MULTI_ROLE_EMPLOYEE_EMPLOYEE_SUBSTITUTE_USERNAME', 'AES_STAGE_MULTI_ROLE_EMPLOYEE_EMPLOYEE_SUBSTITUTE_PASSWORD')
-    'multi-org-employee-substitute-execution.md' = @('AES_STAGE_MULTI_ORG_EMPLOYEE_SUBSTITUTE_USERNAME', 'AES_STAGE_MULTI_ORG_EMPLOYEE_SUBSTITUTE_PASSWORD')
-    'multi-org-employee-employee-execution.md' = @('AES_STAGE_MULTI_ORG_EMPLOYEE_EMPLOYEE_USERNAME', 'AES_STAGE_MULTI_ORG_EMPLOYEE_EMPLOYEE_PASSWORD')
-    'multi-org-organization-campus-execution.md' = @('AES_STAGE_MULTI_ORG_ORG_CAMPUS_USERNAME', 'AES_STAGE_MULTI_ORG_ORG_CAMPUS_PASSWORD')
-}
+$credentialEnvironments = $script:MultiUserCredentialEnvironments
 
 $timeAttendanceFilesReady = @($timeAttendanceFiles | Where-Object { -not (Test-Path -LiteralPath $_) }).Count -eq 0
 $disposableProfileReady = $false
@@ -103,6 +97,20 @@ $stageUrlPolicyReady = [string]::Equals([string]$context.Config.requiredUrlConta
 $freshBrowserIsolationReady = $suiteInstructionText -match 'fresh isolated headed Chrome automation context' -and $suiteInstructionText -match 'Do not claim or reuse'
 $timelineScriptsReady = @($timelineScriptPaths | Where-Object { -not (Test-Path -LiteralPath $_) }).Count -eq 0
 $ffmpegReady = Test-Path -LiteralPath $ffmpegPath
+$laneServersReady = $true; $screenSlots = $null
+if ($Parallel) {
+    Add-Type -AssemblyName System.Windows.Forms
+    $area = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+    $screenSlots = [Math]::Max(1, [Math]::Floor($area.Width / 1280)) * [Math]::Max(1, [Math]::Floor($area.Height / 720))
+    $configText = Get-Content -LiteralPath (Join-Path $workspaceRoot '.codex\config.toml') -Raw
+    $missingServers = @(1..$lanes.Count | Where-Object { $configText -notmatch "(?m)^\[mcp_servers\.playwright_lane$_\]\s*$" })
+    $laneServersReady = $missingServers.Count -eq 0
+    foreach ($lane in $lanes) {
+        Write-Output ("Lane {0}: {1}" -f $lane.LaneId, (@($lane.Controllers.File) -join ', '))
+        if (@($lane.Controllers).Count -gt 1) { Write-Warning ("Duplicate-account constraint enforced in lane {0}: {1}" -f $lane.LaneId, (@($lane.Controllers.File) -join ', ')) }
+    }
+    Write-Output "Screen slots: $screenSlots non-overlapping, $($lanes.Count) requested; W0 outcome A permits overlap."
+}
 $results | Format-Table -AutoSize
 
 $notReady = @($results | Where-Object { -not $_.Ready })
@@ -118,15 +126,19 @@ $notReady = @($results | Where-Object { -not $_.Ready })
     SecretFile = Test-Path -LiteralPath $context.SecretPath
     DisposableChromeProfile = $disposableProfileReady
     TimeAttendanceFiles = $timeAttendanceFilesReady
+    ScenarioScope = $ScenarioScope
     SelectedControllers = @($results).Count
     ReadyControllers = @($results | Where-Object Ready).Count
     NotReadyControllers = $notReady.Count
     MeasuredVideoTimelineScripts = $timelineScriptsReady
     FullBrowserCapture = $timelineScriptsReady -and $ffmpegReady
+    ParallelLanes = if ($Parallel) { $lanes.Count } else { 0 }
+    NonOverlappingScreenSlots = $screenSlots
+    ParallelMcpServers = if ($Parallel) { $laneServersReady } else { $null }
     ReportRoot = $context.FullSuiteRoot
 } | Format-List
 
-if (-not $urlReady -or -not $urlHostApproved -or -not $approvedHostsUnique -or -not $hostListsDisjoint -or -not $requiredUrlReady -or -not $stageUrlPolicyReady -or -not $freshBrowserIsolationReady -or -not $disposableProfileReady -or -not $timeAttendanceFilesReady -or -not $timelineScriptsReady -or -not $ffmpegReady -or $notReady.Count -gt 0) {
+if (-not $urlReady -or -not $urlHostApproved -or -not $approvedHostsUnique -or -not $hostListsDisjoint -or -not $requiredUrlReady -or -not $stageUrlPolicyReady -or -not $freshBrowserIsolationReady -or -not $disposableProfileReady -or -not $timeAttendanceFilesReady -or -not $timelineScriptsReady -or -not $ffmpegReady -or -not $laneServersReady -or $notReady.Count -gt 0) {
     Write-Error "Multi-user readiness check failed for organization $OrgId. Only presence was checked; no credential values were displayed."
     exit 1
 }

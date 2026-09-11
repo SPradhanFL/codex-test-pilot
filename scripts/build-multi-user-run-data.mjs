@@ -11,9 +11,35 @@ if (!/^\d+$/.test(organizationId ?? '') || !/^\d{8}-\d{6}$/.test(runId ?? '')) {
 const runDir = path.join(workspace, 'reports', 'full-suite', organizationId, runId);
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
 const manifest = readJson(path.join(runDir, 'run-manifest.json'));
-const journal = readJson(path.join(runDir, 'video-events.json'));
-const observations = readJson(path.join(runDir, 'execution-observations.json'));
+const parallel = manifest.capture?.executionMode === 'parallel';
+const failedLaneSlugs = new Set();
+const journals = parallel ? (manifest.lanes ?? []).map(lane => {
+  const journalPath = path.join(runDir, 'lanes', lane.slug, 'video-events.json');
+  if (!fs.existsSync(journalPath)) { console.warn(`[WARN] Missing event journal for lane ${lane.slug}; treating lane as failed.`); failedLaneSlugs.add(lane.slug); return { organizationId, runId, schemaVersion: 1, timelineSource: 'measured-video-events-v1', events: [] }; }
+  return readJson(journalPath);
+}) : [readJson(path.join(runDir, 'video-events.json'))];
+const journal = { organizationId, runId, timelineSource: 'measured-video-events-v1', recordingEndedAtUtc: journals.map(item => item.recordingEndedAtUtc).filter(Boolean).sort().at(-1), events: journals.flatMap(item => item.events ?? []) };
+const observations = parallel ? (() => {
+  const laneObservations = (manifest.lanes ?? []).map(lane => {
+    const obsPath = path.join(runDir, 'lanes', lane.slug, 'execution-observations.json');
+    if (!fs.existsSync(obsPath)) { console.warn(`[WARN] Missing execution observations for lane ${lane.slug}.`); failedLaneSlugs.add(lane.slug); return { accounts: {} }; }
+    return readJson(obsPath);
+  });
+  return { environment: laneObservations.find(item => item.environment)?.environment ?? 'AES Stage ML', mode: 'Parallel unattended safe mode · headed Chrome · full-browser evidence', accounts: Object.assign({}, ...laneObservations.map(item => item.accounts ?? {})) };
+})() : readJson(path.join(runDir, 'execution-observations.json'));
 const validStatuses = new Set(['PASS', 'FAIL', 'BLOCKED', 'NOT TESTED']);
+const knownFailureTickets = new Map((manifest.knownFailurePolicy?.tickets ?? []).map((ticket) => [ticket.key, ticket]));
+const scenarioScope = manifest.scenarioScope?.name ?? 'full';
+if (!['full', 'time-and-attendance'].includes(scenarioScope)) throw new Error(`Unsupported scenario scope: ${scenarioScope}.`);
+
+if (scenarioScope === 'time-and-attendance') {
+  for (const event of journal.events.filter(item => item.kind === 'workflow-start')) {
+    const scenarioId = Number(String(event.workflowSlug ?? '').match(/(?:^|-)scenario-(\d{2})(?:-|$)/)?.[1]);
+    if (!Number.isInteger(scenarioId) || scenarioId < 29 || scenarioId > 46) {
+      throw new Error(`Time & Attendance scope rejected out-of-scope workflow ${event.accountSlug}/${event.workflowSlug}. Only scenarios 29-46 are allowed.`);
+    }
+  }
+}
 
 if (String(manifest.organizationId) !== organizationId || String(journal.organizationId) !== organizationId) {
   throw new Error('Manifest/event organization does not match the requested organization.');
@@ -21,7 +47,7 @@ if (String(manifest.organizationId) !== organizationId || String(journal.organiz
 if (journal.runId !== runId || journal.timelineSource !== 'measured-video-events-v1') {
   throw new Error('The measured event journal does not match this run.');
 }
-if (!(Number(observations.recordedDurationSeconds) > 0)) {
+if (!parallel && !(Number(observations.recordedDurationSeconds) > 0)) {
   throw new Error('execution-observations.json requires recordedDurationSeconds from the finalized video.');
 }
 
@@ -140,15 +166,38 @@ const accounts = manifest.accounts.map((manifestAccount, index) => {
     const actual = override.actual ?? (status === 'PASS' ? passActual(event.workflowSlug) : 'The workflow could not complete as expected; see the recorded observation and reproduction steps.');
     const screenshots = inferScreenshots(manifestAccount.slug, event.workflowSlug);
     const warningScreenshot = urlWarnings[event.workflowSlug];
-    const warnings = warningScreenshot ? [{
-      code: 'URL_HOST_MISMATCH',
-      severity: 'WARNING',
-      step: 'Capture the workflow final evidence checkpoint with the full browser window and address bar visible.',
-      expected: 'The evidence URL contains stage-k12.ss.',
-      actual: 'The approved Stage destination shown in the evidence does not contain stage-k12.ss; this warning does not change the workflow status.',
-      screenshot: warningScreenshot
-    }] : [];
-    if (warningScreenshot && !screenshots.includes(warningScreenshot)) screenshots.push(warningScreenshot);
+    const warnings = Array.isArray(override.warnings) ? override.warnings.map((warning) => {
+      const normalizedWarning = {...warning};
+      if (warning.knownIssue != null) {
+        const ticket = knownFailureTickets.get(String(warning.knownIssue.ticket ?? ''));
+        if (!ticket) throw new Error(`Unknown warning Jira ticket for ${manifestAccount.slug}/${event.workflowSlug}: ${warning.knownIssue.ticket ?? '(missing)'}.`);
+        if (warning.code !== 'SLOW_UI_LOAD' || ticket.key !== 'HCMAT-79933') {
+          throw new Error(`Only a SLOW_UI_LOAD recovery may reference known performance issue HCMAT-79933 for ${manifestAccount.slug}/${event.workflowSlug}.`);
+        }
+        normalizedWarning.knownIssue = {ticket: ticket.key, url: ticket.url, title: ticket.title};
+      }
+      return normalizedWarning;
+    }) : [];
+    if (warningScreenshot) warnings.push({
+        code: 'URL_HOST_MISMATCH',
+        severity: 'WARNING',
+        step: 'Capture the workflow final evidence checkpoint with the full browser window and address bar visible.',
+        expected: 'The evidence URL contains stage-k12.ss.',
+        actual: 'The approved Stage destination shown in the evidence does not contain stage-k12.ss; this warning does not change the workflow status.',
+        screenshot: warningScreenshot
+      });
+    for (const warning of warnings) {
+      if (warning.screenshot && !screenshots.includes(warning.screenshot)) screenshots.push(warning.screenshot);
+    }
+    let knownFailure;
+    if (override.knownFailure != null) {
+      if (status !== 'FAIL') throw new Error(`Known failure metadata requires FAIL status for ${manifestAccount.slug}/${event.workflowSlug}.`);
+      const ticket = knownFailureTickets.get(String(override.knownFailure.ticket ?? ''));
+      if (!ticket) throw new Error(`Unknown Jira ticket for ${manifestAccount.slug}/${event.workflowSlug}: ${override.knownFailure.ticket ?? '(missing)'}.`);
+      const matchEvidence = String(override.knownFailure.matchEvidence ?? '').trim();
+      if (!matchEvidence) throw new Error(`Known failure metadata requires matchEvidence for ${manifestAccount.slug}/${event.workflowSlug}.`);
+      knownFailure = {ticket: ticket.key, url: ticket.url, title: ticket.title, matchEvidence};
+    }
     return {
       slug: event.workflowSlug,
       name,
@@ -161,7 +210,9 @@ const accounts = manifest.accounts.map((manifestAccount, index) => {
       screenshots: [...new Set(screenshots)].sort(),
       warnings,
       navigation: override.navigation ?? [],
-      http404s: override.http404s ?? []
+      http404s: override.http404s ?? [],
+      ...(status === 'FAIL' && override.failureObservationSeconds != null ? {failureObservationSeconds: Number(override.failureObservationSeconds)} : {}),
+      ...(knownFailure ? {knownFailure} : {})
     };
   });
   const counts = workflows.reduce((result, workflow) => {
@@ -169,6 +220,7 @@ const accounts = manifest.accounts.map((manifestAccount, index) => {
     return result;
   }, {PASS: 0, FAIL: 0, BLOCKED: 0, 'NOT TESTED': 0});
   const status = counts.FAIL ? 'FAIL' : counts.BLOCKED ? 'BLOCKED' : counts['NOT TESTED'] ? 'NOT TESTED' : 'PASS';
+  const knownFailureCount = workflows.filter((workflow) => workflow.status === 'FAIL' && workflow.knownFailure).length;
   const issueWorkflow = workflows.find((workflow) => workflow.status === 'FAIL')
     ?? workflows.find((workflow) => workflow.status === 'BLOCKED')
     ?? workflows.find((workflow) => workflow.status === 'NOT TESTED');
@@ -176,9 +228,10 @@ const accounts = manifest.accounts.map((manifestAccount, index) => {
     execution: index + 1,
     name: manifestAccount.name,
     slug: manifestAccount.slug,
+    ...(parallel ? {laneId: Number(manifestAccount.laneId), video: manifestAccount.video} : {}),
     controller: manifestAccount.controller,
     status,
-    summary: `${workflows.length} scenario/context validations: ${counts.PASS} passed, ${counts.FAIL} failed, ${counts.BLOCKED} blocked, and ${counts['NOT TESTED']} not tested.`,
+    summary: `${workflows.length} scenario/context validations: ${counts.PASS} passed, ${counts.FAIL} failed (${knownFailureCount} known), ${counts.BLOCKED} blocked, and ${counts['NOT TESTED']} not tested.`,
     expected: 'Execute every authorized workflow for the documented role and organization contexts, continue through independent failures, and preserve read-only safety except for explicitly approved temporary test-data lifecycles.',
     actual: issueWorkflow ? issueWorkflow.actual : 'Every authorized workflow completed successfully.',
     cleanup: accountObservation.cleanup ?? 'No business data was changed. Read-only navigation, searches, filters, application switching, and session-termination checks were used.',
@@ -188,17 +241,20 @@ const accounts = manifest.accounts.map((manifestAccount, index) => {
   };
 });
 
-if (accountEvents.length !== accounts.length) throw new Error(`Expected ${accounts.length} account-start events; found ${accountEvents.length}.`);
+const failedLaneIds = new Set([...(manifest.lanes ?? [])].filter(l => failedLaneSlugs.has(l.slug)).map(l => Number(l.laneId)));
+const expectedAccountEvents = parallel ? accounts.filter(a => !failedLaneIds.has(Number(a.laneId))).length : accounts.length;
+if (accountEvents.length !== expectedAccountEvents) throw new Error(`Expected ${expectedAccountEvents} account-start events${failedLaneIds.size ? ` (${failedLaneIds.size} failed-lane account(s) excluded)` : ''}; found ${accountEvents.length}.`);
 
 const runData = {
   runId,
   environment: observations.environment ?? 'AES Stage ML',
   mode: observations.mode ?? 'Unattended safe mode · headed Chrome · full-browser evidence',
   executedAt: journal.recordingEndedAtUtc,
-  video: 'videos/multi-user-full-suite-execution.webm',
-  recordedDurationSeconds: Number(observations.recordedDurationSeconds),
+  ...(parallel ? {} : {video: 'videos/multi-user-full-suite-execution.webm'}),
+  recordedDurationSeconds: parallel ? 0 : Number(observations.recordedDurationSeconds),
   accounts,
-  organizationId
+  organizationId,
+  scenarioScope
 };
 
 fs.writeFileSync(path.join(runDir, 'run-data.json'), `${JSON.stringify(runData, null, 2)}\n`);

@@ -157,8 +157,9 @@ Use recorded media duration rather than overall wall-clock duration when computi
 ## Result and failure rules
 
 - Apply each scenario's own PASS, FAIL, BLOCKED, and NOT TESTED rules.
-- Before finalizing any **FAIL**, observe or poll for the missing expected page, element, navigation, or state for a full **60 seconds** from the triggering action. If it recovers, continue the scenario; otherwise capture final evidence at or after 60 seconds and record the elapsed timeout in the detailed report step.
-- Do not apply the 60-second failure timeout to missing prerequisites or safety/permission restrictions that correctly produce **BLOCKED** or **NOT TESTED**.
+- Before finalizing any **FAIL** caused by missing, slow, or incomplete UI, observe or poll for the expected page, element, navigation, or state for up to **120 seconds** from the triggering action. If it recovers, continue the scenario; otherwise capture final evidence at or after 120 seconds and record the elapsed timeout in the detailed report step.
+- Measure every screen and required-control load. Add a supplemental `SLOW_UI_LOAD` warning with the actual elapsed seconds when it exceeds 30 seconds; this warning does not change a functional result.
+- Do not apply the 120-second failure timeout to definite missing prerequisites or safety/permission restrictions that correctly produce **BLOCKED** or **NOT TESTED**.
 - Continue to the next independent scenario after a failure when doing so is safe.
 - Block dependent scenarios when required data or cleanup is unavailable.
 - Do not claim a step or scenario passed without observable browser evidence.

@@ -10,7 +10,8 @@ param(
     [string]$Event,
 
     [string]$AccountSlug,
-    [string]$WorkflowSlug
+    [string]$WorkflowSlug,
+    [string]$LaneSlug
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,7 +25,12 @@ $workspaceRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $context = Resolve-MultiUserOrganizationContext -WorkspaceRoot $workspaceRoot -OrgId $OrgId
 $fullSuiteRoot = $context.FullSuiteRoot
 $runDirectory = [System.IO.Path]::GetFullPath((Join-Path $fullSuiteRoot $RunId))
-$eventPath = Join-Path $runDirectory 'video-events.json'
+$eventPath = if ([string]::IsNullOrWhiteSpace($LaneSlug)) { Join-Path $runDirectory 'video-events.json' } else {
+    if ($LaneSlug -notmatch '^lane-[1-9]\d*$') { throw 'LaneSlug must use lane-<number>.' }
+    $laneDirectory = [System.IO.Path]::GetFullPath((Join-Path (Join-Path $runDirectory 'lanes') $LaneSlug))
+    if (-not $laneDirectory.StartsWith($runDirectory, [System.StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $laneDirectory)) { throw "Missing or invalid lane directory: $laneDirectory" }
+    Join-Path $laneDirectory 'video-events.json'
+}
 
 if (-not $runDirectory.StartsWith($fullSuiteRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'The run directory resolved outside the full-suite report root.'
@@ -62,12 +68,30 @@ $now = [DateTimeOffset]::UtcNow
 $monotonicNow = [System.Diagnostics.Stopwatch]::GetTimestamp()
 $monotonicFrequency = [System.Diagnostics.Stopwatch]::Frequency
 
-if ($Event -eq 'RecordingStart') {
-    if (Test-Path -LiteralPath $eventPath) {
-        throw "Video event journal already exists: $eventPath"
-    }
+function Write-LockedJournal {
+    param([Parameter(Mandatory = $true)][System.IO.FileStream]$Stream, [Parameter(Mandatory = $true)]$Value)
+    $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes(($Value | ConvertTo-Json -Depth 8) + [Environment]::NewLine)
+    $Stream.Position = 0; $Stream.SetLength(0); $Stream.Write($bytes, 0, $bytes.Length); $Stream.Flush($true)
+}
 
-    $journal = [ordered]@{
+function Open-EventJournalLock {
+    param([Parameter(Mandatory = $true)][string]$Path)
+    $deadline = [DateTimeOffset]::UtcNow.AddSeconds(5)
+    do {
+        try { return [System.IO.File]::Open($Path, 'Open', 'ReadWrite', 'None') }
+        catch [System.IO.IOException] {
+            if ([DateTimeOffset]::UtcNow -ge $deadline) { throw "Timed out after 5 seconds waiting for the video event journal lock: $Path" }
+            Start-Sleep -Milliseconds 50
+        }
+    } while ($true)
+}
+
+if ($Event -eq 'RecordingStart') {
+    $stream = $null
+    try {
+        try { $stream = [System.IO.File]::Open($eventPath, 'CreateNew', 'ReadWrite', 'None') }
+        catch [System.IO.IOException] { throw "Video event journal already exists: $eventPath" }
+        $journal = [ordered]@{
         schemaVersion = 1
         organizationId = $OrgId
         runId = $RunId
@@ -85,17 +109,23 @@ if ($Event -eq 'RecordingStart') {
                 elapsedMilliseconds = 0
             }
         )
-    }
-    $journal | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $eventPath -Encoding utf8
-    $journal.events[0] | ConvertTo-Json -Depth 4
-    exit 0
+        }
+        Write-LockedJournal -Stream $stream -Value $journal
+        $journal.events[0] | ConvertTo-Json -Depth 4
+    } finally { if ($null -ne $stream) { $stream.Dispose() } }
+    return
 }
 
 if (-not (Test-Path -LiteralPath $eventPath)) {
     throw 'Record RecordingStart immediately after the full-browser Chrome recorder starts and before any other video event.'
 }
 
-$journal = Get-Content -LiteralPath $eventPath -Raw | ConvertFrom-Json
+$stream = Open-EventJournalLock -Path $eventPath
+try {
+$reader = [System.IO.StreamReader]::new($stream, [System.Text.Encoding]::UTF8, $true, 1024, $true)
+$stream.Position = 0
+$journal = $reader.ReadToEnd() | ConvertFrom-Json
+$reader.Dispose()
 if ([string]$journal.organizationId -ne $OrgId -or $journal.runId -ne $RunId -or $journal.timelineSource -ne 'measured-video-events-v1') {
     throw 'The video event journal does not match this run or timeline schema.'
 }
@@ -141,5 +171,6 @@ $journal.events = @($events + [pscustomobject]$entry)
 if ($Event -eq 'RecordingEnd') {
     $journal.recordingEndedAtUtc = $now.ToString('o')
 }
-$journal | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $eventPath -Encoding utf8
+Write-LockedJournal -Stream $stream -Value $journal
 $entry | ConvertTo-Json -Depth 4
+} finally { $stream.Dispose() }

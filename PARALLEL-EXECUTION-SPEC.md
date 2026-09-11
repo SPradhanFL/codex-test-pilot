@@ -47,7 +47,7 @@ below it (see §3.2).
 ### Non-goals
 
 - Parallelising **within** a controller. Explicitly forbidden — see §3.2.
-- Changing scenario semantics, the 60-second failure-observation policy, or the URL-warning policy.
+- Changing scenario semantics, the 120-second UI-recovery policy, measured slow-load warning policy, known-failure policy, or URL-warning policy.
 - Changing the visual design of the generated HTML.
 - Fixing the test-account provisioning gaps (tracked separately; this spec only *enforces* their constraint).
 
@@ -523,7 +523,7 @@ These are existing repository rules. Parallelism does not relax any of them.
   inside its run directory, matching the pattern at `start-browser-window-video.ps1:49–53`.
 - Preserve unattended safe mode. Parallelism must not enable any create, update, delete, approval,
   reconciliation or import action that serial mode declines.
-- Keep the 60-second failure-observation policy per scenario. It is wall-clock per lane and is
+- Keep the 120-second UI-recovery/failure-observation policy per scenario. It is wall-clock per lane and is
   unaffected by concurrency.
 
 ---

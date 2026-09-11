@@ -54,3 +54,533 @@ approval_mode = "approve"
 
 [mcp_servers.playwright.tools.browser_navigate_back]
 approval_mode = "approve"
+
+[mcp_servers.playwright_lane1]
+command = "node"
+args = [
+  "node_modules/@playwright/mcp/cli.js",
+  "--browser",
+  "chrome",
+  "--codegen",
+  "none",
+  "--isolated",
+  "--viewport-size",
+  "1280x720",
+  "--output-dir",
+  "reports/playwright-mcp-artifacts/lane1",
+  "--caps",
+  "devtools"
+]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.playwright_lane1.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane1.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane1.tools.browser_select_option]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane1.tools.browser_type]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane1.tools.browser_close]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane1.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane1.tools.browser_run_code_unsafe]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane1.tools.browser_fill_form]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane1.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane1.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane1.tools.browser_navigate_back]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2]
+command = "node"
+args = [
+  "node_modules/@playwright/mcp/cli.js",
+  "--browser",
+  "chrome",
+  "--codegen",
+  "none",
+  "--isolated",
+  "--viewport-size",
+  "1280x720",
+  "--output-dir",
+  "reports/playwright-mcp-artifacts/lane2",
+  "--caps",
+  "devtools"
+]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.playwright_lane2.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2.tools.browser_select_option]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2.tools.browser_type]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2.tools.browser_close]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2.tools.browser_run_code_unsafe]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2.tools.browser_fill_form]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane2.tools.browser_navigate_back]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3]
+command = "node"
+args = [
+  "node_modules/@playwright/mcp/cli.js",
+  "--browser",
+  "chrome",
+  "--codegen",
+  "none",
+  "--isolated",
+  "--viewport-size",
+  "1280x720",
+  "--output-dir",
+  "reports/playwright-mcp-artifacts/lane3",
+  "--caps",
+  "devtools"
+]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.playwright_lane3.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3.tools.browser_select_option]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3.tools.browser_type]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3.tools.browser_close]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3.tools.browser_run_code_unsafe]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3.tools.browser_fill_form]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane3.tools.browser_navigate_back]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4]
+command = "node"
+args = [
+  "node_modules/@playwright/mcp/cli.js",
+  "--browser",
+  "chrome",
+  "--codegen",
+  "none",
+  "--isolated",
+  "--viewport-size",
+  "1280x720",
+  "--output-dir",
+  "reports/playwright-mcp-artifacts/lane4",
+  "--caps",
+  "devtools"
+]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.playwright_lane4.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4.tools.browser_select_option]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4.tools.browser_type]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4.tools.browser_close]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4.tools.browser_run_code_unsafe]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4.tools.browser_fill_form]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane4.tools.browser_navigate_back]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5]
+command = "node"
+args = [
+  "node_modules/@playwright/mcp/cli.js",
+  "--browser",
+  "chrome",
+  "--codegen",
+  "none",
+  "--isolated",
+  "--viewport-size",
+  "1280x720",
+  "--output-dir",
+  "reports/playwright-mcp-artifacts/lane5",
+  "--caps",
+  "devtools"
+]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.playwright_lane5.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5.tools.browser_select_option]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5.tools.browser_type]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5.tools.browser_close]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5.tools.browser_run_code_unsafe]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5.tools.browser_fill_form]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane5.tools.browser_navigate_back]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6]
+command = "node"
+args = [
+  "node_modules/@playwright/mcp/cli.js",
+  "--browser",
+  "chrome",
+  "--codegen",
+  "none",
+  "--isolated",
+  "--viewport-size",
+  "1280x720",
+  "--output-dir",
+  "reports/playwright-mcp-artifacts/lane6",
+  "--caps",
+  "devtools"
+]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.playwright_lane6.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6.tools.browser_select_option]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6.tools.browser_type]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6.tools.browser_close]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6.tools.browser_run_code_unsafe]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6.tools.browser_fill_form]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane6.tools.browser_navigate_back]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7]
+command = "node"
+args = [
+  "node_modules/@playwright/mcp/cli.js",
+  "--browser",
+  "chrome",
+  "--codegen",
+  "none",
+  "--isolated",
+  "--viewport-size",
+  "1280x720",
+  "--output-dir",
+  "reports/playwright-mcp-artifacts/lane7",
+  "--caps",
+  "devtools"
+]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.playwright_lane7.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7.tools.browser_select_option]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7.tools.browser_type]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7.tools.browser_close]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7.tools.browser_run_code_unsafe]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7.tools.browser_fill_form]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane7.tools.browser_navigate_back]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8]
+command = "node"
+args = [
+  "node_modules/@playwright/mcp/cli.js",
+  "--browser",
+  "chrome",
+  "--codegen",
+  "none",
+  "--isolated",
+  "--viewport-size",
+  "1280x720",
+  "--output-dir",
+  "reports/playwright-mcp-artifacts/lane8",
+  "--caps",
+  "devtools"
+]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.playwright_lane8.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8.tools.browser_select_option]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8.tools.browser_type]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8.tools.browser_close]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8.tools.browser_run_code_unsafe]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8.tools.browser_fill_form]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane8.tools.browser_navigate_back]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9]
+command = "node"
+args = [
+  "node_modules/@playwright/mcp/cli.js",
+  "--browser",
+  "chrome",
+  "--codegen",
+  "none",
+  "--isolated",
+  "--viewport-size",
+  "1280x720",
+  "--output-dir",
+  "reports/playwright-mcp-artifacts/lane9",
+  "--caps",
+  "devtools"
+]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.playwright_lane9.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9.tools.browser_select_option]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9.tools.browser_type]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9.tools.browser_close]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9.tools.browser_run_code_unsafe]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9.tools.browser_fill_form]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane9.tools.browser_navigate_back]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10]
+command = "node"
+args = [
+  "node_modules/@playwright/mcp/cli.js",
+  "--browser",
+  "chrome",
+  "--codegen",
+  "none",
+  "--isolated",
+  "--viewport-size",
+  "1280x720",
+  "--output-dir",
+  "reports/playwright-mcp-artifacts/lane10",
+  "--caps",
+  "devtools"
+]
+enabled = true
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.playwright_lane10.tools.browser_click]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10.tools.browser_navigate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10.tools.browser_select_option]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10.tools.browser_type]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10.tools.browser_close]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10.tools.browser_resize]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10.tools.browser_run_code_unsafe]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10.tools.browser_fill_form]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10.tools.browser_tabs]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10.tools.browser_evaluate]
+approval_mode = "approve"
+
+[mcp_servers.playwright_lane10.tools.browser_navigate_back]
+approval_mode = "approve"

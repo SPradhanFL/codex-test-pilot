@@ -30,9 +30,20 @@
   ],
   "scenarioData": {
     "manageAccess": {
-      "enabled": false,
+      "enabled": true,
+      "loginUsernameKey": "org_username",
+      "employeeFirstName": "Employee_sub",
+      "employeeLastName": "Employee_sub_last",
       "unconfiguredLoginStatus": "NOT TESTED",
       "reason": "No safe Manage Access employee is configured for this organization or login."
+    },
+    "timeAttendanceOrganizationUserNavigation": {
+      "enabled": true,
+      "loginUsernameKey": "org_username",
+      "searchIdentifier": "Employee_sub_last",
+      "expectedDisplayName": "Employee_sub_last, Employee_sub",
+      "expectedOrganizationId": "140463",
+      "expectedRoleUserType": "substitute"
     }
   },
   "approvedHosts": [

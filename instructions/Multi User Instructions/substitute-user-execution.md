@@ -63,7 +63,7 @@ This Substitute-specific flow overrides the individual-absence and detail-tab br
 
 Expected: Available Jobs, Scheduled Jobs/Schedule, Past Jobs/History Jobs, and Non Work Days can each be selected and display responsive content without changing business data. An individual job-detail page or detail-tab set is not required.
 
-Classification: Mark **PASS** when all four required views work, including valid empty states. Mark **FAIL** after the mandatory 60-second failure observation when an exposed view cannot be selected or render correctly. Mark **BLOCKED** only when authentication, role selection, entitlement, or environment restrictions prevent access to a required Substitute view.
+Classification: Mark **PASS** when all four required views work, including valid empty states. Mark **FAIL** after the mandatory 120-second UI recovery observation when an exposed view cannot be selected or render correctly. Add a measured slow-load warning when a view takes more than 30 seconds. Mark **BLOCKED** only when authentication, role selection, entitlement, or environment restrictions prevent access to a required Substitute view.
 
 ## Scenario 32 — Time & Attendance to Absence Management and back
 

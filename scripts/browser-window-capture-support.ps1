@@ -180,6 +180,43 @@ function Get-MultiUserFfmpegPath {
     return $ffmpegPath
 }
 
+function Get-MultiUserWindowSlotPosition {
+    param([Parameter(Mandatory = $true)][ValidateRange(1, 100)][int]$WindowSlot, [int]$Width = 1280, [int]$Height = 720)
+    Add-Type -AssemblyName System.Windows.Forms
+    $area = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+    $columns = [Math]::Max(1, [Math]::Floor($area.Width / $Width)); $rows = [Math]::Max(1, [Math]::Floor($area.Height / $Height))
+    $capacity = $columns * $rows; $slot = $WindowSlot - 1; $overlaps = $slot -ge $capacity
+    if ($overlaps) { Write-Warning "Window slot $WindowSlot exceeds the $capacity non-overlapping slot(s); validated W0 outcome A permits overlap."; $slot = $slot % $capacity }
+    [pscustomobject]@{ X = $area.Left + (($slot % $columns) * $Width); Y = $area.Top + ([Math]::Floor($slot / $columns) * $Height); NonOverlappingSlots = $capacity; Overlaps = $overlaps }
+}
+
+function Get-MultiUserChromeWindowForCurrentCodexLane {
+    Initialize-MultiUserBrowserCaptureNativeMethods
+    $processes = @(Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId, Name)
+    $byId = @{}; foreach ($process in $processes) { $byId[[int]$process.ProcessId] = $process }
+    $cursor = [int]$PID; $codexProcessId = 0
+    while ($byId.ContainsKey($cursor)) {
+        $process = $byId[$cursor]
+        if ([string]$process.Name -ieq 'codex.exe') { $codexProcessId = $cursor; break }
+        if ([int]$process.ParentProcessId -eq $cursor) { break }
+        $cursor = [int]$process.ParentProcessId
+    }
+    if ($codexProcessId -eq 0) { throw 'Unable to find the owning Codex process for this lane.' }
+
+    $descendants = New-Object System.Collections.Generic.HashSet[int]
+    $queue = New-Object System.Collections.Generic.Queue[int]
+    $queue.Enqueue($codexProcessId)
+    while ($queue.Count -gt 0) {
+        $parent = $queue.Dequeue()
+        foreach ($child in @($processes | Where-Object { [int]$_.ParentProcessId -eq $parent })) {
+            if ($descendants.Add([int]$child.ProcessId)) { $queue.Enqueue([int]$child.ProcessId) }
+        }
+    }
+    $windows = @($descendants | ForEach-Object { Get-Process -Id $_ -ErrorAction SilentlyContinue } | Where-Object { $_.ProcessName -eq 'chrome' -and $_.MainWindowHandle -ne [IntPtr]::Zero })
+    if ($windows.Count -ne 1) { throw "Expected exactly one headed Chrome window owned by this Codex lane; found $($windows.Count)." }
+    return [long]$windows[0].MainWindowHandle.ToInt64()
+}
+
 function Get-ForegroundChromeCaptureWindow {
     param(
         [ValidateRange(640, 3840)]
@@ -191,6 +228,8 @@ function Get-ForegroundChromeCaptureWindow {
         [switch]$Resize,
 
         [long]$WindowHandle = 0,
+
+        [ValidateRange(0, 100)][int]$WindowSlot = 0,
 
         [string]$PreferredTitleContains = 'Frontline Education - Sign In'
     )
@@ -256,8 +295,9 @@ function Get-ForegroundChromeCaptureWindow {
     }
 
     if ($Resize) {
+        $position = if ($WindowSlot -gt 0) { Get-MultiUserWindowSlotPosition -WindowSlot $WindowSlot -Width $Width -Height $Height } else { [pscustomobject]@{ X = 0; Y = 0 } }
         $showWindowWithoutActivation = 0x0040
-        if (-not [MultiUserBrowserCapture.NativeMethods]::SetWindowPos($handle, [IntPtr]::Zero, 0, 0, $Width, $Height, $showWindowWithoutActivation)) {
+        if (-not [MultiUserBrowserCapture.NativeMethods]::SetWindowPos($handle, [IntPtr]::Zero, $position.X, $position.Y, $Width, $Height, $showWindowWithoutActivation)) {
             throw 'Unable to position the Chrome window for the required 1280x720 full-browser capture.'
         }
         $shell = New-Object -ComObject WScript.Shell

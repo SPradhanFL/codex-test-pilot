@@ -4,7 +4,11 @@ param(
 
     [string]$RunId = (Get-Date -Format 'yyyyMMdd-HHmmss'),
     [string[]]$Controller = @(),
-    [string[]]$ExcludeController = @()
+    [string[]]$ExcludeController = @(),
+    [ValidateSet('Full', 'TimeAndAttendance')]
+    [string]$ScenarioScope = 'Full',
+    [ValidateRange(0, 100)][int]$MaxLanes = 0,
+    [switch]$Parallel
 )
 
 $ErrorActionPreference = 'Stop'
@@ -13,7 +17,16 @@ $workspaceRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 . (Join-Path $PSScriptRoot 'multi-user-org-context.ps1')
 
 $context = Resolve-MultiUserOrganizationContext -WorkspaceRoot $workspaceRoot -OrgId $OrgId
+$knownFailuresPath = Join-Path $workspaceRoot 'config\known-failures.json'
+if (-not (Test-Path -LiteralPath $knownFailuresPath)) {
+    throw "Missing known-failure catalog: $knownFailuresPath"
+}
+$knownFailures = Get-Content -LiteralPath $knownFailuresPath -Raw | ConvertFrom-Json
+if ([int]$knownFailures.schemaVersion -ne 1 -or @($knownFailures.tickets).Count -lt 1) {
+    throw 'The known-failure catalog is missing or unsupported.'
+}
 $selected = @(Select-MultiUserControllers -Context $context -Controller $Controller -ExcludeController $ExcludeController)
+$lanes = if ($Parallel) { @(Group-MultiUserControllerLanes -Context $context -SelectedControllers $selected -MaxLanes $MaxLanes) } else { @() }
 $fullSuiteRoot = $context.FullSuiteRoot
 $archiveRoot = [System.IO.Path]::GetFullPath((Join-Path $fullSuiteRoot 'old-reports'))
 $controllerRoot = [System.IO.Path]::GetFullPath((Join-Path $workspaceRoot 'instructions\Multi User Instructions'))
@@ -90,12 +103,19 @@ if (Test-Path -LiteralPath $runDirectory) {
 
 New-Item -ItemType Directory -Path $runDirectory | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $runDirectory 'roles') | Out-Null
-New-Item -ItemType Directory -Path (Join-Path $runDirectory 'videos') | Out-Null
+if ($Parallel) {
+    New-Item -ItemType Directory -Path (Join-Path $runDirectory 'lanes') | Out-Null
+    foreach ($lane in $lanes) {
+        $laneDirectory = Join-Path (Join-Path $runDirectory 'lanes') $lane.Slug
+        New-Item -ItemType Directory -Path $laneDirectory | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $laneDirectory 'videos') | Out-Null
+    }
+} else { New-Item -ItemType Directory -Path (Join-Path $runDirectory 'videos') | Out-Null }
 
 $manifestAccounts = @(for ($index = 0; $index -lt $selected.Count; $index++) {
     $controllerInfo = $selected[$index]
     $slug = $controllerInfo.File -replace '-execution\.md$', ''
-    [ordered]@{
+    $account = [ordered]@{
         execution = $index + 1
         name = $controllerInfo.FriendlyName
         slug = $slug
@@ -103,6 +123,13 @@ $manifestAccounts = @(for ($index = 0; $index -lt $selected.Count; $index++) {
         report = 'roles/' + $slug + '/index.html'
         status = 'PENDING'
     }
+    if ($Parallel) {
+        $lane = @($lanes | Where-Object { $controllerInfo.File -in @($_.Controllers.File) })
+        if ($lane.Count -ne 1) { throw "Controller $($controllerInfo.File) was not assigned to exactly one lane." }
+        $account.laneId = $lane[0].LaneId
+        $account.video = "lanes/$($lane[0].Slug)/videos/$($lane[0].Slug).webm"
+    }
+    $account
 })
 
 foreach ($role in $manifestAccounts) {
@@ -125,6 +152,21 @@ $manifest = [ordered]@{
     enabledControllers = @($context.EnabledControllers)
     selectedControllers = @($selected.File)
     excludedControllers = @($ExcludeController)
+    scenarioScope = if ($ScenarioScope -eq 'TimeAndAttendance') {
+        [ordered]@{
+            name = 'time-and-attendance'
+            repositoryScenarioIds = @(29..46)
+            excludedRepositoryScenarioIds = @(1..28)
+            includeSupplementalWorkflows = $false
+        }
+    } else {
+        [ordered]@{
+            name = 'full'
+            repositoryScenarioIds = @()
+            excludedRepositoryScenarioIds = @()
+            includeSupplementalWorkflows = $true
+        }
+    }
     video = 'videos/multi-user-full-suite-execution.webm'
     timeline = [ordered]@{
         source = 'measured-video-events-v1'
@@ -163,11 +205,33 @@ $manifest = [ordered]@{
     }
     failurePolicy = [ordered]@{
         appliesTo = 'FAIL'
-        observationTimeoutSeconds = 60
+        observationTimeoutSeconds = 120
         requireFinalEvidence = $true
         preserveBlockedAndNotTested = $true
     }
+    performancePolicy = [ordered]@{
+        warningThresholdSeconds = 30
+        maximumUiRecoverySeconds = 120
+        warningCode = 'SLOW_UI_LOAD'
+        warningDoesNotChangeStatus = $true
+        requireMeasuredElapsedTime = $true
+    }
+    knownFailurePolicy = [ordered]@{
+        catalog = 'config/known-failures.json'
+        schemaVersion = [int]$knownFailures.schemaVersion
+        displayLabel = [string]$knownFailures.displayLabel
+        statusRemains = [string]$knownFailures.statusRemains
+        tickets = @($knownFailures.tickets)
+    }
     accounts = $manifestAccounts
+}
+if ($Parallel) {
+    $manifest.Remove('video')
+    $manifest.lanes = @($lanes | ForEach-Object { [ordered]@{ laneId = $_.LaneId; slug = $_.Slug; controllers = @($_.Controllers.File) } })
+    $manifest.timeline.eventJournal = 'lanes/<lane-slug>/video-events.json'
+    $manifest.capture.executionMode = 'parallel'
+    $manifest.capture.parallelLanes = $lanes.Count
+    $manifest.capture.videoCount = $lanes.Count
 }
 $manifest | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath (Join-Path $runDirectory 'run-manifest.json') -Encoding utf8
 
@@ -178,7 +242,9 @@ $manifest | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath (Join-Path $runDi
     credentialFile = $context.SecretPath
     runDirectory = $runDirectory
     controllerCount = $selected.Count
+    scenarioScope = $manifest.scenarioScope
     controllers = $manifestAccounts
+    lanes = if ($Parallel) { @($manifest.lanes) } else { $null }
     archivedRunDirectories = @($archived)
     archiveRoot = $archiveRoot
 } | ConvertTo-Json -Depth 7

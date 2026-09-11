@@ -59,20 +59,31 @@ For ML multi-user execution, treat `instructions/Multi User Instructions/` as th
 
 ## Result classification
 
-### Mandatory 60-second failure observation
+### Mandatory 120-second UI recovery and failure observation
 
-- Before marking any step or scenario **FAIL**, keep the affected destination, page, or target element under observation for a full **60 seconds** from the action that should have produced the expected result.
+- Before marking any step or scenario **FAIL** for missing, slow, or incomplete UI, keep the affected destination, page, or target element under observation for up to **120 seconds** from the action that should have produced the expected result.
 - Use observable Playwright waits or polling during that window. Keep the target scrolled into view when applicable, and do not repeat a create, save, delete, logout, or other state-changing action merely to fill the wait period.
-- Do not finalize **FAIL** before the 60-second window expires. If the expected page, element, state, or navigation becomes available during the window, continue validation from that recovered state.
-- If the expected result is still absent after 60 seconds, capture final evidence at or after the timeout and mark **FAIL** with the actual result stating that the full 60-second observation expired.
-- An application error may be recorded as soon as it appears, but the failure is finalized only after the same 60-second observation window unless continuing would violate a safety, security, or environment boundary.
+- Start a monotonic elapsed-time measurement with every navigation, application switch, role/organization switch, and action that loads a screen or required control. Stop it when the expected state is visible and responsive.
+- When the measured load exceeds **30 seconds**, add a supplemental `SLOW_UI_LOAD` warning with the actual elapsed seconds, triggering step, expected state, observed state, and screenshot. Keep the functional status determined by the completed assertions; the warning does not itself fail the scenario.
+- For the known HCMAT-79933 Sidekick performance condition, continue waiting up to 120 seconds. If Sidekick becomes visible and responsive, complete the remaining assertions and mark the scenario `PASS` when they succeed. Include `knownIssue.ticket: "HCMAT-79933"` in the slow-load warning so its Jira link and description appear beside the exact measured time.
+- Do not finalize **FAIL** before the 120-second window expires. If the expected page, element, state, or navigation becomes available during the window, continue validation from that recovered state and add the slow-load warning when applicable.
+- If the expected result is still absent after 120 seconds, capture final evidence at or after the timeout and mark **FAIL** with the actual result stating that the full 120-second observation expired.
+- An application error may be recorded as soon as it appears, but the failure is finalized only after the same 120-second observation window unless continuing would violate a safety, security, or environment boundary.
 - This timeout applies only to a potential **FAIL**. Missing credentials, permissions, prerequisite data, unsafe targets, or intentionally unsupported coverage remain **BLOCKED** or **NOT TESTED** under the rules below and must not be converted to **FAIL** by waiting.
-- Every failed report entry must include a timeout step showing the action that started the wait, the expected recovery state, the final observed state, and `60 seconds` as the elapsed failure-observation period.
+- Do not immediately classify a missing UI element as `BLOCKED` when it may still be rendering. Apply the 120-second recovery window first. Definite configuration, credential, entitlement, safety, and test-data prerequisites remain immediate blockers.
+- Every failed report entry must include a timeout step showing the action that started the wait, the expected recovery state, the final observed state, and `120 seconds` as the elapsed failure-observation period.
+
+### Known failures
+
+- Read `config/known-failures.json` before execution. Keep the canonical status as `FAIL`, and add `knownFailure.ticket` plus concise `knownFailure.matchEvidence` only when the observed direction, application, role/organization context, and symptom match a catalog entry.
+- Reports display a matched failure as **KNOWN FAILED — HCMAT-…**, link its Jira issue, and continue counting it in the `FAIL` total.
+- Do not assign a known ticket based only on a scenario number or a related-looking symptom. When signatures overlap, use the catalog's more specific match.
+- HCMAT-79933 is also allowed as `knownIssue` metadata on a `SLOW_UI_LOAD` warning for a recovered Sidekick. That recovery is not a known failure: the scenario remains `PASS` when all functional expectations complete.
 
 - **PASS:** Every step completed and every expected result was observed.
 - **FAIL:** A step completed but its expected result was not observed, or the application displayed an error.
 - **BLOCKED:** Execution could not safely continue because of missing data, permissions, authentication, unavailable UI, or environment issues.
-- **WARNING:** Supplemental evidence that does not replace a scenario status. For Stage ML multi-user runs, a missing configured URL substring is a warning when the documented navigation and elements still work.
+- **WARNING:** Supplemental evidence that does not replace a scenario status. This includes a measured screen/control load over 30 seconds and a missing configured URL substring when the documented navigation and elements still work.
 
 ## Reporting
 

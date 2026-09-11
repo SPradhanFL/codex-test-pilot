@@ -14,6 +14,10 @@ param(
     [ValidateRange(5, 60)]
     [int]$FrameRate = 15,
 
+    [string]$LaneSlug,
+    [ValidateRange(0, 100)][int]$WindowSlot = 0,
+    [long]$WindowHandle = 0,
+
     [string]$PreferredTitleContains = 'Frontline Education - Sign In'
 )
 
@@ -39,15 +43,22 @@ if ([string]$manifest.organizationId -ne $OrgId) {
     throw 'The organization does not match the run manifest.'
 }
 
-$videoDirectory = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'videos'))
-$statePath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'browser-window-video-state.json'))
-$capturePath = [System.IO.Path]::GetFullPath((Join-Path $videoDirectory 'multi-user-full-suite-execution.capture.webm'))
-$finalPath = [System.IO.Path]::GetFullPath((Join-Path $videoDirectory 'multi-user-full-suite-execution.webm'))
-$stopSignalPath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'browser-window-video.stop'))
-$readyPath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'browser-window-video.ready.json'))
-$resultPath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'browser-window-video.result.json'))
+$parallel = -not [string]::IsNullOrWhiteSpace($LaneSlug)
+if ($parallel) {
+    if ($LaneSlug -notmatch '^lane-[1-9]\d*$' -or $WindowHandle -eq 0 -or $WindowSlot -eq 0) { throw 'Parallel capture requires LaneSlug, WindowHandle, and WindowSlot.' }
+    if (@($manifest.lanes | Where-Object slug -eq $LaneSlug).Count -ne 1) { throw "Lane $LaneSlug is not declared in the manifest." }
+    $captureRoot = [System.IO.Path]::GetFullPath((Join-Path (Join-Path $runDirectory 'lanes') $LaneSlug))
+    $videoDirectory = Join-Path $captureRoot 'videos'; $statePath = Join-Path $captureRoot 'browser-window-video-state.json'
+    $capturePath = Join-Path $videoDirectory "$LaneSlug.capture.webm"; $finalPath = Join-Path $videoDirectory "$LaneSlug.webm"
+    $stopSignalPath = Join-Path $captureRoot 'browser-window-video.stop'; $readyPath = Join-Path $captureRoot 'browser-window-video.ready.json'; $resultPath = Join-Path $captureRoot 'browser-window-video.result.json'
+} else {
+    $captureRoot = $runDirectory; $videoDirectory = Join-Path $runDirectory 'videos'; $statePath = Join-Path $runDirectory 'browser-window-video-state.json'
+    $capturePath = Join-Path $videoDirectory 'multi-user-full-suite-execution.capture.webm'; $finalPath = Join-Path $videoDirectory 'multi-user-full-suite-execution.webm'
+    $stopSignalPath = Join-Path $runDirectory 'browser-window-video.stop'; $readyPath = Join-Path $runDirectory 'browser-window-video.ready.json'; $resultPath = Join-Path $runDirectory 'browser-window-video.result.json'
+}
+$videoDirectory, $statePath, $capturePath, $finalPath, $stopSignalPath, $readyPath, $resultPath = @($videoDirectory, $statePath, $capturePath, $finalPath, $stopSignalPath, $readyPath, $resultPath | ForEach-Object { [System.IO.Path]::GetFullPath($_) })
 foreach ($path in @($videoDirectory, $statePath, $capturePath, $finalPath, $stopSignalPath, $readyPath, $resultPath)) {
-    if (-not $path.StartsWith($runDirectory, [System.StringComparison]::OrdinalIgnoreCase)) {
+    if (-not $path.StartsWith($captureRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw 'A video capture path resolved outside the current run directory.'
     }
 }
@@ -58,10 +69,11 @@ if (@(@($statePath, $capturePath, $finalPath, $stopSignalPath, $readyPath, $resu
 New-Item -ItemType Directory -Force -Path $videoDirectory | Out-Null
 $logDirectory = [System.IO.Path]::GetFullPath((Join-Path $workspaceRoot '.playwright-mcp'))
 New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
-$stderrPath = Join-Path $logDirectory ("browser-window-video-$OrgId-$RunId.stderr.log")
-$stdoutPath = Join-Path $logDirectory ("browser-window-video-$OrgId-$RunId.stdout.log")
+$logSuffix = if ($parallel) { "-$LaneSlug" } else { '' }
+$stderrPath = Join-Path $logDirectory ("browser-window-video-$OrgId-$RunId$logSuffix.stderr.log")
+$stdoutPath = Join-Path $logDirectory ("browser-window-video-$OrgId-$RunId$logSuffix.stdout.log")
 
-$window = Get-ForegroundChromeCaptureWindow -Width $Width -Height $Height -Resize -PreferredTitleContains $PreferredTitleContains
+$window = Get-ForegroundChromeCaptureWindow -Width $Width -Height $Height -Resize -WindowHandle $WindowHandle -WindowSlot $WindowSlot -PreferredTitleContains $PreferredTitleContains
 $ffmpegPath = Get-MultiUserFfmpegPath -WorkspaceRoot $workspaceRoot
 $workerPath = Join-Path $PSScriptRoot 'browser-window-video-worker.ps1'
 if (-not (Test-Path -LiteralPath $workerPath)) {
@@ -105,6 +117,7 @@ $ready = Get-Content -LiteralPath $readyPath -Raw | ConvertFrom-Json
 $state = [ordered]@{
     organizationId = $OrgId
     runId = $RunId
+    laneSlug = if ($parallel) { $LaneSlug } else { $null }
     workerProcessId = $workerProcess.Id
     captureProcessId = [int]$ready.ffmpegProcessId
     chromeProcessId = $window.ProcessId

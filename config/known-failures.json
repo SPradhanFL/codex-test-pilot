@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "displayLabel": "KNOWN FAILED",
+  "statusRemains": "FAIL",
+  "tickets": [
+    {
+      "key": "HCMAT-79895",
+      "url": "https://frontlinetechnologies.atlassian.net/browse/HCMAT-79895",
+      "title": "Browser Back restores the previously authenticated page after logout",
+      "match": "Logout succeeds, then one browser Back action restores the previously authenticated application page or authenticated controls."
+    },
+    {
+      "key": "HCMAT-79933",
+      "url": "https://frontlinetechnologies.atlassian.net/browse/HCMAT-79933",
+      "title": "Sidekick menu is slow or unavailable after login or app navigation",
+      "match": "The Sidekick/global navigation is delayed or remains unavailable after login or navigation between applications. Use HCMAT-79992 instead for its more specific multi-organization Absence Management signature.",
+      "recovery": "If Sidekick becomes responsive within 120 seconds, keep the scenario's successful functional result, record the exact measured load time in a SLOW_UI_LOAD warning, and link this ticket in the warning description."
+    },
+    {
+      "key": "HCMAT-79813",
+      "url": "https://frontlinetechnologies.atlassian.net/browse/HCMAT-79813",
+      "title": "AM role is not preserved when switching from Absence Management to Time & Attendance",
+      "match": "A multi-role user selects a role in Absence Management and Switch Apps opens Time & Attendance in a different role. Do not match the reverse TA-to-AM direction."
+    },
+    {
+      "key": "HCMAT-79992",
+      "url": "https://frontlinetechnologies.atlassian.net/browse/HCMAT-79992",
+      "title": "Sidekick/global header is unavailable in multi-organization Absence Management",
+      "match": "In a multi-organization Absence Management context, Home content loads after selecting an organization but the global header, Sidekick, account menu, role switcher, or Switch Apps controls remain unavailable. This specific signature takes precedence over HCMAT-79933."
+    }
+  ]
+}

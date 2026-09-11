@@ -4,6 +4,20 @@
 
 Execute every controller enabled for the requested Stage ML organization as one ordered multi-user run. The caller must supply `OrgId`; configuration, credentials, archiving, and reports remain isolated under that organization. Produce one self-contained role/login-combination report folder for each selected controller, one consolidated dashboard, one continuous video, scenario-detail pages, screenshots, a video timeline, totals, and failure reproduction steps.
 
+## Explicit scenario scope
+
+The starter accepts `-ScenarioScope Full` (the default) or `-ScenarioScope TimeAndAttendance`. The selected scope is persisted in `run-manifest.json` and is authoritative for serial and parallel execution.
+
+When the scope is `TimeAndAttendance`, execute only repository scenarios **29-46** that are authorized by each selected controller and active role/organization context. Do not execute scenarios 1-28 or the supplemental Absence Management-origin App Switcher workflow. Visiting Absence Management is allowed only when it is an explicit step of a selected TA scenario, including the TA -> AM -> TA round trip. Emit measured workflow events and report results only for scenarios 29-46. This scope overrides instructions elsewhere that say to execute a controller's complete scenario set.
+
+For a parallel TA-only run, use:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-multi-user-parallel-lanes.ps1 -OrgId <OrgId> -ScenarioScope TimeAndAttendance
+```
+
+When `run-manifest.json` declares `capture.executionMode: "parallel"`, the lane contract overrides references below to one shared run-level browser/video: each account lane owns one isolated Chrome/MCP instance, one video at `lanes/<lane-slug>/videos/<lane-slug>.webm`, and one event journal at `lanes/<lane-slug>/video-events.json`. Lanes execute concurrently, while controllers listed in the same lane execute sequentially. Every video event and recorder start/stop command must include that lane's `-LaneSlug`; screenshots remain under the controller's `roles/<account-slug>/screenshots/` folder. Never use another lane's MCP server, Chrome window, state file, event journal, or credentials. Serial mode remains the default when `capture.executionMode` is absent.
+
 ## Mandatory preparation
 
 Before opening the browser, read completely:
@@ -142,7 +156,10 @@ The event journal is mandatory. It supplies the real scenario boundaries used by
 9. Restore any safe filters, searches, roles, and organization context before logout or controller completion.
 10. After every successful login/context selection and again from the Home-page top-left area, apply the conditional App Switcher validation. When visible, report it as a supplemental workflow inside the current role folder; when absent at both checkpoints, record the observation without adding an outcome.
 11. Validate the sanitized stable URL at every workflow's final checkpoint. A missing configured substring is a separate `WARNING` and does not change a working flow's status. If the unexpected destination also breaks the documented workflow, classify it as FAIL; if execution cannot reach a stable inspectable state, classify it as BLOCKED without inventing a warning.
-12. Apply the mandatory **60-second failure observation** from `instructions/project-instructions.md` to every potential FAIL in every controller and role/context. Do not finalize FAIL until the expected page, element, navigation, or state has been observed or polled for the full 60 seconds. Capture the final full-browser screenshot at or after timeout and add a report step that explicitly records the 60-second elapsed observation. Do not use this rule to delay or reclassify a genuine BLOCKED or NOT TESTED prerequisite.
+12. Apply the mandatory **120-second UI recovery and failure observation** from `instructions/project-instructions.md` to every potential FAIL caused by missing, slow, or incomplete rendering in every controller and role/context. Do not finalize FAIL until the expected page, element, navigation, or state has been observed or polled for the full 120 seconds. Capture final full-browser evidence at or after timeout and add a report step that explicitly records the 120-second elapsed observation. Do not delay definite credential, configuration, entitlement, safety, or test-data blockers.
+13. Measure every screen and required-control load from its triggering action to the visible responsive state. When it exceeds 30 seconds, add a `SLOW_UI_LOAD` warning with `thresholdSeconds: 30`, the actual `elapsedSeconds`, step, expected/actual text, and a linked full-browser screenshot. Continue the workflow and retain the functional result when the state recovers.
+14. Read `config/known-failures.json`. For a failed workflow whose observed direction, application, context, and symptom exactly match one catalog entry, keep `status: "FAIL"` and add `knownFailure` with the ticket key and concise match evidence. Never match by scenario number alone; HCMAT-79992 takes precedence over HCMAT-79933 for its specific multi-organization AM signature.
+15. Treat HCMAT-79933 as a recoverable known performance condition: if Sidekick/global navigation becomes visible and responsive within 120 seconds, continue and use `PASS` when every functional assertion succeeds. Add `knownIssue: {"ticket":"HCMAT-79933"}` to its `SLOW_UI_LOAD` warning so the report shows the Jira ticket beside the exact elapsed time. Use `knownFailure` only if the matching Sidekick state remains unusable after 120 seconds.
 
 ## Run data
 
@@ -180,7 +197,7 @@ Maintain `reports/full-suite/<OrgId>/<runId>/run-data.json` with this structure:
           "slug": "workflow-name",
           "name": "Workflow name",
           "source": "tests/navigation/example.md",
-          "status": "PASS",
+          "status": "FAIL",
           "timelineMeasured": true,
           "sourceStartElapsedMilliseconds": 0,
           "sourceEndElapsedMilliseconds": 0,
@@ -195,6 +212,19 @@ Maintain `reports/full-suite/<OrgId>/<runId>/run-data.json` with this structure:
               "expected": "The URL contains the configured requiredUrlContains value.",
               "actual": "The sanitized stable URL did not contain the required substring.",
               "screenshot": "workflow-evidence.png"
+            },
+            {
+              "code": "SLOW_UI_LOAD",
+              "severity": "WARNING",
+              "thresholdSeconds": 30,
+              "elapsedSeconds": 42.317,
+              "knownIssue": {
+                "ticket": "HCMAT-79933"
+              },
+              "step": "Open the destination and wait for its required controls to become responsive.",
+              "expected": "The required screen and controls become responsive within 30 seconds.",
+              "actual": "The required screen became responsive after 42.317 seconds; functional validation continued.",
+              "screenshot": "workflow-evidence.png"
             }
           ],
           "steps": [
@@ -202,7 +232,7 @@ Maintain `reports/full-suite/<OrgId>/<runId>/run-data.json` with this structure:
               "action": "Executed action",
               "expected": "Expected result",
               "actual": "Observed result",
-              "status": "PASS"
+              "status": "FAIL"
             }
           ],
           "navigation": [
@@ -226,7 +256,11 @@ Maintain `reports/full-suite/<OrgId>/<runId>/run-data.json` with this structure:
               "impact": "Required data did not load; workflow failed."
             }
           ],
-          "failureObservationSeconds": 60,
+          "failureObservationSeconds": 120,
+          "knownFailure": {
+            "ticket": "HCMAT-79895",
+            "matchEvidence": "Logout succeeded and one browser Back action restored the previously authenticated page."
+          },
           "reproduce": []
         }
       ],
@@ -241,7 +275,7 @@ Use only `PASS`, `FAIL`, `BLOCKED`, or `NOT TESTED` for workflow status. `WARNIN
 
 `navigation` is required for every workflow that reaches browser navigation; use an empty list only when execution is blocked before a browser destination is reached. Each navigation object must keep origin and path separate and contain query-key names only. Every Time & Attendance workflow must also include `http404s`: use one sanitized object per observed HTTP 404, or `[]` when none was observed. Each 404 object must contain status `404`, an approved Stage origin, a sanitized path, query-key names only, evidence classification, triggering action/source, and impact. Do not place the username in `run-data.json`; the report generator resolves it from the selected controller and `config/aes-stage.ml.<OrgId>.json`, with its supported environment-variable override taking precedence. The timeline application script supplies the measured timeline fields shown above. Every selected controller must receive a report even when authentication is blocked.
 
-Set `failureObservationSeconds` to `60` for every failed workflow and include the corresponding timeout step in `steps`. Omit that field for PASS, BLOCKED, and NOT TESTED workflows.
+Set `failureObservationSeconds` to `120` for every failed workflow and include the corresponding timeout step in `steps`. Omit that field for PASS, BLOCKED, and NOT TESTED workflows. `knownFailure` is optional and valid only with `status: "FAIL"`; use only a ticket from `config/known-failures.json` and include observation-specific `matchEvidence`. The build step resolves the catalog title and Jira URL. A `SLOW_UI_LOAD` warning is supplemental, may accompany any functional status, and must record the actual measured `elapsedSeconds` above 30. A recovered Sidekick matching HCMAT-79933 uses `knownIssue.ticket` on that warning and remains PASS when all functional assertions succeed.
 
 ## Finalization and report generation
 

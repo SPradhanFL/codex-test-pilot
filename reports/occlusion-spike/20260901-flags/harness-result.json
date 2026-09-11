@@ -1,0 +1,33 @@
+﻿{
+    "mode":  "flags",
+    "durationSeconds":  120,
+    "fullyOccludedLane":  1,
+    "windowHandles":  [
+                          591880,
+                          264230
+                      ],
+    "workerResults":  [
+                          {
+                              "status":  "COMPLETED",
+                              "ffmpegProcessId":  54208,
+                              "startedAtUtc":  "2026-09-01T08:08:36.5030491+00:00",
+                              "endedAtUtc":  "2026-09-01T08:10:37.8029946+00:00",
+                              "exitCode":  0,
+                              "captureMethod":  "print-window-raw-frame-pipe",
+                              "framesWritten":  1815,
+                              "repeatedFrames":  0,
+                              "error":  null
+                          },
+                          {
+                              "status":  "COMPLETED",
+                              "ffmpegProcessId":  52776,
+                              "startedAtUtc":  "2026-09-01T08:08:36.6234399+00:00",
+                              "endedAtUtc":  "2026-09-01T08:10:37.7814081+00:00",
+                              "exitCode":  0,
+                              "captureMethod":  "print-window-raw-frame-pipe",
+                              "framesWritten":  1813,
+                              "repeatedFrames":  0,
+                              "error":  null
+                          }
+                      ]
+}

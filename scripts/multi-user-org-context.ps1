@@ -11,6 +11,19 @@ $script:MultiUserControllerCatalog = @(
     [pscustomobject]@{ File = 'multi-org-organization-campus-execution.md'; FriendlyName = 'Multi-org Organization User + Campus User'; UsernameKey = 'multiOrgOrgCampus'; PasswordKey = 'multi_org_org_campus_password' }
 )
 
+$script:MultiUserCredentialEnvironments = @{
+    'organization-user-execution.md' = @('AES_STAGE_ORGANIZATION_USERNAME', 'AES_STAGE_ORGANIZATION_PASSWORD')
+    'campus-user-execution.md' = @('AES_STAGE_CAMPUS_USERNAME', 'AES_STAGE_CAMPUS_PASSWORD')
+    'employee-user-execution.md' = @('AES_STAGE_EMPLOYEE_USERNAME', 'AES_STAGE_EMPLOYEE_PASSWORD')
+    'substitute-user-execution.md' = @('AES_STAGE_SUBSTITUTE_USERNAME', 'AES_STAGE_SUBSTITUTE_PASSWORD')
+    'multi-role-campus-employee-organization-execution.md' = @('AES_STAGE_ROLE_SWITCHER_ORG_USERNAME', 'AES_STAGE_ROLE_SWITCHER_ORG_PASSWORD')
+    'multi-role-organization-employee-execution.md' = @('AES_STAGE_MULTI_ROLE_ORG_EMPLOYEE_USERNAME', 'AES_STAGE_MULTI_ROLE_ORG_EMPLOYEE_PASSWORD')
+    'multi-role-employee-employee-substitute-execution.md' = @('AES_STAGE_MULTI_ROLE_EMPLOYEE_EMPLOYEE_SUBSTITUTE_USERNAME', 'AES_STAGE_MULTI_ROLE_EMPLOYEE_EMPLOYEE_SUBSTITUTE_PASSWORD')
+    'multi-org-employee-substitute-execution.md' = @('AES_STAGE_MULTI_ORG_EMPLOYEE_SUBSTITUTE_USERNAME', 'AES_STAGE_MULTI_ORG_EMPLOYEE_SUBSTITUTE_PASSWORD')
+    'multi-org-employee-employee-execution.md' = @('AES_STAGE_MULTI_ORG_EMPLOYEE_EMPLOYEE_USERNAME', 'AES_STAGE_MULTI_ORG_EMPLOYEE_EMPLOYEE_PASSWORD')
+    'multi-org-organization-campus-execution.md' = @('AES_STAGE_MULTI_ORG_ORG_CAMPUS_USERNAME', 'AES_STAGE_MULTI_ORG_ORG_CAMPUS_PASSWORD')
+}
+
 function Test-MultiUserConfiguredValue {
     param([AllowNull()][string]$Value)
 
@@ -120,4 +133,57 @@ function Select-MultiUserControllers {
     }
 
     return $selected
+}
+
+function Group-MultiUserControllerLanes {
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$Context,
+        [Parameter(Mandatory = $true)][pscustomobject[]]$SelectedControllers,
+        [ValidateRange(0, 100)][int]$MaxLanes = 0
+    )
+
+    if ($SelectedControllers.Count -eq 0) { throw 'At least one selected controller is required.' }
+    $selectedOrder = @{}
+    $groups = [ordered]@{}
+    for ($index = 0; $index -lt $SelectedControllers.Count; $index++) {
+        $controller = $SelectedControllers[$index]
+        $selectedOrder[$controller.File] = $index
+        $environmentNames = $script:MultiUserCredentialEnvironments[$controller.File]
+        $environmentUsername = if ($null -ne $environmentNames) { [Environment]::GetEnvironmentVariable($environmentNames[0]) } else { '' }
+        $configuredUsername = [string]$Context.Config.testUsernames.($controller.UsernameKey)
+        $effectiveUsername = if (Test-MultiUserConfiguredValue $environmentUsername) { $environmentUsername } else { $configuredUsername }
+        if (-not (Test-MultiUserConfiguredValue $effectiveUsername)) { throw "Controller $($controller.File) has no resolvable username." }
+
+        $identity = $effectiveUsername.Trim().ToUpperInvariant()
+        if (-not $groups.Contains($identity)) {
+            $groups[$identity] = [pscustomobject]@{ FirstIndex = $index; Identities = @($identity); UsernameKeys = @(); Controllers = @() }
+        }
+        $group = $groups[$identity]
+        $group.UsernameKeys = @($group.UsernameKeys + $controller.UsernameKey | Select-Object -Unique)
+        $group.Controllers = @($group.Controllers + $controller)
+    }
+
+    $working = @($groups.Values | Sort-Object @{ Expression = { -1 * @($_.Controllers).Count } }, FirstIndex)
+    while ($MaxLanes -gt 0 -and $working.Count -gt $MaxLanes) {
+        $shortest = $working[-1]
+        $nextShortest = $working[-2]
+        $merged = [pscustomobject]@{
+            FirstIndex = [Math]::Min($shortest.FirstIndex, $nextShortest.FirstIndex)
+            Identities = @($nextShortest.Identities + $shortest.Identities | Select-Object -Unique)
+            UsernameKeys = @($nextShortest.UsernameKeys + $shortest.UsernameKeys | Select-Object -Unique)
+            Controllers = @($nextShortest.Controllers + $shortest.Controllers | Sort-Object { $selectedOrder[$_.File] })
+        }
+        $remaining = if ($working.Count -gt 2) { @($working[0..($working.Count - 3)]) } else { @() }
+        $working = @($remaining + $merged | Sort-Object @{ Expression = { -1 * @($_.Controllers).Count } }, FirstIndex)
+    }
+
+    $seenIdentities = @{}
+    return @(for ($index = 0; $index -lt $working.Count; $index++) {
+        $group = $working[$index]
+        foreach ($identity in $group.Identities) {
+            if ($seenIdentities.ContainsKey($identity)) { throw 'Unsafe lane schedule: one resolved username appears in more than one lane.' }
+            $seenIdentities[$identity] = $true
+        }
+        [pscustomobject]@{ LaneId = $index + 1; UsernameKeys = @($group.UsernameKeys); Controllers = @($group.Controllers); Slug = 'lane-' + ($index + 1) }
+    })
 }

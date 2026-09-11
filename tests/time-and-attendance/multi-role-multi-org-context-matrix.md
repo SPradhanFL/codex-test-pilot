@@ -30,7 +30,7 @@ The switcher is a context selector, not proof that a switch succeeded. At every 
 - Do not create, edit, grant, revoke, migrate, invite, run, schedule, export, or delete data.
 - Do not inspect cookies, local storage, tokens, or raw authorization URLs.
 - If fewer contexts are exposed than the selected controller requires, mark only the missing context-dependent scenario **BLOCKED** and continue independent work.
-- Apply the approved-host, sanitized navigation, HTTP 404, console-baseline, 60-second failure-observation, screenshot, and continuous-video requirements from the shared instructions.
+- Apply the approved-host, sanitized navigation, HTTP 404, console-baseline, 120-second UI-recovery, measured >30-second load-warning, known-failure, screenshot, and continuous-video requirements from the shared instructions.
 
 ## Shared context proof
 

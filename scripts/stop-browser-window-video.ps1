@@ -3,7 +3,8 @@ param(
     [string]$OrgId,
 
     [Parameter(Mandatory = $true)]
-    [string]$RunId
+    [string]$RunId,
+    [string]$LaneSlug
 )
 
 $ErrorActionPreference = 'Stop'
@@ -18,7 +19,10 @@ $workspaceRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 
 $context = Resolve-MultiUserOrganizationContext -WorkspaceRoot $workspaceRoot -OrgId $OrgId
 $runDirectory = [System.IO.Path]::GetFullPath((Join-Path $context.FullSuiteRoot $RunId))
-$statePath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'browser-window-video-state.json'))
+$parallel = -not [string]::IsNullOrWhiteSpace($LaneSlug)
+if ($parallel -and $LaneSlug -notmatch '^lane-[1-9]\d*$') { throw 'LaneSlug must use lane-<number>.' }
+$captureRoot = if ($parallel) { [System.IO.Path]::GetFullPath((Join-Path (Join-Path $runDirectory 'lanes') $LaneSlug)) } else { $runDirectory }
+$statePath = [System.IO.Path]::GetFullPath((Join-Path $captureRoot 'browser-window-video-state.json'))
 if (-not $runDirectory.StartsWith($context.FullSuiteRoot, [System.StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $statePath)) {
     throw 'Missing browser-window recording state for the requested organization/run.'
 }
@@ -33,7 +37,8 @@ $finalPath = [System.IO.Path]::GetFullPath([string]$state.finalPath)
 $stopSignalPath = [System.IO.Path]::GetFullPath([string]$state.stopSignalPath)
 $readyPath = [System.IO.Path]::GetFullPath([string]$state.readyPath)
 $resultPath = [System.IO.Path]::GetFullPath([string]$state.resultPath)
-$eventPath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'video-events.json'))
+$eventPath = [System.IO.Path]::GetFullPath((Join-Path $captureRoot 'video-events.json'))
+$metadataPath = [System.IO.Path]::GetFullPath((Join-Path $captureRoot 'browser-window-video-metadata.json'))
 foreach ($path in @($capturePath, $finalPath, $statePath, $stopSignalPath, $readyPath, $resultPath)) {
     if (-not $path.StartsWith($runDirectory, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw 'A recorded artifact path resolved outside the requested run directory.'
@@ -94,6 +99,19 @@ if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $finalPath) -or (Get-It
     throw 'Unable to finalize the full-browser recording as WebM.'
 }
 
+if ($parallel) {
+    [ordered]@{
+        organizationId = $OrgId
+        runId = $RunId
+        laneSlug = $LaneSlug
+        video = $finalPath
+        recordedDurationSeconds = if ($null -ne $measuredDurationSeconds) { $measuredDurationSeconds } else { $nativeDurationSeconds }
+        nativeDurationSeconds = $nativeDurationSeconds
+        measuredDurationSeconds = $measuredDurationSeconds
+        timestampScale = $timestampScale
+    } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $metadataPath -Encoding utf8
+}
+
 Remove-Item -LiteralPath $capturePath
 Remove-Item -LiteralPath $stopSignalPath
 Remove-Item -LiteralPath $readyPath
@@ -103,6 +121,7 @@ Remove-Item -LiteralPath $statePath
 [pscustomobject]@{
     organizationId = $OrgId
     runId = $RunId
+    laneSlug = if ($parallel) { $LaneSlug } else { $null }
     video = $finalPath
     captureScope = 'full-browser-window'
     addressBarIncluded = $true

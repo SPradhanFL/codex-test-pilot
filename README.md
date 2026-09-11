@@ -142,7 +142,7 @@ That scenario automatically:
 
 Codex reads the selected scenario and shared files, opens the application, performs the browser actions, verifies the expected results, and writes the requested reports. If required configuration is missing, it stops before making changes and reports what must be supplied.
 
-Before any scenario is marked **FAIL**, the runner observes or polls the missing expected page, element, navigation, or state for a full 60 seconds. If it remains unavailable, the runner captures final evidence at or after the timeout and records the 60-second expiration in the report. This wait does not change genuine **BLOCKED** or **NOT TESTED** prerequisite outcomes.
+Before any scenario is marked **FAIL** for missing, slow, or incomplete UI, the runner observes or polls the expected page, element, navigation, or state for up to 120 seconds. If it remains unavailable, the runner captures final evidence at or after the timeout and records the 120-second expiration in the report. Every screen or required-control load above 30 seconds is reported as a measured `SLOW_UI_LOAD` warning without changing the functional result. A Sidekick that recovers within 120 seconds under HCMAT-79933 remains `PASS` when all assertions succeed, with the exact load time and linked Jira ticket in its warning description. Definite **BLOCKED** and **NOT TESTED** prerequisites are not delayed. Failures that exactly match `config/known-failures.json` display as **KNOWN FAILED — HCMAT-…** while remaining included in FAIL totals.
 
 ## Execute the complete suite with one video
 
@@ -210,7 +210,24 @@ powershell -ExecutionPolicy Bypass -File scripts/check-multi-user-run-readiness.
 powershell -ExecutionPolicy Bypass -File scripts/start-multi-user-full-suite-run.ps1 -OrgId 140462
 ```
 
-Replace `140462` with `140463` to execute the four accounts configured for that organization. Reports and ZIPs are isolated under the matching `reports/full-suite/<OrgId>/` folder.
+Replace `140462` with `140463` to use that organization's enabled controllers. At the time of writing, 140463 enables ten controllers resolving to nine distinct account lanes; readiness always reports the current configuration. Reports and ZIPs are isolated under the matching `reports/full-suite/<OrgId>/` folder.
+
+To run controllers in parallel account lanes, use the parallel orchestrator. Controllers resolving to the same trimmed, case-insensitive username are placed in one lane and always run sequentially; distinct account lanes run concurrently. The current organization configuration determines the lane count dynamically, and `-MaxLanes` can reduce concurrency safely:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check-multi-user-run-readiness.ps1 -OrgId 140463 -Parallel
+powershell -ExecutionPolicy Bypass -File scripts/start-multi-user-parallel-lanes.ps1 -OrgId 140463 -MaxLanes 0 -TimeoutMinutes 90
+```
+
+To run all and only Time & Attendance scenarios across the enabled login controllers while retaining parallel account lanes, use:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-multi-user-parallel-lanes.ps1 -OrgId 140463 -ScenarioScope TimeAndAttendance -MaxLanes 0 -TimeoutMinutes 90
+```
+
+The Time & Attendance scope includes repository scenarios 29-46 and excludes AM scenarios 1-28 and the supplemental AM-origin App Switcher workflow.
+
+Parallel runs use one isolated Playwright MCP/Chrome instance, video, and measured event journal per lane under `lanes/lane-N/`. Report pages remain under `roles/<controller>/` and point to their lane video. The orchestrator uses ephemeral non-interactive Codex executions with the workspace-write sandbox and automatic approval review; it never uses the dangerous approval/sandbox bypass. A failed or timed-out lane does not remove evidence from successful lanes. Serial execution remains the default when `-Parallel` is omitted.
 
 ```text
 For OrgId 140463, execute instructions/multi-user-full-suite-execution.md in unattended safe mode. Start a fresh isolated headed Chrome automation context and new test window, then run every controller enabled in config/aes-stage.ml.140463.json with one continuous 1280x720 full-browser-window video including the address bar, apply URL warning validation at every workflow checkpoint, archive only that organization's previous run, continue through independent failures, and generate the standard HTML evidence package.

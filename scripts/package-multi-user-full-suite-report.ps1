@@ -21,7 +21,6 @@ $zipPath = [System.IO.Path]::GetFullPath((Join-Path $fullSuiteRoot ("multi-user-
 $manifestPath = Join-Path $runDirectory 'run-manifest.json'
 $runDataPath = Join-Path $runDirectory 'run-data.json'
 $timelinePath = Join-Path $runDirectory 'timeline.json'
-$videoEventPath = Join-Path $runDirectory 'video-events.json'
 
 if (-not $runDirectory.StartsWith($fullSuiteRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'The run directory resolved outside the full-suite report root.'
@@ -35,13 +34,15 @@ if (-not (Test-Path -LiteralPath (Join-Path $runDirectory 'timeline.json'))) {
 if (-not (Test-Path -LiteralPath $manifestPath)) {
     throw 'The run manifest is missing.'
 }
-if (-not (Test-Path -LiteralPath $runDataPath) -or -not (Test-Path -LiteralPath $videoEventPath)) {
-    throw 'The measured run data or video event journal is missing.'
+if (-not (Test-Path -LiteralPath $runDataPath)) {
+    throw 'The measured run data is missing.'
 }
 
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 $runData = Get-Content -LiteralPath $runDataPath -Raw | ConvertFrom-Json
 $timeline = Get-Content -LiteralPath $timelinePath -Raw | ConvertFrom-Json
+$parallel = [string]$manifest.capture.executionMode -eq 'parallel'
+$failedLaneIds = if ($parallel -and $runData.lanes) { @($runData.lanes | Where-Object { $_.failed -eq $true } | ForEach-Object { [int]$_.laneId }) } else { @() }
 if ([string]$manifest.organizationId -ne $OrgId -or [string]$runData.organizationId -ne $OrgId -or [string]$timeline.organizationId -ne $OrgId) {
     throw "Report artifacts do not match requested OrgId $OrgId."
 }
@@ -49,6 +50,7 @@ if ($runData.timelineSource -ne 'measured-video-events-v1' -or $timeline.timelin
     throw 'The report does not contain a measured video timeline.'
 }
 foreach ($account in @($runData.accounts)) {
+    if ($parallel -and [int]$account.laneId -in $failedLaneIds) { continue }
     if ($account.timelineMeasured -ne $true) {
         throw "Account timeline was not measured: $($account.slug)"
     }
@@ -71,10 +73,10 @@ $roleReports = @(
 if ($roleReports.Count -ne $expectedReports) {
     throw "Expected $expectedReports role/login-combination reports, found $($roleReports.Count)."
 }
-$videos = @(Get-ChildItem -LiteralPath (Join-Path $runDirectory 'videos') -File -Filter '*.webm')
-if ($videos.Count -ne 1) {
-    throw "Expected one final video, found $($videos.Count)."
-}
+$activeLaneCount = if ($parallel) { [int]$manifest.capture.videoCount - $failedLaneIds.Count } else { [int]$manifest.capture.videoCount }
+$videos = if ($parallel) { @(Get-ChildItem -LiteralPath (Join-Path $runDirectory 'lanes') -Recurse -File -Filter '*.webm') } else { @(Get-ChildItem -LiteralPath (Join-Path $runDirectory 'videos') -File -Filter '*.webm') }
+$eventJournals = if ($parallel) { @(Get-ChildItem -LiteralPath (Join-Path $runDirectory 'lanes') -Recurse -File -Filter 'video-events.json') } else { @(Get-Item -LiteralPath (Join-Path $runDirectory 'video-events.json') -ErrorAction SilentlyContinue) }
+if ($videos.Count -ne $activeLaneCount -or $eventJournals.Count -ne $activeLaneCount) { throw "Expected $activeLaneCount video(s) and event journal(s) from active lanes; found $($videos.Count) video(s) and $($eventJournals.Count) journal(s)." }
 if (Test-Path -LiteralPath $zipPath) {
     throw "The package already exists: $zipPath"
 }

@@ -20,7 +20,6 @@ $fullSuiteRoot = $context.FullSuiteRoot
 $runDirectory = [System.IO.Path]::GetFullPath((Join-Path $fullSuiteRoot $RunId))
 $runDataPath = Join-Path $runDirectory 'run-data.json'
 $manifestPath = Join-Path $runDirectory 'run-manifest.json'
-$videoEventPath = Join-Path $runDirectory 'video-events.json'
 $videoDirectory = Join-Path $runDirectory 'videos'
 $videoDestination = Join-Path $videoDirectory 'multi-user-full-suite-execution.webm'
 
@@ -36,12 +35,13 @@ if (-not (Test-Path -LiteralPath $runDataPath)) {
 if (-not (Test-Path -LiteralPath $manifestPath)) {
     throw "Missing run manifest: $manifestPath"
 }
-if (-not (Test-Path -LiteralPath $videoEventPath)) {
-    throw "Missing measured video event journal: $videoEventPath"
-}
-
 $data = Get-Content -LiteralPath $runDataPath -Raw | ConvertFrom-Json
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+$parallel = [string]$manifest.capture.executionMode -eq 'parallel'
+$failedLaneSlugs = if ($parallel -and $data.lanes) { @($data.lanes | Where-Object { $_.failed -eq $true } | ForEach-Object { [string]$_.slug }) } else { @() }
+$videoEventPaths = if ($parallel) { @($manifest.lanes | Where-Object { [string]$_.slug -notin $failedLaneSlugs } | ForEach-Object { Join-Path (Join-Path (Join-Path $runDirectory 'lanes') $_.slug) 'video-events.json' }) } else { @(Join-Path $runDirectory 'video-events.json') }
+$missingEvents = @($videoEventPaths | Where-Object { -not (Test-Path -LiteralPath $_) })
+if ($missingEvents.Count -gt 0) { throw "Missing measured video event journal(s): $($missingEvents -join ', ')" }
 if ([string]$manifest.organizationId -ne $OrgId -or [string]$data.organizationId -ne $OrgId) {
     throw "Run manifest/data organization does not match requested OrgId $OrgId."
 }
@@ -57,22 +57,26 @@ if (@($data.accounts).Count -ne $expectedReports) {
     throw "Expected $expectedReports role/login-combination results in run-data.json, found $(@($data.accounts).Count)."
 }
 
-New-Item -ItemType Directory -Force -Path $videoDirectory | Out-Null
-if ([string]::IsNullOrWhiteSpace($VideoSource)) {
-    $VideoSource = Join-Path $workspaceRoot 'multi-user-full-suite-execution.webm'
-}
-$resolvedVideoSource = [System.IO.Path]::GetFullPath($VideoSource)
-
-if (-not (Test-Path -LiteralPath $videoDestination)) {
-    if (-not (Test-Path -LiteralPath $resolvedVideoSource)) {
-        throw "Missing final continuous video: $resolvedVideoSource"
+if ($parallel) {
+    if (@($manifest.lanes).Count -ne [int]$manifest.capture.videoCount) { throw 'Parallel videoCount must equal lane count.' }
+    foreach ($lane in @($manifest.lanes)) {
+        if ([string]$lane.slug -in $failedLaneSlugs) { continue }
+        $directory = [System.IO.Path]::GetFullPath((Join-Path (Join-Path (Join-Path $runDirectory 'lanes') $lane.slug) 'videos'))
+        $expected = Join-Path $directory ($lane.slug + '.webm')
+        $videos = if (Test-Path -LiteralPath $directory) { @(Get-ChildItem -LiteralPath $directory -File -Filter '*.webm') } else { @() }
+        if (-not $directory.StartsWith($runDirectory, [System.StringComparison]::OrdinalIgnoreCase) -or $videos.Count -ne 1 -or $videos[0].FullName -ne $expected) { throw "Lane $($lane.slug) must contain exactly one finalized WebM." }
     }
-    Move-Item -LiteralPath $resolvedVideoSource -Destination $videoDestination
-}
-
-$videoFiles = @(Get-ChildItem -LiteralPath $videoDirectory -File -Filter '*.webm')
-if ($videoFiles.Count -ne 1 -or $videoFiles[0].Name -ne 'multi-user-full-suite-execution.webm') {
-    throw 'The current run must contain exactly one user-facing WebM video.'
+    $videoFiles = @($manifest.lanes | Where-Object { [string]$_.slug -notin $failedLaneSlugs })
+} else {
+    New-Item -ItemType Directory -Force -Path $videoDirectory | Out-Null
+    if ([string]::IsNullOrWhiteSpace($VideoSource)) { $VideoSource = Join-Path $workspaceRoot 'multi-user-full-suite-execution.webm' }
+    $resolvedVideoSource = [System.IO.Path]::GetFullPath($VideoSource)
+    if (-not (Test-Path -LiteralPath $videoDestination)) {
+        if (-not (Test-Path -LiteralPath $resolvedVideoSource)) { throw "Missing final continuous video: $resolvedVideoSource" }
+        Move-Item -LiteralPath $resolvedVideoSource -Destination $videoDestination
+    }
+    $videoFiles = @(Get-ChildItem -LiteralPath $videoDirectory -File -Filter '*.webm')
+    if ($videoFiles.Count -ne 1 -or $videoFiles[0].Name -ne 'multi-user-full-suite-execution.webm') { throw 'The current run must contain exactly one user-facing WebM video.' }
 }
 
 $movedScreenshots = 0
@@ -121,7 +125,7 @@ if ($missingScreenshots.Count -gt 0) {
     organizationId = $OrgId
     runId = $RunId
     roleReports = @($data.accounts).Count
-    video = $videoDestination
+    video = if ($parallel) { $null } else { $videoDestination }
     videoCount = $videoFiles.Count
     screenshotsMoved = $movedScreenshots
 } | ConvertTo-Json -Depth 4

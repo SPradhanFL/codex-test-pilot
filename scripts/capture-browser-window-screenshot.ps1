@@ -52,13 +52,18 @@ if (-not $destination.StartsWith($screenshotDirectory, [System.StringComparison]
     throw 'The screenshot path resolved outside its evidence directory.'
 }
 
-$videoStatePath = Join-Path $runDirectory 'browser-window-video-state.json'
+$manifestAccount = @($manifest.accounts | Where-Object slug -eq $AccountSlug)
+$parallel = [string]$manifest.capture.executionMode -eq 'parallel'
+$laneSlug = if ($parallel) { [string](@($manifest.lanes | Where-Object { [int]$_.laneId -eq [int]$manifestAccount[0].laneId })[0].slug) } else { '' }
+$videoStatePath = if ($parallel) { Join-Path (Join-Path (Join-Path $runDirectory 'lanes') $laneSlug) 'browser-window-video-state.json' } else { Join-Path $runDirectory 'browser-window-video-state.json' }
 $recordedWindowHandle = 0
 if (Test-Path -LiteralPath $videoStatePath) {
     $videoState = Get-Content -LiteralPath $videoStatePath -Raw | ConvertFrom-Json
     $recordedWindowHandle = [long]$videoState.chromeWindowHandle
 }
-$window = Get-ForegroundChromeCaptureWindow -Width 1280 -Height 720 -Resize -WindowHandle $recordedWindowHandle
+if ($parallel -and $recordedWindowHandle -eq 0) { throw "Missing active browser-window state for $laneSlug; refusing to capture another lane's window." }
+$windowSlot = if ($parallel) { [int]$manifestAccount[0].laneId } else { 0 }
+$window = Get-ForegroundChromeCaptureWindow -Width 1280 -Height 720 -Resize -WindowHandle $recordedWindowHandle -WindowSlot $windowSlot
 Add-Type -AssemblyName System.Drawing
 $bitmap = New-Object System.Drawing.Bitmap($window.Width, $window.Height)
 $graphics = [System.Drawing.Graphics]::FromImage($bitmap)

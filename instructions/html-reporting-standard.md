@@ -32,6 +32,7 @@ The main `index.html` must use the same responsive dashboard style as the canoni
 - A blue gradient report header with the suite name, run ID, environment, organization context, and recorded duration.
 - Summary cards for total role reports, total scenario/context validations, passed, failed, blocked, and not-tested scenario/context validations.
 - A separate warning total. Warnings are supplemental observations and must not be counted as PASS, FAIL, BLOCKED, or NOT TESTED.
+- A separate known-failed total. Known failures remain included in the failed total and display as `KNOWN FAILED — <Jira ticket>` with a link and match evidence.
 - For multi-user dashboards, calculate outcome totals from every workflow under every login combination. Do not use aggregate login-combination statuses as the Passed/Failed/Blocked totals.
 - In each multi-user execution row and outcome card, show the login combination's numeric result breakdown (for example, `18 Passed`, `1 Failed`, `1 Blocked`) instead of only one aggregate PASS/FAIL/BLOCKED label.
 - One embedded HTML5 video player for the complete execution.
@@ -40,6 +41,7 @@ The main `index.html` must use the same responsive dashboard style as the canoni
 - A separate **Failures and blocked flows** section.
 - Numbered reproduction steps for each failure or blocked scenario.
 - Relative links so the complete run folder or ZIP remains portable.
+- Any generated Markdown/Slack handoff summary must use the same `KNOWN FAILED — <Jira ticket>` label and preserve the canonical FAIL count; it must not flatten known failures back to unlabeled failures.
 
 ## Scenario-page requirements
 
@@ -49,7 +51,8 @@ Each scenario name on the dashboard must open a separate HTML page containing:
 - Expected result and observed actual result.
 - Every executed step in order.
 - Failure or blocked reason with numbered reproduction steps when applicable.
-- For every FAIL, a visible `Failure observation: 60 seconds` statement and an executed timeout step showing that the expected UI state was polled for the full interval before the failure was finalized.
+- For every FAIL, a visible `Failure observation: 120 seconds` statement and an executed timeout step showing that the expected UI state was polled for the full interval before the failure was finalized.
+- For a catalog-matched failure, a visible `KNOWN FAILED — <Jira ticket>` badge, Jira link, catalog title, and observation-specific match evidence.
 - One or more full, readable screenshot evidence images.
 - URL warnings, when present, with the affected validation step, expected/actual result, and linked screenshot.
 - The shared execution video with a button that seeks to the scenario start and stops at the scenario end.
@@ -63,7 +66,8 @@ For every Time & Attendance scenario, also include:
 - a clear assessment of whether any IDM authorization hop was silent and expected or caused re-authentication;
 - the initial application/role context, every cross-product destination, and the final application/role context;
 - an explicit prohibited-host result for `qaestar.flqa.net`; and
-- performance or console observations that did not change the functional result.
+- measured performance or console observations that did not change the functional result. Every screen or required-control load over 30 seconds must show its actual elapsed seconds in a `SLOW_UI_LOAD` warning.
+- a recovered HCMAT-79933 Sidekick delay as `PASS` when all assertions succeed, with the exact load time and linked Jira ticket in the warning description.
 
 ## Evidence rules
 
@@ -93,4 +97,7 @@ Before sharing a report, verify:
 9. Multi-user `run-data.json` and `timeline.json` declare `measured-video-events-v1`, and every account/workflow range comes from `video-events.json` rather than an equal-time estimate.
 10. The video and every multi-user screenshot include the complete Chrome window and address bar, while excluding surrounding desktop content.
 11. Warning totals match all workflow `warnings` arrays, and each warning screenshot resolves.
-12. Every failed workflow records `failureObservationSeconds: 60`, includes its 60-second observation in the executed-step evidence, and has a final screenshot captured at or after timeout.
+12. Every failed workflow records `failureObservationSeconds: 120`, includes its 120-second observation in the executed-step evidence, and has a final screenshot captured at or after timeout.
+13. Every `SLOW_UI_LOAD` warning records `thresholdSeconds: 30`, an actual measured `elapsedSeconds` value greater than 30, and linked full-browser evidence.
+14. Every `knownFailure` references a ticket in `config/known-failures.json`, keeps canonical status `FAIL`, and includes concise evidence proving the exact signature match.
+15. Every recovered HCMAT-79933 Sidekick warning links that Jira ticket in its description and does not alter a successful functional result.
